@@ -2,33 +2,61 @@
 
 @theme {
   /* Colors */
-  --color-canvas: #010102;
-  --color-surface-1: #0f1011;
-  --color-surface-2: #141516;
-  --color-surface-3: #18191a;
-  --color-surface-4: #191a1b;
+  --color-canvas: var(--app-canvas);
+  --color-surface-1: var(--app-surface-1);
+  --color-surface-2: var(--app-surface-2);
+  --color-surface-3: var(--app-surface-3);
+  --color-surface-4: var(--app-surface-4);
   
-  --color-brand-primary: #052B58;
-  --color-brand-primary-hover: #073b78;
-  --color-brand-primary-focus: #052B57;
+  --color-brand-primary: var(--app-brand-primary);
+  --color-brand-primary-hover: var(--app-brand-primary-hover);
+  --color-brand-primary-focus: var(--app-brand-primary-focus);
+  --color-brand-secure: var(--app-brand-secure);
+  --color-semantic-success: var(--app-semantic-success);
   
-  --color-ink: #F2F2F0;
-  --color-ink-muted: #7C8C9C;
-  --color-ink-subtle: #7C849C;
-  --color-ink-tertiary: #62666d;
+  --color-ink: var(--app-ink);
+  --color-ink-muted: var(--app-ink-muted);
+  --color-ink-subtle: var(--app-ink-subtle);
+  --color-ink-tertiary: var(--app-ink-tertiary);
   
-  --color-hairline: #23252a;
-  --color-hairline-strong: #34343a;
-  --color-hairline-tertiary: #3e3e44;
+  --color-hairline: var(--app-hairline);
+  --color-hairline-strong: var(--app-hairline-strong);
+  --color-hairline-tertiary: var(--app-hairline-tertiary);
   
-  --color-inverse-canvas: #ffffff;
-  --color-inverse-surface-1: #f5f6f6;
-  --color-inverse-surface-2: #f6f7f7;
-  --color-inverse-ink: #000000;
+  --color-inverse-canvas: var(--app-inverse-canvas);
+  --color-inverse-surface-1: var(--app-inverse-surface-1);
+  --color-inverse-surface-2: var(--app-inverse-surface-2);
+  --color-inverse-ink: var(--app-inverse-ink);
 
   /* Typography Fallbacks */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Linear Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", "Linear Mono", monospace;
+
+  /* Spacing Scale (4px base) */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-section: 96px;
+
+  /* Font Sizes mapping */
+  --text-display-xl: 80px;
+  --text-display-lg: 56px;
+  --text-display-md: 40px;
+  --text-headline: 28px;
+  --text-card-title: 22px;
+  --text-subhead: 20px;
+  --text-body-lg: 18px;
+  --text-body: 16px;
+  --text-body-sm: 14px;
+  --text-caption: 12px;
+  --text-button: 14px;
+  --text-eyebrow: 13px;
+  --text-mono: 13px;
   
   /* Radii */
   --radius-xs: 4px;
@@ -49,11 +77,76 @@
   --tracking-body: -0.05px;
 }
 
+:root {
+  /* LIGHT MODE (Primary) */
+  --app-canvas: #f8fafc;
+  --app-surface-1: #ffffff;
+  --app-surface-2: #f1f5f9;
+  --app-surface-3: #e2e8f0;
+  --app-surface-4: #cbd5e1;
+  
+  --app-brand-primary: #0ea5e9;
+  --app-brand-primary-hover: #0284c7;
+  --app-brand-primary-focus: #0369a1;
+  --app-brand-secure: #64748b;
+  --app-semantic-success: #10b981;
+  
+  --app-ink: #0f172a;
+  --app-ink-muted: #475569;
+  --app-ink-subtle: #64748b;
+  --app-ink-tertiary: #94a3b8;
+  
+  --app-hairline: #e2e8f0;
+  --app-hairline-strong: #cbd5e1;
+  --app-hairline-tertiary: #94a3b8;
+  
+  --app-inverse-canvas: #010102;
+  --app-inverse-surface-1: #0f1011;
+  --app-inverse-surface-2: #141516;
+  --app-inverse-ink: #ffffff;
+}
+
+.dark {
+  /* DARK MODE (Secondary) */
+  --app-canvas: #010102;
+  --app-surface-1: #0f1011;
+  --app-surface-2: #141516;
+  --app-surface-3: #18191a;
+  --app-surface-4: #191a1b;
+  
+  --app-brand-primary: #052B58;
+  --app-brand-primary-hover: #073b78;
+  --app-brand-primary-focus: #052B57;
+  --app-brand-secure: #7a7fad;
+  --app-semantic-success: #27a644;
+  
+  --app-ink: #F2F2F0;
+  --app-ink-muted: #7C8C9C;
+  --app-ink-subtle: #7C849C;
+  --app-ink-tertiary: #62666d;
+  
+  --app-hairline: #23252a;
+  --app-hairline-strong: #34343a;
+  --app-hairline-tertiary: #3e3e44;
+  
+  --app-inverse-canvas: #ffffff;
+  --app-inverse-surface-1: #f5f6f6;
+  --app-inverse-surface-2: #f6f7f7;
+  --app-inverse-ink: #000000;
+}
+
 /* Base Styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -63,6 +156,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 /* Custom Scrollbar */
@@ -79,4 +180,322 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-ink-tertiary);
+}
+
+/* ==========================================
+   LAYOUT & SPACING COMPATIBILITY OVERRIDES
+   ==========================================
+   Corrects Tailwind v4 compiled non-standard property bugs 
+   (e.g., max-w -> max-width, min-w -> min-width) and guarantees 
+   margins, paddings, gaps, and centering work perfectly.
+*/
+
+/* Centering */
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Max-Width Utility Fixes */
+.max-w-2xl { max-width: 42rem !important; }
+.max-w-5xl { max-width: 64rem !important; }
+.max-w-6xl { max-width: 72rem !important; }
+.max-w-7xl { max-width: 80rem !important; }
+.max-w-xl { max-width: 36rem !important; }
+.max-w-sm { max-width: 24rem !important; }
+.max-w-md { max-width: 28rem !important; }
+.max-w-lg { max-width: 32rem !important; }
+.max-w-full { max-width: 100% !important; }
+.max-w-none { max-width: none !important; }
+
+/* Min-Width Fixes */
+.min-w-0 { min-width: 0px !important; }
+
+/* Standard Padding Fallbacks */
+.p-4 { padding: 1rem !important; }
+.p-5 { padding: 1.25rem !important; }
+.p-6 { padding: 1.5rem !important; }
+.p-8 { padding: 2rem !important; }
+
+.px-4 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+.px-6 {
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+.px-8 {
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+.px-10 {
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
+}
+.px-16 {
+  padding-left: 4rem !important;
+  padding-right: 4rem !important;
+}
+.px-20 {
+  padding-left: 5rem !important;
+  padding-right: 5rem !important;
+}
+
+/* Responsive Horizontal Container Padding Fallbacks */
+@media (min-width: 640px) {
+  .sm\:px-10 {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+  }
+}
+@media (min-width: 768px) {
+  .md\:px-16 {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+  }
+}
+@media (min-width: 1024px) {
+  .lg\:px-20 {
+    padding-left: 5rem !important;
+    padding-right: 5rem !important;
+  }
+}
+
+/* Standard Margin Fallbacks */
+.my-2 {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+.mt-1 { margin-top: 0.25rem !important; }
+.mt-6 { margin-top: 1.5rem !important; }
+.mt-8 { margin-top: 2rem !important; }
+.mr-2 { margin-right: 0.5rem !important; }
+.mb-1 { margin-bottom: 0.25rem !important; }
+.mb-1\.5 { margin-bottom: 0.375rem !important; }
+.mb-4 { margin-bottom: 1rem !important; }
+.mb-16 { margin-bottom: 4rem !important; }
+.mb-20 { margin-bottom: 5rem !important; }
+
+/* Responsive Margins */
+@media (min-width: 1024px) {
+  .lg\:mb-0 { margin-bottom: 0px !important; }
+}
+
+/* Standard Vertical Padding Fallbacks */
+.py-0\.5 {
+  padding-top: 0.125rem !important;
+  padding-bottom: 0.125rem !important;
+}
+.py-1 {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+}
+.py-1\.5 {
+  padding-top: 0.375rem !important;
+  padding-bottom: 0.375rem !important;
+}
+.py-2 {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+.py-2\.5 {
+  padding-top: 0.625rem !important;
+  padding-bottom: 0.625rem !important;
+}
+.py-3\.5 {
+  padding-top: 0.875rem !important;
+  padding-bottom: 0.875rem !important;
+}
+.py-4 {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+.py-12 {
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+.py-16 {
+  padding-top: 4rem !important;
+  padding-bottom: 4rem !important;
+}
+.py-20 {
+  padding-top: 5rem !important;
+  padding-bottom: 5rem !important;
+}
+.py-24 {
+  padding-top: 6rem !important;
+  padding-bottom: 6rem !important;
+}
+.py-32 {
+  padding-top: 8rem !important;
+  padding-bottom: 8rem !important;
+}
+
+/* Flex/Grid Gap Fallbacks */
+.gap-1\.5 { gap: 0.375rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-2\.5 { gap: 0.625rem !important; }
+.gap-3 { gap: 0.75rem !important; }
+.gap-4 { gap: 1rem !important; }
+.gap-5 { gap: 1.25rem !important; }
+.gap-6 { gap: 1.5rem !important; }
+.gap-8 { gap: 2rem !important; }
+.gap-10 { gap: 2.5rem !important; }
+.gap-12 { gap: 3rem !important; }
+.gap-16 { gap: 4rem !important; }
+
+/* ==========================================
+   PREMIUM CUSTOM FOOTER SPECIFIC STYLES
+   ==========================================
+*/
+.custom-footer {
+  background-color: var(--color-surface-1) !important;
+  border-top: 2px solid var(--color-brand-primary) !important;
+  box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.footer-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 2.5rem !important;
+}
+
+@media (min-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr 1.5fr !important;
+    gap: 2rem !important;
+  }
+}
+
+.footer-link-bullet {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #052b58;
+  transition: all 0.2s ease-in-out;
+}
+
+.group:hover .footer-link-bullet {
+  background-color: #818cf8 !important; /* Indigo glow on hover */
+  transform: scale(1.5);
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.8);
+}
+
+/* Bulletproof Full-Width Centered Landing Page Footer */
+.landing-footer {
+  width: 100% !important;
+  background-color: var(--color-surface-1) !important;
+  border-top: 1px solid var(--color-hairline) !important;
+  padding-top: 2rem !important;       /* Balanced, compact vertical padding */
+  padding-bottom: 2rem !important;
+  padding-left: 2rem !important;       /* Standard side padding */
+  padding-right: 2rem !important;
+  margin-top: 4rem !important;         /* Neat spacing from content above */
+  display: flex !important;
+  flex-direction: column !important;   /* Stacks content vertically for perfect horizontal centering */
+  align-items: center !important;      /* Centers content horizontally */
+  justify-content: center !important;  /* Centers content vertically */
+  text-align: center !important;       /* Center-aligns all text lines */
+  color: var(--color-ink-muted) !important;
+  font-size: 0.825rem !important;      /* Clean, compact size (approx 13px) */
+  line-height: 1.6 !important;
+  user-select: none !important;
+}
+
+
+/* ==========================================
+   BULLETPROOF PREMIUM LOGIN PAGE STYLES
+   ==========================================
+*/
+.login-page-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 !important;
+  padding: 4rem 1.5rem !important;   /* Dynamic outer padding */
+  z-index: 10 !important;
+}
+
+.login-header-area {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 0.75rem !important;           /* Space between badge, title, and description */
+  margin-bottom: 2rem !important;    /* Separator space before the card */
+}
+
+.login-card {
+  width: 100% !important;
+  max-width: 440px !important;
+  background-color: var(--color-surface-1) !important;
+  border: 1px solid var(--color-hairline) !important;
+  border-radius: 16px !important;
+  padding: 2.75rem 2.25rem !important; /* Beautiful, large inner spacing (paddings) */
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3) !important;
+  position: relative !important;
+}
+
+.login-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;             /* Explicit vertical gap between fields (margins/paddings) */
+  width: 100% !important;
+}
+
+.login-form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;             /* Spacing between label and input */
+  width: 100% !important;
+}
+
+.login-label {
+  display: block !important;
+  font-size: 0.75rem !important;      /* 12px label */
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #7c8c9c !important;
+  font-weight: 600 !important;
+  user-select: none !important;
+}
+
+.login-input {
+  width: 100% !important;
+  background-color: var(--color-surface-2) !important;
+  border: 1px solid var(--color-hairline-strong) !important;
+  border-radius: 8px !important;
+  padding: 0.875rem 1rem !important;   /* Substantial input padding */
+  font-size: 0.875rem !important;       /* Clean text size */
+  color: var(--color-ink) !important;
+  outline: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.login-input:focus {
+  border-color: var(--color-brand-primary) !important;
+  box-shadow: 0 0 0 1px var(--color-brand-primary) !important;
+}
+
+.login-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.login-error {
+  padding: 0.75rem 1rem !important;
+  background-color: rgba(244, 63, 94, 0.1) !important;
+  border: 1px solid rgba(244, 63, 94, 0.2) !important;
+  border-radius: 8px !important;
+  font-size: 0.75rem !important;
+  color: #fb7185 !important;
+  line-height: 1.5 !important;
 }

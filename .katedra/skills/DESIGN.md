@@ -326,6 +326,13 @@ The page rhythm is **dense product screenshots** — Linear's marketing leads wi
 - Cards use `{rounded.lg}` 12px corners with 1px hairline borders — never pill, rarely 16px.
 - **Product UI screenshots** dominate the page. The marketing chrome is a dark frame for the app.
 - No second chromatic color. No atmospheric gradients. No spotlight cards.
+- **Strict Mobile & Multi-Device Responsiveness** — All layouts must be 100% responsive and pristine across all viewport sizes (mobile, tablet, desktop). Incorporate adaptive grid-systems, flex wrap behaviors, text scaling adjustments, and toggleable sidebar/navigation drawer drawers using responsive Tailwind utility classes (`sm:`, `md:`, `lg:`). Zero overlapping texts or broken gutters allowed.
+- **Strict Margins and Paddings (Layout Air & Breathing)** — To ensure absolute layout consistency and a quietly luxurious feel, all UI components must adhere to the spacing discipline established in Katedra's Login layout:
+  - **Page Layouts & Main Containers**: Implement structured breathing room using `py-12 px-4 sm:px-6` on screen-wrappers, or `p-6 sm:p-8 md:p-10` for dashboard workspaces. Avoid tightly packed edges.
+  - **Cards, Panels & Modals**: Must maintain consistent internal padding starting at `p-6` for mobile viewports, scaling up to `sm:p-8` on larger screens.
+  - **Forms & Inputs Flow**: Group inputs vertically using `space-y-4` margins. Labels and their inputs must be separated by `space-y-1.5` margins. Standard input boxes must use a highly touchable internal padding of `p-3` (12px) with `text-xs` sizing.
+  - **Buttons & Interactive CTAs**: Default interactive buttons to a padding of `px-4 py-2.5` (or a full-width `py-3` on major form actions) to maximize tactile response and precision.
+
 
 ## Known Gaps
 
