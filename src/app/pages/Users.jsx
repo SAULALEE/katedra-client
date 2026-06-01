@@ -214,110 +214,159 @@ export default function Users() {
         </div>
       </main>
 
-      {/* OVERLAY MODAL - Fully Custom, Premium Linear UI Styling */}
+      {/* OVERLAY MODAL - Elegant, Clean Minimalist UI Styling */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 sm:p-6 transition-all duration-300 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#010102]/80 backdrop-blur-md p-6 transition-all duration-200">
           
-          {/* Modal Container (Strictly using p-6 sm:p-8 spacing tokens) */}
+          {/* Modal Container with generous 48px padding and 500px width to ensure it feels luxurious and spacious */}
           <div 
-            className="w-full max-w-[480px] bg-surface-1 border border-hairline rounded-lg p-6 sm:p-8 shadow-2xl relative flex flex-col gap-6"
+            className="w-full max-w-[500px] bg-surface-1 border border-hairline rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.85)] relative flex flex-col"
+            style={{ padding: '48px', gap: '32px' }}
           >
-            
             {/* Modal Header */}
-            <div className="flex justify-between items-start border-b border-hairline pb-4">
+            <div className="flex justify-between items-start pb-5 border-b border-hairline select-none" style={{ gap: '20px' }}>
               <div>
-                <span className="text-[9px] uppercase tracking-wider text-brand-primary font-bold">Formulario de Control</span>
-                <h3 className="text-base font-bold text-ink mt-0.5">
-                  {editingUser ? 'Editar Registro de Docente' : 'Registrar Nuevo Docente'}
+                <h3 className="text-lg font-bold text-ink tracking-tight">
+                  {editingUser ? 'Editar Docente' : 'Registrar Nuevo Docente'}
                 </h3>
+                <p className="text-xs text-ink-muted mt-1.5 leading-relaxed">
+                  Completa los campos para registrar o actualizar el perfil en el sistema.
+                </p>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="text-ink-muted hover:text-ink cursor-pointer transition-colors p-1"
+                type="button"
+                className="w-8 h-8 rounded-full border border-hairline hover:border-hairline-strong hover:bg-surface-2 flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer transition-all shrink-0"
                 aria-label="Cerrar modal"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            {/* Modal Form Flow (Using space-y-4 vertical spacing and space-y-1.5 label spacing) */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Modal Form Flow */}
+            <form onSubmit={handleSubmit} className="flex flex-col" style={{ gap: '28px' }}>
               
-              <Input
-                label="Nombre Completo"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ejem. Dra. Viviana Solano"
-                disabled={isSubmitting}
-              />
+              {/* Stacked Input Fields with Comfortable Gaps */}
+              <div className="flex flex-col" style={{ gap: '20px' }}>
+                <div className="flex flex-col" style={{ gap: '8px' }}>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                    Nombre Completo
+                  </label>
+                  <input
+                    type="text"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    placeholder="Ejem. Dra. Viviana Solano"
+                    disabled={isSubmitting}
+                    className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                  />
+                </div>
 
-              <Input
-                label="Correo Electrónico"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="docente@katedra.edu"
-                disabled={isSubmitting}
-              />
-
-              {/* Rol Selection - Estilizado Linear */}
-              <div className="space-y-1.5 w-full">
-                <label className="block text-[10px] uppercase tracking-wider text-ink-muted font-medium select-none">
-                  Rol de Sistema
-                </label>
-                <select
-                  value={rol}
-                  onChange={(e) => setRol(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full bg-surface-1 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-md p-3 text-xs text-ink outline-none transition-all duration-200 focus:ring-1 focus:ring-brand-primary-focus cursor-pointer"
-                >
-                  <option value="Docente Plan Libre">Docente Plan Libre</option>
-                  <option value="Docente Premium">Docente Premium</option>
-                  <option value="Administrador">Administrador</option>
-                </select>
+                <div className="flex flex-col" style={{ gap: '8px' }}>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="docente@katedra.edu"
+                    disabled={isSubmitting}
+                    className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                  />
+                </div>
               </div>
 
-              {/* Estado Selection - Estilizado Linear */}
-              <div className="space-y-1.5 w-full">
-                <label className="block text-[10px] uppercase tracking-wider text-ink-muted font-medium select-none">
-                  Estado Operativo
+              {/* Rol Selection - Sleek Horizontal Segmented Grid */}
+              <div className="flex flex-col" style={{ gap: '8px' }}>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                  Rol de Sistema
                 </label>
-                <select
-                  value={estado}
-                  onChange={(e) => setEstado(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full bg-surface-1 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-md p-3 text-xs text-ink outline-none transition-all duration-200 focus:ring-1 focus:ring-brand-primary-focus cursor-pointer"
-                >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                </select>
+                <div className="grid grid-cols-3 gap-2 bg-[#070809] p-1.5 rounded-xl border border-hairline select-none">
+                  {[
+                    { id: 'Docente Plan Libre', short: 'Libre' },
+                    { id: 'Docente Premium', short: 'Premium' },
+                    { id: 'Administrador', short: 'Admin' }
+                  ].map((roleOption) => {
+                    const isSelected = rol === roleOption.id;
+                    return (
+                      <button
+                        key={roleOption.id}
+                        type="button"
+                        onClick={() => setRol(roleOption.id)}
+                        disabled={isSubmitting}
+                        className={`py-3 px-1 text-center text-xs font-semibold rounded-lg cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-surface-1 text-ink border border-hairline-strong shadow-sm font-bold'
+                            : 'text-ink-subtle hover:text-ink hover:bg-surface-3/30'
+                        }`}
+                      >
+                        {roleOption.short}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Estado Selection - Clean Horizontal Toggle Switch */}
+              <div className="flex flex-col" style={{ gap: '8px' }}>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                  Estado de la Cuenta
+                </label>
+                <div className="flex p-1.5 bg-[#070809] rounded-xl border border-hairline select-none">
+                  {[
+                    { id: 'Activo', label: 'Activo', color: 'text-emerald-400', activeBg: 'bg-emerald-500/10 border-emerald-500/25', dotBg: 'bg-emerald-400 shadow-[0_0_8px_#34d399]' },
+                    { id: 'Inactivo', label: 'Inactivo', color: 'text-rose-400', activeBg: 'bg-rose-500/10 border-rose-500/25', dotBg: 'bg-rose-400 shadow-[0_0_8px_#f43f5e]' }
+                  ].map((stateOption) => {
+                    const isSelected = estado === stateOption.id;
+                    return (
+                      <button
+                        key={stateOption.id}
+                        type="button"
+                        onClick={() => setEstado(stateOption.id)}
+                        disabled={isSubmitting}
+                        className={`flex-1 py-3 text-xs font-bold rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-all border border-transparent ${
+                          isSelected
+                            ? `${stateOption.activeBg} ${stateOption.color} font-bold shadow-md`
+                            : 'text-ink-subtle hover:text-ink hover:bg-surface-3/30'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${stateOption.dotBg}`} />
+                        <span>{stateOption.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {formError && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-md text-[11px] text-rose-400 animate-fade-in">
-                  {formError}
+                <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-[11px] text-rose-400 animate-fade-in font-semibold flex items-center gap-2">
+                  <svg className="w-3.5 h-3.5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{formError}</span>
                 </div>
               )}
 
-              {/* Action CTAs (Using padding px-4 py-2.5 / py-3) */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-hairline">
-                <Button 
-                  variant="tertiary" 
+              {/* Action CTAs */}
+              <div className="flex items-center justify-end gap-3.5 pt-5 border-t border-hairline select-none">
+                <button 
+                  type="button"
                   onClick={() => setIsModalOpen(false)}
                   disabled={isSubmitting}
-                  className="px-4 py-2.5 text-xs font-semibold"
+                  className="px-4 py-2.5 rounded-lg text-xs font-semibold text-ink-subtle hover:text-ink hover:bg-surface-2/60 cursor-pointer transition-all"
                 >
                   Cancelar
-                </Button>
+                </button>
                 <Button 
-                  variant="primary" 
+                  variant="primary"
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 text-xs font-semibold shadow-[0_0_15px_rgba(5,43,88,0.3)]"
+                  className="px-5 py-2.5 text-xs font-semibold"
                 >
-                  {isSubmitting ? 'Guardando...' : editingUser ? 'Guardar Cambios' : 'Registrar Usuario'}
+                  {isSubmitting ? 'Guardando...' : editingUser ? 'Guardar Cambios' : 'Registrar Docente'}
                 </Button>
               </div>
             </form>

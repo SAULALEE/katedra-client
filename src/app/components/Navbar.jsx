@@ -23,11 +23,17 @@ export default function Navbar() {
     <header className="w-full h-[56px] border-b border-hairline bg-canvas text-ink flex items-center sticky top-0 z-50">
       <Container size="7xl" className="flex items-center justify-between h-full">
         {/* Brand/Logo */}
-        <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => navigate('/')}>
-          <div className="w-5 h-5 rounded-sm bg-brand-primary flex items-center justify-center shadow-[0_0_12px_rgba(5,43,88,0.5)]">
-            <span className="text-[10px] font-bold text-white">K</span>
+        <div className="flex items-center gap-3 cursor-pointer select-none group" onClick={() => navigate('/')}>
+          <div className="relative w-9 h-9 rounded-full overflow-hidden border border-hairline bg-surface-1 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:scale-105 group-hover:border-brand-primary/30 group-hover:shadow-[0_4px_12px_rgba(var(--brand-primary-rgb,5,43,88),0.15)]">
+            <img 
+              src={isDarkMode ? '/katedra-dark-mode.jpeg' : '/katedra-light-mode.jpeg'} 
+              alt="Katedra Logo" 
+              className="w-full h-full object-cover"
+            />
           </div>
-          <span className="font-sans font-semibold tracking-subhead text-[15px]">Katedra</span>
+          <span className="font-sans font-semibold tracking-subhead text-[15px] text-ink group-hover:text-brand-primary transition-colors duration-300">
+            Katedra
+          </span>
         </div>
 
         {/* Desktop Menu links - typography.body-sm (14px, tracking 0) */}

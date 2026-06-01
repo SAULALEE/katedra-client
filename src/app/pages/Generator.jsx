@@ -4,6 +4,7 @@ import { useGenerator } from '../hooks/useGenerator';
 import { Input, Textarea } from '../components/Input';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import ResponsiveSidebar from '../components/ResponsiveSidebar';
 
 export default function Generator() {
   const navigate = useNavigate();
@@ -21,33 +22,35 @@ export default function Generator() {
   } = useGenerator();
 
   return (
-    <div className="w-full min-h-screen bg-canvas text-ink flex flex-col selection:bg-brand-primary selection:text-white">
+    <div className="w-full min-h-screen bg-canvas text-ink flex flex-col md:flex-row selection:bg-brand-primary selection:text-white">
       
-      {/* Header bar */}
-      <header className="h-[56px] border-b border-hairline px-4 sm:px-6 flex items-center justify-between bg-canvas/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
-          <div className="w-5 h-5 rounded-sm bg-brand-primary flex items-center justify-center shadow-[0_0_12px_rgba(5,43,88,0.5)]">
-            <span className="text-[10px] font-bold text-white">K</span>
-          </div>
-          <span className="font-sans font-semibold tracking-subhead text-[15px] hidden xs:block">Katedra — Editor de Temarios</span>
-        </div>
+      {/* Sidebar Navigation */}
+      <ResponsiveSidebar />
 
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="secondary"
-            onClick={() => navigate('/dashboard')}
-            className="px-3.5 py-1.5 text-xs"
-          >
-            Volver al Panel
-          </Button>
-        </div>
-      </header>
-
-      {/* Main split work space */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+      {/* Main Content Workspace */}
+      <main className="flex-1 flex flex-col min-w-0 bg-canvas">
         
-        {/* Left Side: Setup Wizard Panel */}
-        <section className="w-full lg:w-100 border-b lg:border-b-0 lg:border-r border-hairline bg-surface-1/60 p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto shrink-0">
+        {/* Top Navbar (Consistent h-[56px] header from DESIGN.md) */}
+        <header className="h-[56px] border-b border-hairline bg-canvas/80 backdrop-blur-md sticky top-0 z-30 w-full flex items-center">
+          <div className="w-full px-6 sm:px-8 flex items-center justify-between">
+            <h2 className="text-sm font-semibold tracking-card-title text-ink">Editor de Temarios con IA</h2>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="secondary"
+                onClick={() => navigate('/dashboard')}
+                className="px-3.5 py-1.5 text-xs font-bold"
+              >
+                Volver al Panel
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main split work space */}
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+          
+          {/* Left Side: Setup Wizard Panel */}
+          <section className="w-full lg:w-96 border-b lg:border-b-0 lg:border-r border-hairline bg-surface-1/60 p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto shrink-0">
           <div>
             <h3 className="text-body-lg font-semibold tracking-card-title text-ink mb-1">Configuración del Temario</h3>
             <p className="text-caption text-ink-muted">Proporciona los datos del curso para la IA.</p>
@@ -84,14 +87,14 @@ export default function Generator() {
               variant="primary"
               onClick={handleGenerate}
               disabled={isGenerating || !tema || !materia}
-              className="w-full py-4 text-body-sm font-semibold shadow-[0_0_20px_rgba(5,43,88,0.3)] hover:shadow-[0_0_25px_rgba(5,43,88,0.5)] transition-shadow duration-200"
+              className="w-full py-3.5 text-body-sm font-semibold shadow-[0_0_20px_rgba(5,43,88,0.3)] hover:shadow-[0_0_25px_rgba(5,43,88,0.5)] transition-shadow duration-200 rounded-xl"
             >
               {isGenerating ? 'Generando Material...' : 'Generar Material con IA'}
             </Button>
           </div>
 
           {/* Prompting Note using custom Card */}
-          <Card surface="2" className="p-5 text-caption text-ink-subtle leading-relaxed border border-hairline bg-surface-2/30">
+          <Card surface="2" className="p-6 text-caption text-ink-subtle leading-relaxed border border-hairline bg-surface-2/30 rounded-xl">
             <span className="font-semibold text-ink block mb-1.5">Nota del Motor AI</span>
             Esta llamada integra prompts validados según `ai-integration.md`. Generará teoría completa, ejercicios con soluciones, un examen evaluatorio estructurado de 3 preguntas y 3 diapositivas docentes de apoyo.
           </Card>
@@ -102,32 +105,32 @@ export default function Generator() {
           
           {/* Tab Selection */}
           <div className="h-12 border-b border-hairline bg-surface-1/40 overflow-x-auto w-full select-none">
-            <div className="w-full h-full px-6 sm:px-8 flex items-center gap-2 min-w-[500px]">
+            <div className="w-full h-full px-6 sm:px-8 flex items-center gap-1.5 min-w-[500px]">
               <button 
                 disabled={!generatedData}
                 onClick={() => setActiveTab('teoria')}
-                className={`h-full text-body-sm px-4 font-medium transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'teoria' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
+                className={`h-full text-body-sm px-4 font-semibold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'teoria' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
               >
                 Teoría
               </button>
               <button 
                 disabled={!generatedData}
                 onClick={() => setActiveTab('ejercicios')}
-                className={`h-full text-body-sm px-4 font-medium transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'ejercicios' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
+                className={`h-full text-body-sm px-4 font-semibold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'ejercicios' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
               >
                 Ejercicios Prácticos
               </button>
               <button 
                 disabled={!generatedData}
                 onClick={() => setActiveTab('evaluacion')}
-                className={`h-full text-body-sm px-4 font-medium transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'evaluacion' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
+                className={`h-full text-body-sm px-4 font-semibold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'evaluacion' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
               >
                 Evaluación (Quizzes)
               </button>
               <button 
                 disabled={!generatedData}
                 onClick={() => setActiveTab('diapositivas')}
-                className={`h-full text-body-sm px-4 font-medium transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'diapositivas' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
+                className={`h-full text-body-sm px-4 font-semibold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${activeTab === 'diapositivas' && generatedData ? 'text-ink border-brand-primary' : 'text-ink-muted border-transparent hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
               >
                 Diapositivas
               </button>
@@ -136,31 +139,31 @@ export default function Generator() {
 
           {/* Content Wrapper */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-6 sm:p-8 md:p-12 w-full max-w-5xl mx-auto">
+            <div className="p-6 sm:p-8 md:p-10 w-full max-w-5xl mx-auto">
             
               {/* State A: Generating AI Loading state */}
               {isGenerating && (
-                <div className="h-[450px] flex flex-col items-center justify-center gap-6 text-center">
+                <div className="min-h-[400px] flex flex-col items-center justify-center gap-5 text-center py-16">
                   {/* Custom Spinner */}
-                  <div className="w-12 h-12 rounded-full border-2 border-hairline border-t-brand-primary animate-spin"></div>
-                  <div className="flex flex-col gap-2">
-                    <p className="text-body-lg font-semibold text-ink">El motor de IA está cocinando tu contenido...</p>
-                    <p className="text-body-sm text-brand-primary-hover font-mono font-medium animate-pulse">{generationStep}</p>
+                  <div className="w-10 h-10 rounded-full border-2 border-hairline border-t-brand-primary animate-spin"></div>
+                  <div className="flex flex-col gap-1.5">
+                    <p className="text-body font-semibold text-ink">El motor de IA está cocinando tu contenido...</p>
+                    <p className="text-xs text-brand-primary font-mono font-bold animate-pulse">{generationStep}</p>
                   </div>
                 </div>
               )}
 
               {/* State B: Empty State (No generation yet) */}
               {!isGenerating && !generatedData && (
-                <div className="h-[450px] flex flex-col items-center justify-center gap-5 text-center">
-                  <div className="w-14 h-14 rounded-lg bg-surface-1 border border-hairline flex items-center justify-center text-ink-muted shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-                    <svg className="w-7 h-7 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="min-h-[400px] flex flex-col items-center justify-center gap-5 text-center py-16 px-6 bg-surface-1/30 border border-dashed border-hairline rounded-2xl">
+                  <div className="w-12 h-12 rounded-xl bg-surface-1 border border-hairline flex items-center justify-center text-ink-muted shadow-md">
+                    <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                     </svg>
                   </div>
-                  <div className="flex flex-col gap-2 max-w-sm">
-                    <h4 className="text-body font-semibold text-ink">Material Académico Vacío</h4>
-                    <p className="text-body-sm text-ink-muted leading-relaxed">
+                  <div className="flex flex-col gap-1.5 max-w-sm">
+                    <h4 className="text-body font-bold text-ink">Material Académico Vacío</h4>
+                    <p className="text-xs text-ink-muted leading-relaxed">
                       Usa el panel lateral para ingresar el nombre de la asignatura y la unidad. Haz clic en "Generar Material con IA" para comenzar.
                     </p>
                   </div>
@@ -169,22 +172,22 @@ export default function Generator() {
 
               {/* State C: Render Output */}
               {!isGenerating && generatedData && (
-                <div className="flex flex-col gap-8 animate-fade-in">
+                <div className="flex flex-col gap-6 sm:gap-8 animate-fade-in">
                   
                   {/* 1. Teoría Tab View */}
                   {activeTab === 'teoria' && (
-                    <div className="flex flex-col gap-6 prose prose-invert max-w-none text-ink text-body-sm sm:text-body leading-relaxed">
+                    <div className="flex flex-col gap-6 prose prose-invert max-w-none text-ink text-body-sm sm:text-body leading-relaxed bg-surface-1 p-6 sm:p-8 border border-hairline rounded-2xl shadow-xl">
                       <div className="flex justify-between items-center border-b border-hairline pb-4 select-none">
-                        <span className="text-caption uppercase tracking-wider text-brand-primary-hover font-semibold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded">Teoría Docente</span>
+                        <span className="text-[10px] uppercase tracking-wider text-brand-primary font-bold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded-lg">Teoría Docente</span>
                         <button 
                           onClick={() => window.print()}
-                          className="text-body-sm text-ink-muted hover:text-ink hover:underline cursor-pointer font-medium"
+                          className="text-xs text-ink-muted hover:text-ink hover:underline cursor-pointer font-bold"
                         >
                           Imprimir / Guardar PDF
                         </button>
                       </div>
                       {/* Rendered Text */}
-                      <div className="whitespace-pre-line flex flex-col gap-4">
+                      <div className="whitespace-pre-line flex flex-col gap-4 text-xs sm:text-sm text-ink-muted leading-relaxed">
                         {generatedData.teoria}
                       </div>
                     </div>
@@ -192,12 +195,12 @@ export default function Generator() {
 
                   {/* 2. Ejercicios Tab View */}
                   {activeTab === 'ejercicios' && (
-                    <div className="flex flex-col gap-6 text-ink text-body-sm sm:text-body leading-relaxed">
+                    <div className="flex flex-col gap-6 text-ink text-body-sm sm:text-body leading-relaxed bg-surface-1 p-6 sm:p-8 border border-hairline rounded-2xl shadow-xl">
                       <div className="flex justify-between items-center border-b border-hairline pb-4 select-none">
-                        <span className="text-caption uppercase tracking-wider text-brand-primary-hover font-semibold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded">Guía Práctica</span>
-                        <span className="text-body-sm text-ink-muted">Contiene ejercicios resueltos</span>
+                        <span className="text-[10px] uppercase tracking-wider text-brand-primary font-bold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded-lg">Guía Práctica</span>
+                        <span className="text-xs text-ink-muted font-medium">Contiene ejercicios resueltos</span>
                       </div>
-                      <div className="whitespace-pre-line flex flex-col gap-4">
+                      <div className="whitespace-pre-line flex flex-col gap-4 text-xs sm:text-sm text-ink-muted leading-relaxed">
                         {generatedData.ejercicios}
                       </div>
                     </div>
@@ -207,19 +210,19 @@ export default function Generator() {
                   {activeTab === 'evaluacion' && (
                     <div className="flex flex-col gap-6">
                       <div className="flex justify-between items-center border-b border-hairline pb-4 select-none">
-                        <span className="text-caption uppercase tracking-wider text-brand-primary-hover font-semibold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded">Banco de Evaluaciones</span>
-                        <span className="text-body-sm text-ink-muted">3 preguntas de opción múltiple</span>
+                        <span className="text-[10px] uppercase tracking-wider text-brand-primary font-bold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded-lg">Banco de Evaluaciones</span>
+                        <span className="text-xs text-ink-muted font-medium">3 preguntas de opción múltiple</span>
                       </div>
 
-                      <div className="flex flex-col gap-8">
+                      <div className="flex flex-col gap-6">
                         {generatedData.evaluacion.map((q, qIndex) => {
                           const isCorrect = checkedAnswers[qIndex] === q.opcionCorrectaIndex;
                           const isAnswered = checkedAnswers[qIndex] !== undefined;
 
                           return (
-                            <Card key={qIndex} surface="1" className="flex flex-col gap-5 p-6 sm:p-8">
-                              <span className="text-caption font-mono text-ink-muted font-semibold uppercase tracking-wider">Pregunta #{qIndex + 1}</span>
-                              <h4 className="text-body font-semibold text-ink">{q.pregunta}</h4>
+                            <Card key={qIndex} surface="1" className="flex flex-col gap-5 p-6 sm:p-8 rounded-2xl">
+                              <span className="text-[10px] font-mono text-ink-muted font-bold uppercase tracking-wider bg-surface-2 px-3 py-1 rounded-lg w-max select-none">Pregunta #{qIndex + 1}</span>
+                              <h4 className="text-sm sm:text-base font-semibold text-ink leading-relaxed">{q.pregunta}</h4>
                               
                               {/* Options */}
                               <div className="grid grid-cols-1 gap-3">
@@ -229,7 +232,7 @@ export default function Generator() {
                                     <button
                                       key={optIndex}
                                       onClick={() => setCheckedAnswers({...checkedAnswers, [qIndex]: optIndex})}
-                                      className={`w-full text-left p-4 rounded-md text-body-sm transition-all border flex justify-between items-center cursor-pointer ${
+                                      className={`w-full text-left p-4 rounded-xl text-xs transition-all border flex justify-between items-center cursor-pointer ${
                                         isSelected 
                                           ? 'bg-brand-primary/10 border-brand-primary text-ink font-semibold shadow-[0_2px_10px_rgba(5,43,88,0.15)]' 
                                           : 'bg-surface-2 border-hairline hover:border-hairline-strong text-ink-muted hover:text-ink'
@@ -244,9 +247,9 @@ export default function Generator() {
 
                               {/* FeedBack */}
                               {isAnswered && (
-                                <div className={`p-5 rounded-md border text-body-sm leading-relaxed flex flex-col gap-1.5 ${isCorrect ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/5 border-rose-500/20 text-rose-400'}`}>
+                                <div className={`p-5 rounded-xl border text-xs leading-relaxed flex flex-col gap-1.5 ${isCorrect ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/5 border-rose-500/20 text-rose-400'}`}>
                                   <span className="font-semibold block">{isCorrect ? '✓ Respuesta Correcta' : '✗ Respuesta Incorrecta'}</span>
-                                  <p className="text-ink-muted text-caption mt-1">{q.explicacion}</p>
+                                  <p className="text-ink-muted text-[11px] mt-1">{q.explicacion}</p>
                                 </div>
                               )}
                             </Card>
@@ -260,23 +263,23 @@ export default function Generator() {
                   {activeTab === 'diapositivas' && (
                     <div className="flex flex-col gap-6">
                       <div className="flex justify-between items-center border-b border-hairline pb-4 select-none">
-                        <span className="text-caption uppercase tracking-wider text-brand-primary-hover font-semibold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded">Esquemas de Diapositivas</span>
-                        <span className="text-body-sm text-ink-muted">3 láminas de apoyo</span>
+                        <span className="text-[10px] uppercase tracking-wider text-brand-primary font-bold bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded-lg">Esquemas de Diapositivas</span>
+                        <span className="text-xs text-ink-muted font-medium">3 láminas de apoyo</span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {generatedData.diapositivas.map((slide, sIndex) => (
-                          <Card key={sIndex} surface="1" className="flex flex-col justify-between aspect-square p-6 sm:p-8">
+                          <Card key={sIndex} surface="1" className="flex flex-col justify-between aspect-[4/3] p-6 rounded-2xl hover:border-brand-primary/40 transition-all duration-300">
                             <div>
-                              <span className="text-caption uppercase tracking-wider text-brand-primary-hover font-semibold bg-brand-primary/10 px-2 py-0.5 rounded block w-max mb-4 select-none">Lámina #{sIndex + 1}</span>
-                              <h4 className="text-body font-semibold text-ink mb-4">{slide.titulo}</h4>
-                              <ul className="flex flex-col gap-2.5 text-body-sm text-ink-muted list-disc list-inside leading-relaxed">
+                              <span className="text-[9px] uppercase tracking-wider text-brand-primary font-bold bg-brand-primary/10 px-2 py-0.5 rounded-lg block w-max mb-3.5 select-none">Lámina #{sIndex + 1}</span>
+                              <h4 className="text-xs sm:text-sm font-semibold text-ink mb-3">{slide.titulo}</h4>
+                              <ul className="flex flex-col gap-2 text-[11px] text-ink-muted list-disc list-inside leading-relaxed">
                                 {slide.puntos.map((pt, pIndex) => (
                                   <li key={pIndex}>{pt}</li>
                                 ))}
                               </ul>
                             </div>
-                            <span className="text-caption text-ink-tertiary text-right mt-6 font-mono select-none">Katedra Presentador</span>
+                            <span className="text-[9px] text-ink-tertiary text-right mt-4 font-mono select-none">Katedra Presentador</span>
                           </Card>
                         ))}
                       </div>
@@ -291,6 +294,7 @@ export default function Generator() {
         </section>
 
       </div>
+      </main>
     </div>
   );
 }
