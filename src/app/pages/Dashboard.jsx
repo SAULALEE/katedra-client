@@ -273,9 +273,9 @@ export default function Dashboard() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#010102]/80 backdrop-blur-md p-6 transition-all duration-200 animate-fade-in">
           
-          {/* Modal Container with generous 48px padding and 580px max-width to ensure it feels luxurious and spacious */}
+          {/* Modal Container with generous 48px padding and 500px max-width to match user modal exactly, ensuring overflow-hidden for internal scroll */}
           <div 
-            className="w-full max-w-[580px] bg-surface-1 border border-hairline rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.85)] relative flex flex-col"
+            className="w-full max-w-[500px] bg-surface-1 border border-hairline rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.85)] relative flex flex-col max-h-[90vh] overflow-hidden"
             style={{ padding: '48px', gap: '32px' }}
           >
             {/* Modal Header */}
@@ -321,163 +321,168 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* Ingest Form Flow */}
-            <form onSubmit={handleSubmit} className="flex flex-col animate-fade-in" style={{ gap: '28px' }}>
+            {/* Ingest Form Flow (overflow-hidden to prevent container scroll) */}
+            <form onSubmit={handleSubmit} className="flex flex-col animate-fade-in overflow-hidden" style={{ gap: '28px' }}>
               
-              {/* Conditional Content based on Tab */}
-              {activeTab === 'pdf' && (
-                <div 
-                  onDragEnter={handleDrag}
-                  onDragOver={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-xl py-10 px-8 flex flex-col items-center justify-center text-center transition-all ${
-                    dragActive ? 'border-brand-primary bg-brand-primary/5' : 'border-hairline hover:border-hairline-strong bg-canvas/30'
-                  }`}
-                  style={{ gap: '12px' }}
-                >
-                  <input
-                    type="file"
-                    id="pdf-upload"
-                    accept=".pdf,.doc,.docx,.txt"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <svg className="w-10 h-10 text-indigo-400/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  
-                  {fileName ? (
-                    <div className="flex flex-col" style={{ gap: '6px' }}>
-                      <p className="text-xs font-semibold text-emerald-400 truncate max-w-[320px] mx-auto">{fileName}</p>
-                      <p className="text-[10px] text-ink-tertiary">Archivo cargado exitosamente. La IA autodetectará el nombre.</p>
-                      <label htmlFor="pdf-upload" className="inline-block mt-2 text-[10px] text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer underline select-none">
-                        Cambiar archivo
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col" style={{ gap: '6px' }}>
-                      <p className="text-xs font-semibold text-ink">Arrastra tu programa de estudios aquí</p>
-                      <p className="text-[10px] text-ink-muted">PDF, DOCX o TXT hasta 20MB</p>
-                      <label htmlFor="pdf-upload" className="inline-block mt-2.5 px-4 py-2 bg-surface-2 border border-hairline rounded-lg text-[10px] font-bold text-ink hover:bg-surface-3 transition-colors cursor-pointer select-none">
-                        Buscar Archivo
-                      </label>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'link' && (
-                <div className="flex flex-col" style={{ gap: '8px' }}>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
-                    Dirección URL del Temario
-                  </label>
-                  <input
-                    type="url"
-                    value={origenDetalle}
-                    onChange={(e) => setOrigenDetalle(e.target.value)}
-                    placeholder="https://universidad.edu/programas/matematicas-1.html"
-                    disabled={isProcessing}
-                    className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
-                  />
-                </div>
-              )}
-
-              {activeTab === 'drive' && (
-                <div className="flex flex-col animate-fade-in" style={{ gap: '10px' }}>
-                  <span className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
-                    Archivos Recientes de Google Drive
-                  </span>
-                  
-                  <div className="bg-[#070809] border border-hairline rounded-xl divide-y divide-hairline overflow-hidden max-h-[160px] overflow-y-auto">
-                    {[
-                      { name: 'Syllabus_Algoritmos_2026.pdf', folder: 'Estructuras de Datos' },
-                      { name: 'Plan_Fisica_Termodinamica.pdf', folder: 'Física Avanzada' },
-                      { name: 'Introduccion_Literatura_Hispana.docx', folder: 'Humanidades' }
-                    ].map((file) => (
-                      <div 
-                        key={file.name}
-                        onClick={() => handleSelectDriveFile(file.name, file.folder)}
-                        className={`py-3 px-4 text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                          fileName === file.name ? 'bg-brand-primary/10 text-brand-primary font-medium border-l-2 border-brand-primary' : 'hover:bg-surface-2/40 text-ink-muted hover:text-ink'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 truncate">
-                          <svg className="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-                          </svg>
-                          <span className="truncate">{file.name}</span>
-                        </div>
-                        <span className="text-[9px] uppercase tracking-widest text-ink-tertiary font-bold shrink-0">{file.folder}</span>
+              {/* Internal scrollable container for inputs */}
+              <div className="flex flex-col overflow-y-auto max-h-[44vh] pr-1.5 gap-6 scrollable-modal-content">
+                
+                {/* Conditional Content based on Tab */}
+                {activeTab === 'pdf' && (
+                  <div 
+                    onDragEnter={handleDrag}
+                    onDragOver={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-xl py-10 px-8 flex flex-col items-center justify-center text-center transition-all ${
+                      dragActive ? 'border-brand-primary bg-brand-primary/5' : 'border-hairline hover:border-hairline-strong bg-canvas/30'
+                    }`}
+                    style={{ gap: '12px' }}
+                  >
+                    <input
+                      type="file"
+                      id="pdf-upload"
+                      accept=".pdf,.doc,.docx,.txt"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <svg className="w-10 h-10 text-indigo-400/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    
+                    {fileName ? (
+                      <div className="flex flex-col" style={{ gap: '6px' }}>
+                        <p className="text-xs font-semibold text-emerald-400 truncate max-w-[320px] mx-auto">{fileName}</p>
+                        <p className="text-[10px] text-ink-tertiary">Archivo cargado exitosamente. La IA autodetectará el nombre.</p>
+                        <label htmlFor="pdf-upload" className="inline-block mt-2 text-[10px] text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer underline select-none">
+                          Cambiar archivo
+                        </label>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="flex flex-col" style={{ gap: '6px' }}>
+                        <p className="text-xs font-semibold text-ink">Arrastra tu programa de estudios aquí</p>
+                        <p className="text-[10px] text-ink-muted">PDF, DOCX o TXT hasta 20MB</p>
+                        <label htmlFor="pdf-upload" className="inline-block mt-2.5 px-4 py-2 bg-surface-2 border border-hairline rounded-lg text-[10px] font-bold text-ink hover:bg-surface-3 transition-colors cursor-pointer select-none">
+                          Buscar Archivo
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'link' && (
+                  <div className="flex flex-col" style={{ gap: '8px' }}>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                      Dirección URL del Temario
+                    </label>
+                    <input
+                      type="url"
+                      value={origenDetalle}
+                      onChange={(e) => setOrigenDetalle(e.target.value)}
+                      placeholder="https://universidad.edu/programas/matematicas-1.html"
+                      disabled={isProcessing}
+                      className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                    />
+                  </div>
+                )}
+
+                {activeTab === 'drive' && (
+                  <div className="flex flex-col animate-fade-in" style={{ gap: '10px' }}>
+                    <span className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                      Archivos Recientes de Google Drive
+                    </span>
+                    
+                    <div className="bg-surface-2 border border-hairline rounded-xl divide-y divide-hairline overflow-hidden max-h-[160px] overflow-y-auto">
+                      {[
+                        { name: 'Syllabus_Algoritmos_2026.pdf', folder: 'Estructuras de Datos' },
+                        { name: 'Plan_Fisica_Termodinamica.pdf', folder: 'Física Avanzada' },
+                        { name: 'Introduccion_Literatura_Hispana.docx', folder: 'Humanidades' }
+                      ].map((file) => (
+                        <div 
+                          key={file.name}
+                          onClick={() => handleSelectDriveFile(file.name, file.folder)}
+                          className={`py-3 px-4 text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                            fileName === file.name ? 'bg-brand-primary/10 text-brand-primary font-medium border-l-2 border-brand-primary' : 'hover:bg-surface-2/40 text-ink-muted hover:text-ink'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 truncate">
+                            <svg className="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+                            </svg>
+                            <span className="truncate">{file.name}</span>
+                          </div>
+                          <span className="text-[9px] uppercase tracking-widest text-ink-tertiary font-bold shrink-0">{file.folder}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {fileName && (
+                      <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[10px] text-emerald-400 font-semibold mt-1">
+                        Seleccionado: <span className="text-ink">{fileName}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Form Standard Metadata inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="flex flex-col" style={{ gap: '8px' }}>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                      Nombre del Temario
+                    </label>
+                    <input
+                      type="text"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      placeholder="Ej. Programación Avanzada"
+                      disabled={isProcessing}
+                      className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                    />
                   </div>
                   
-                  {fileName && (
-                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[10px] text-emerald-400 font-semibold mt-1">
-                      Seleccionado: <span className="text-ink">{fileName}</span>
-                    </div>
-                  )}
+                  <div className="flex flex-col" style={{ gap: '8px' }}>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                      Materia / Curso
+                    </label>
+                    <input
+                      type="text"
+                      value={curso}
+                      onChange={(e) => setCurso(e.target.value)}
+                      placeholder="Ej. Sistemas Computacionales"
+                      disabled={isProcessing}
+                      className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                    />
+                  </div>
                 </div>
-              )}
 
-              {/* Form Standard Metadata inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Temas Selection - Spacious select dropdown */}
                 <div className="flex flex-col" style={{ gap: '8px' }}>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
-                    Nombre del Temario
+                    Número de subtemas a generar con IA
                   </label>
-                  <input
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    placeholder="Ej. Programación Avanzada"
+                  <select
+                    value={temas}
+                    onChange={(e) => setTemas(e.target.value)}
                     disabled={isProcessing}
-                    className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
-                  />
+                    className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all duration-200 focus:ring-1 focus:ring-brand-primary cursor-pointer"
+                  >
+                    <option value="4">4 subtemas (Generación Rápida)</option>
+                    <option value="6">6 subtemas (Generación Estándar)</option>
+                    <option value="8">8 subtemas (Generación Completa)</option>
+                    <option value="12">12 subtemas (Extensa / Avanzada)</option>
+                  </select>
                 </div>
-                
-                <div className="flex flex-col" style={{ gap: '8px' }}>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
-                    Materia / Curso
-                  </label>
-                  <input
-                    type="text"
-                    value={curso}
-                    onChange={(e) => setCurso(e.target.value)}
-                    placeholder="Ej. Sistemas Computacionales"
-                    disabled={isProcessing}
-                    className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
-                  />
-                </div>
-              </div>
 
-              {/* Temas Selection - Spacious select dropdown */}
-              <div className="flex flex-col" style={{ gap: '8px' }}>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
-                  Número de subtemas a generar con IA
-                </label>
-                <select
-                  value={temas}
-                  onChange={(e) => setTemas(e.target.value)}
-                  disabled={isProcessing}
-                  className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all duration-200 focus:ring-1 focus:ring-brand-primary cursor-pointer"
-                >
-                  <option value="4">4 subtemas (Generación Rápida)</option>
-                  <option value="6">6 subtemas (Generación Estándar)</option>
-                  <option value="8">8 subtemas (Generación Completa)</option>
-                  <option value="12">12 subtemas (Extensa / Avanzada)</option>
-                </select>
-              </div>
+                {formError && (
+                  <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-[11px] text-rose-400 font-semibold flex items-center gap-2">
+                    <svg className="w-3.5 h-3.5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{formError}</span>
+                  </div>
+                )}
 
-              {formError && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-[11px] text-rose-400 font-semibold flex items-center gap-2">
-                  <svg className="w-3.5 h-3.5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <span>{formError}</span>
-                </div>
-              )}
+              </div>
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3.5 pt-5 border-t border-hairline select-none">
@@ -490,10 +495,11 @@ export default function Dashboard() {
                   Cancelar
                 </button>
                 
-                <button 
+                <Button 
+                  variant="primary"
                   type="submit"
                   disabled={isProcessing}
-                  className="relative px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-indigo-650 hover:bg-indigo-600 cursor-pointer select-none transition-all shadow-[0_4px_20px_rgba(99,102,241,0.25)] flex items-center gap-2 border border-indigo-400/20 active:scale-[0.98]"
+                  className="px-5 py-2.5 text-xs font-bold flex items-center gap-2"
                 >
                   {isProcessing ? (
                     <>
@@ -508,7 +514,7 @@ export default function Dashboard() {
                       </svg>
                     </>
                   )}
-                </button>
+                </Button>
               </div>
 
             </form>
