@@ -125,7 +125,36 @@ export default function ContentViewer() {
 
                 {/* 2. Ejercicios */}
                 {activeTab === 'ejercicios' && (
-                  <Card surface="1" className="p-6 sm:p-8 md:p-10 shadow-xl border-hairline bg-surface-1 rounded-2xl">
+                  <Card surface="1" className="p-6 sm:p-8 md:p-10 shadow-xl border-hairline bg-surface-1 rounded-2xl flex flex-col gap-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b border-hairline pb-5 select-none">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] uppercase tracking-wider text-brand-primary font-bold bg-brand-primary/10 border border-brand-primary/20 px-3 py-1.5 rounded-lg">Guía Práctica</span>
+                        <span className="text-xs text-ink-muted font-medium hidden md:inline">Contiene ejercicios resueltos</span>
+                      </div>
+                      
+                      {/* Export buttons row */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-widest text-ink-muted font-bold mr-1">Exportar a:</span>
+                        <button 
+                          onClick={() => alert('Exportar ejercicios a Google Forms (Simulado)')}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#7248B9]/30 bg-[#7248B9]/5 hover:bg-[#7248B9]/15 text-[#7248B9] dark:text-[#b392f0] transition-colors cursor-pointer select-none"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Google Forms
+                        </button>
+                        <button 
+                          onClick={() => alert('Exportar ejercicios a Microsoft Forms (Simulado)')}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#00828a]/30 bg-[#00828a]/5 hover:bg-[#00828a]/15 text-[#00828a] dark:text-[#33c2cc] transition-colors cursor-pointer select-none"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                          </svg>
+                          MS Forms
+                        </button>
+                      </div>
+                    </div>
                     <div className="prose prose-invert max-w-none text-ink-muted text-xs sm:text-sm leading-relaxed whitespace-pre-line">
                       {content.ejercicios}
                     </div>
@@ -135,9 +164,34 @@ export default function ContentViewer() {
                 {/* 3. Evaluacion */}
                 {activeTab === 'evaluacion' && (
                   <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-1 px-1">
-                      <h3 className="text-sm sm:text-base font-bold text-ink tracking-tight">Banco de Preguntas</h3>
-                      <p className="text-xs text-ink-muted">Valida el conocimiento de tus alumnos con estas preguntas autogeneradas.</p>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b border-hairline pb-5 select-none">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-sm sm:text-base font-bold text-ink tracking-tight">Banco de Preguntas</h3>
+                        <p className="text-xs text-ink-muted">Valida el conocimiento de tus alumnos con estas preguntas autogeneradas.</p>
+                      </div>
+
+                      {/* Export buttons row */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] uppercase tracking-widest text-ink-muted font-bold mr-1">Exportar a:</span>
+                        <button 
+                          onClick={() => alert('Exportar examen a Google Forms (Simulado)')}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#7248B9]/30 bg-[#7248B9]/5 hover:bg-[#7248B9]/15 text-[#7248B9] dark:text-[#b392f0] transition-colors cursor-pointer select-none"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Google Forms
+                        </button>
+                        <button 
+                          onClick={() => alert('Exportar examen a Microsoft Forms (Simulado)')}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#00828a]/30 bg-[#00828a]/5 hover:bg-[#00828a]/15 text-[#00828a] dark:text-[#33c2cc] transition-colors cursor-pointer select-none"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                          </svg>
+                          MS Forms
+                        </button>
+                      </div>
                     </div>
                     {content.evaluacion.map((q, qIndex) => {
                       const isCorrect = checkedAnswers[qIndex] === q.opcionCorrectaIndex;

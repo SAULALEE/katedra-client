@@ -260,7 +260,7 @@ export default function Users() {
                     onChange={(e) => setNombre(e.target.value)}
                     placeholder="Ejem. Dra. Viviana Solano"
                     disabled={isSubmitting}
-                    className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                    className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
                   />
                 </div>
 
@@ -274,7 +274,7 @@ export default function Users() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="docente@katedra.edu"
                     disabled={isSubmitting}
-                    className="w-full bg-[#070809] border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                    className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
                   />
                 </div>
               </div>
@@ -284,7 +284,7 @@ export default function Users() {
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
                   Rol de Sistema
                 </label>
-                <div className="grid grid-cols-3 gap-2 bg-[#070809] p-1.5 rounded-xl border border-hairline select-none">
+                <div className="grid grid-cols-3 gap-2 bg-surface-2 p-1.5 rounded-xl border border-hairline select-none">
                   {[
                     { id: 'Docente Plan Libre', short: 'Libre' },
                     { id: 'Docente Premium', short: 'Premium' },
@@ -315,7 +315,7 @@ export default function Users() {
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
                   Estado de la Cuenta
                 </label>
-                <div className="flex p-1.5 bg-[#070809] rounded-xl border border-hairline select-none">
+                <div className="flex p-1.5 bg-surface-2 rounded-xl border border-hairline select-none">
                   {[
                     { id: 'Activo', label: 'Activo', color: 'text-emerald-400', activeBg: 'bg-emerald-500/10 border-emerald-500/25', dotBg: 'bg-emerald-400 shadow-[0_0_8px_#34d399]' },
                     { id: 'Inactivo', label: 'Inactivo', color: 'text-rose-400', activeBg: 'bg-rose-500/10 border-rose-500/25', dotBg: 'bg-rose-400 shadow-[0_0_8px_#f43f5e]' }
