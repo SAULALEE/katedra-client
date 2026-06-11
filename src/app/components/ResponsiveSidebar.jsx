@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeStore } from '../store/useThemeStore';
+import { formatRoleDisplay } from '../utils/roleUtils';
 
 export default function ResponsiveSidebar() {
   const navigate = useNavigate();
@@ -131,7 +132,7 @@ export default function ResponsiveSidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-ink truncate">{user?.nombre || 'Prof. Alejandro'}</p>
-            <p className="text-[10px] text-ink-muted truncate">{user?.rol || 'Docente Premium'}</p>
+            <p className="text-[10px] text-ink-muted truncate">{user?.rol ? formatRoleDisplay(user.rol) : 'Docente Premium'}</p>
           </div>
         </div>
         
