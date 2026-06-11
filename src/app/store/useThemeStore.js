@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 export const useThemeStore = create(
   persist(
     (set) => ({
-      isDarkMode: false,
+      isDarkMode: true,
       toggleTheme: () => set((state) => {
         const newIsDarkMode = !state.isDarkMode;
         if (newIsDarkMode) {
@@ -24,7 +24,7 @@ export const useThemeStore = create(
       }),
     }),
     {
-      name: 'katedra-theme-storage',
+      name: 'katedra-theme-storage-v2',
     }
   )
 );
