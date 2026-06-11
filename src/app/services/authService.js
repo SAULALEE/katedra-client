@@ -9,69 +9,52 @@ const api = axios.create({
 });
 
 /**
- * Static/Mock credentials for prototype phase.
- * In a real environment, these will be validated by the database/backend.
- */
-const MOCK_USER = {
-  id: 'usr-8f7b-482a-bc91-2244bb66cc88',
-  email: 'admin@katedra.com',
-  nombre: 'Prof. Alejandro',
-  rol: 'Docente Premium',
-  avatarInitials: 'PA'
-};
-
-const MOCK_PASSWORD = 'admin123';
-
-/**
- * Simulates an authentication request with an artificial delay.
- * Fully prepared for backend REST integration.
+ * Authenticates user with email and password using the real backend API.
  * 
  * @param {string} email 
  * @param {string} password 
- * @returns {Promise<object>}
+ * @returns {Promise<object>} Returns mapped user details and the JWT token.
  */
 export const loginRequest = async (email, password) => {
-  // Option 1: Backend Integration (Pre-integrated, just uncomment when ready)
-  /*
   try {
     const response = await api.post('/auth/login', { email, password });
-    return response.data; // Expected format: { user: { id, email, nombre, ... }, token: "jwt_token" }
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error de autenticación');
-  }
-  */
+    
+    // Parse backend response data
+    const { token, id, email: responseEmail, usuario } = response.data;
+    
+    // Generate avatar initials from usuario's name
+    const avatarInitials = usuario?.nombre
+      ? usuario.nombre.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase()
+      : 'U';
 
-  // Option 2: Static Prototype Implementation
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (email.toLowerCase() === MOCK_USER.email && password === MOCK_PASSWORD) {
-        // Return dummy token along with user details
-        resolve({
-          user: MOCK_USER,
-          token: 'mock-jwt-token-xyz-12345'
-        });
-      } else {
-        reject(new Error('Credenciales incorrectas. Pruebe con admin@katedra.com y admin123.'));
-      }
-    }, 800); // 800ms natural delay
-  });
+    return {
+      user: {
+        id,
+        email: responseEmail,
+        nombre: usuario?.nombre || 'Usuario Katedra',
+        rol: usuario?.rol || 'ROLE_USER',
+        avatarInitials
+      },
+      token
+    };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message 
+      || error.response?.data?.error 
+      || 'Error de autenticación. Por favor, compruebe sus credenciales.';
+    throw new Error(errorMessage, { cause: error });
+  }
 };
 
 /**
- * Simulates a logout request.
- * Can be integrated with token revocation endpoints if needed.
+ * Performs a logout request on the backend if configured, and returns true.
+ * 
+ * @returns {Promise<boolean>}
  */
 export const logoutRequest = async () => {
-  // Option 1: Backend Integration
-  /*
   try {
     await api.post('/auth/logout');
   } catch (error) {
-    console.error('Logout error on backend:', error);
+    console.warn('Backend logout endpoint failed or not active:', error);
   }
-  */
-
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(true), 200);
-  });
+  return true;
 };

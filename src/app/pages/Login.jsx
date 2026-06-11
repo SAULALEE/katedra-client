@@ -49,7 +49,7 @@ export default function Login() {
   // Elite UX helper to auto-fill mock credentials with a clean transition
   const handleAutoFillDemo = () => {
     setIsDemoFilling(true);
-    let emailStr = 'admin@katedra.com';
+    let emailStr = 'saul.martinez@katedra.com';
     let passStr = 'admin123';
     
     // Smooth simulated typing effect

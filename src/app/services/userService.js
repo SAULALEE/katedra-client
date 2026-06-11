@@ -12,8 +12,8 @@ const api = axios.create({
 const MOCK_USERS = [
   {
     id: 'usr-0000-0000-0001',
-    nombre: 'Prof. Alejandro Ruiz',
-    email: 'admin@katedra.com',
+    nombre: 'Saúl Martínez',
+    email: 'saul.martinez@katedra.com',
     rol: 'Administrador',
     estado: 'Activo',
     fechaRegistro: '2026-01-10'
