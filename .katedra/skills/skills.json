@@ -26,6 +26,11 @@
       "file": "skills/DESIGN.md",
       "status": "Active"
     },
+    {
+      "name": "Git Branching Strategy & Workflow",
+      "file": "skills/git-workflow.md",
+      "status": "Active"
+    },
     
     {
       "name": "Database Architecture, JPA, & Flyway",
