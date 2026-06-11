@@ -1,12 +1,4 @@
-import axios from 'axios';
-
-// Base API configuration for potential backend integration
-const api = axios.create({
-  baseURL: '/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
+import api from './api';
 
 const MOCK_INITIAL_COURSES = [
   { id: '1', nombre: 'Introducción a Python y Control de Flujo', curso: 'Programación I', temas: 5, fecha: '2026-05-28', estado: 'Completado', origen: 'Manual' },

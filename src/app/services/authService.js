@@ -1,12 +1,4 @@
-import axios from 'axios';
-
-// Base API configuration for potential backend integration
-const api = axios.create({
-  baseURL: '/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
+import api from './api';
 
 /**
  * Authenticates user with email and password using the real backend API.

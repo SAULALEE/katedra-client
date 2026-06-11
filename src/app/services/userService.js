@@ -1,12 +1,4 @@
-import axios from 'axios';
-
-// Base API configuration for potential backend integration
-const api = axios.create({
-  baseURL: '/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
+import api from './api';
 
 // Mock Initial Users for the static prototype
 const MOCK_USERS = [
