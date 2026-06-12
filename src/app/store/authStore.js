@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { loginRequest, logoutRequest } from '../services/authService';
+import { loginRequest, logoutRequest, registerRequest } from '../services/authService';
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -53,6 +53,35 @@ export const useAuthStore = create((set, get) => ({
     } catch (err) {
       set({
         error: err.message || 'Error al iniciar sesión',
+        loading: false,
+        isAuthenticated: false
+      });
+      return false;
+    }
+  },
+
+  /**
+   * Attempts to register a new user and authenticate them.
+   */
+  register: async (email, password, nombre) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await registerRequest(email, password, nombre);
+      
+      localStorage.setItem('katedra_user', JSON.stringify(data.user));
+      localStorage.setItem('katedra_token', data.token);
+
+      set({
+        user: data.user,
+        token: data.token,
+        isAuthenticated: true,
+        loading: false,
+        error: null
+      });
+      return true;
+    } catch (err) {
+      set({
+        error: err.message || 'Error al registrar la cuenta',
         loading: false,
         isAuthenticated: false
       });

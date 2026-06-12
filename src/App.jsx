@@ -4,6 +4,7 @@ import Landing from './app/pages/Landing';
 import Dashboard from './app/pages/Dashboard';
 import Generator from './app/pages/Generator';
 import Login from './app/pages/Login';
+import Register from './app/pages/Register';
 import Users from './app/pages/Users';
 import ContentViewer from './app/pages/ContentViewer';
 import GeneratedContents from './app/pages/GeneratedContents';
@@ -23,6 +24,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Protected Dashboard Routes */}
         <Route 
