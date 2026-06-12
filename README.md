@@ -1,16 +1,98 @@
-# React + Vite
+# Katedra Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este repositorio contiene el frontend de **Katedra**, una herramienta de generación de contenido académico impulsada por Inteligencia Artificial para profesores.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Requisitos Previos e Instalación
 
-## React Compiler
+Asegúrate de tener instalado lo siguiente en tu máquina local:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Bun
+Runtime de JavaScript y gestor de dependencias principal del proyecto.
+- **Instalación:** Sigue las instrucciones de la [documentación oficial de Bun](https://bun.sh/).
 
-## Expanding the ESLint configuration
+### 2. Doppler CLI
+Cliente para inyectar variables de entorno de forma segura sin usar archivos locales `.env`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+#### 🐧 En Linux (Debian/Ubuntu/macOS)
+Puedes utilizar el instalador rápido oficial:
+```bash
+curl -sLf https://web.doppler.com/install.sh | sh
+```
+*O vía Homebrew:*
+```bash
+brew install dopplerhq/cli/doppler
+```
+
+#### 🪟 En Windows
+Puedes instalarlo mediante gestores de paquetes comunes de Windows:
+
+**Opción A: Winget (Recomendado)**
+```powershell
+winget install Doppler.DopplerCLI
+```
+
+**Opción B: Scoop**
+```powershell
+scoop bucket add doppler https://github.com/DopplerHQ/scoop-bucket.git
+scoop install doppler
+```
+
+**Opción C: Chocolatey**
+```powershell
+choco install doppler
+```
+
+---
+
+## 🚀 Configuración del Entorno Local
+
+Una vez completadas las instalaciones del sistema, sigue estos pasos:
+
+### 1. Clonar el repositorio e instalar dependencias
+```bash
+git clone <url-del-repositorio>
+cd katedra-client
+bun install
+```
+
+### 2. Autenticar y enlazar Doppler
+Debes conectarte a Doppler y enlazar este directorio local al proyecto de la aplicación:
+
+```bash
+# Iniciar sesión en Doppler (solo la primera vez)
+doppler login
+
+# Enlazar la carpeta local al proyecto
+doppler setup
+```
+> [!NOTE]
+> Cuando ejecutes `doppler setup`, selecciona el proyecto **`katedra-client`** y la configuración de entorno **`dev`** (o tu configuración de desarrollo asignada).
+
+### 3. Ejecutar el servidor de desarrollo
+Para iniciar la aplicación local con los secretos inyectados automáticamente:
+
+```bash
+bun run dev
+```
+
+El servidor de desarrollo correrá por defecto en `http://localhost:5173`.
+
+---
+
+## 📦 Scripts Disponibles
+
+El proyecto expone los siguientes scripts definidos con Bun:
+
+- `bun run dev`: Levanta el entorno de desarrollo Vite bajo el contexto de `doppler run`.
+- `bun run build`: Compila el cliente optimizado para producción.
+- `bun run lint`: Ejecuta el análisis de linter (ESLint) sobre el código.
+- `bun run preview`: Previsualiza localmente el build de producción generado.
+
+---
+
+## 🔒 Gestión de Variables de Entorno
+
+* **No crear archivos `.env` locales:** No es necesario crear archivos de configuración local en el disco. Doppler se encarga de inyectar las variables directamente en el proceso de ejecución.
+* **Agregar nuevos secretos:** Si necesitas registrar una nueva variable (por ejemplo, `VITE_NUEVA_VARIABLE`), agrégala en la plataforma de Doppler para el proyecto `katedra-client` y notifica a tu equipo para sincronizar los cambios.
