@@ -13,6 +13,7 @@ export const useAuth = () => {
     loading,
     error,
     login,
+    register,
     logout,
     clearError,
     initAuth
@@ -33,6 +34,7 @@ export const useAuth = () => {
     loading,
     error,
     login,
+    register,
     logout,
     clearError
   };
