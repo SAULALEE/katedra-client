@@ -85,12 +85,12 @@ export default function GeneratedContents() {
                         <span className="text-[10px] font-bold text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
                           {c.origen || 'AI Generado'}
                         </span>
-                        <span className="text-caption text-ink-tertiary">{c.fecha}</span>
+                        <span className="text-caption text-ink-tertiary">{c.createdAt ? c.createdAt.split('T')[0] : ''}</span>
                       </div>
                       
                       <div>
-                        <h4 className="text-body-lg font-bold text-ink leading-tight mb-1 group-hover:text-brand-primary transition-colors line-clamp-2">{c.nombre}</h4>
-                        <p className="text-body-sm text-ink-muted truncate">{c.curso}</p>
+                        <h4 className="text-body-lg font-bold text-ink leading-tight mb-1 group-hover:text-brand-primary transition-colors line-clamp-2">{c.titulo}</h4>
+                        <p className="text-body-sm text-ink-muted truncate">{c.asignatura}</p>
                       </div>
                       
                       <div className="flex flex-wrap gap-2 mt-2">

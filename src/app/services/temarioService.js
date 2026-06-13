@@ -126,29 +126,19 @@ export const crearTemarioRequest = async (temarioData) => {
 };
 
 export const generarMaterialAI = async (materia, tema, unidades) => {
-  // Option 1: Backend Integration
-  /*
   try {
     const response = await api.post('/temarios/generar-material', { materia, tema, unidades });
     return response.data;
   } catch (error) {
     throw new Error('Error al generar material con IA');
   }
-  */
-
-  // Option 2: Mock Static Simulation
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(MOCK_GENERATED_CONTENT);
-    }, 5400);
-  });
 };
 
 export const getContenidoTemario = async (id) => {
-  // Mock function to get content of an already generated temario
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(MOCK_GENERATED_CONTENT);
-    }, 800);
-  });
+  try {
+    const response = await api.get(`/temarios/${id}/contenido`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Error al obtener el contenido del temario');
+  }
 };
