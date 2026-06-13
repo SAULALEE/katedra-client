@@ -1,9 +1,9 @@
 import api from './api';
 
 const MOCK_INITIAL_COURSES = [
-  { id: '1', nombre: 'Introducción a Python y Control de Flujo', curso: 'Programación I', temas: 5, fecha: '2026-05-28', estado: 'Completado', origen: 'Manual' },
-  { id: '2', nombre: 'Límites, Continuidad y Derivadas', curso: 'Cálculo Diferencial', temas: 8, fecha: '2026-05-25', estado: 'Completado', origen: 'Manual' },
-  { id: '3', nombre: 'Leyes de Newton y Fuerza de Fricción', curso: 'Física Clásica', temas: 4, fecha: '2026-05-20', estado: 'Completado', origen: 'Manual' },
+  { id: '1', titulo: 'Introducción a Python y Control de Flujo', asignatura: 'Programación I', temas: 5, fecha: '2026-05-28', estado: 'Completado', origen: 'Manual' },
+  { id: '2', titulo: 'Límites, Continuidad y Derivadas', asignatura: 'Cálculo Diferencial', temas: 8, fecha: '2026-05-25', estado: 'Completado', origen: 'Manual' },
+  { id: '3', titulo: 'Leyes de Newton y Fuerza de Fricción', asignatura: 'Física Clásica', temas: 4, fecha: '2026-05-20', estado: 'Completado', origen: 'Manual' },
 ];
 
 const MOCK_GENERATED_CONTENT = {
@@ -102,69 +102,27 @@ function invertirLista(head) {
  * Restores from localStorage if available to support mockup persistence.
  */
 export const getTemarios = async () => {
-  // Option 1: Backend Integration
-  /*
   try {
     const response = await api.get('/temarios');
     return response.data;
   } catch (error) {
     throw new Error('Error al obtener temarios');
   }
-  */
-
-  // Option 2: Mock Static Simulation
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const stored = localStorage.getItem('katedra_mock_temarios');
-      if (stored) {
-        resolve(JSON.parse(stored));
-      } else {
-        localStorage.setItem('katedra_mock_temarios', JSON.stringify(MOCK_INITIAL_COURSES));
-        resolve(MOCK_INITIAL_COURSES);
-      }
-    }, 400);
-  });
 };
 
 /**
  * Adds a new temario to the system (supporting links, drive, pdfs, etc.).
  * Fully prepared for backend ingestion.
  * 
- * @param {object} temarioData { nombre, curso, temas, origen, detalleOrigen }
+ * @param {object} temarioData { titulo, asignatura, gradoAcademico, descripcion, temas, origen, detalleOrigen }
  */
 export const crearTemarioRequest = async (temarioData) => {
-  // Option 1: Backend Integration
-  /*
   try {
     const response = await api.post('/temarios', temarioData);
     return response.data;
   } catch (error) {
     throw new Error('Error al guardar el temario');
   }
-  */
-
-  // Option 2: Mock Static Simulation
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const stored = localStorage.getItem('katedra_mock_temarios');
-      const list = stored ? JSON.parse(stored) : MOCK_INITIAL_COURSES;
-
-      const nuevoTemario = {
-        id: `tem-${Math.random().toString(36).substr(2, 9)}`,
-        nombre: temarioData.nombre,
-        curso: temarioData.curso,
-        temas: parseInt(temarioData.temas) || 4,
-        fecha: new Date().toISOString().split('T')[0],
-        estado: 'Completado',
-        origen: temarioData.origen, // 'PDF', 'Link', 'Google Drive', 'Manual'
-        detalleOrigen: temarioData.detalleOrigen || ''
-      };
-
-      const updatedList = [nuevoTemario, ...list];
-      localStorage.setItem('katedra_mock_temarios', JSON.stringify(updatedList));
-      resolve(nuevoTemario);
-    }, 1200); // 1.2s delay to simulate AI processing the document
-  });
 };
 
 export const generarMaterialAI = async (materia, tema, unidades) => {
