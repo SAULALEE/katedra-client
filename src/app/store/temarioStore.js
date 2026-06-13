@@ -27,7 +27,7 @@ export const useTemarioStore = create((set, get) => ({
     try {
       const nuevoTemario = await crearTemarioRequest(temarioData);
       set((state) => ({
-        courses: [nuevoTemario, ...state.courses],
+        courses: [...state.courses, nuevoTemario],
         loading: false,
         error: null
       }));
