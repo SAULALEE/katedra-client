@@ -16,8 +16,10 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('pdf'); // 'pdf', 'link', 'drive', 'manual'
 
   // Input States
-  const [nombre, setNombre] = useState('');
-  const [curso, setCurso] = useState('');
+  const [titulo, setTitulo] = useState('');
+  const [asignatura, setAsignatura] = useState('');
+  const [gradoAcademico, setGradoAcademico] = useState('');
+  const [descripcion, setDescripcion] = useState('');
   const [temas, setTemas] = useState('6');
   const [origenDetalle, setOrigenDetalle] = useState('');
   const [dragActive, setDragActive] = useState(false);
@@ -29,8 +31,10 @@ export default function Dashboard() {
 
   // Open creation modal
   const handleOpenModal = () => {
-    setNombre('');
-    setCurso('');
+    setTitulo('');
+    setAsignatura('');
+    setGradoAcademico('');
+    setDescripcion('');
     setTemas('6');
     setOrigenDetalle('');
     setFileName('');
@@ -59,8 +63,8 @@ export default function Dashboard() {
       setFileName(file.name);
       // Auto fill form values based on file name
       const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
-      setNombre(`Temario: ${cleanName}`);
-      setCurso('Materia del Documento');
+      setTitulo(`Temario: ${cleanName}`);
+      setAsignatura('Materia del Documento');
     }
   };
 
@@ -69,16 +73,16 @@ export default function Dashboard() {
       const file = e.target.files[0];
       setFileName(file.name);
       const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
-      setNombre(`Temario: ${cleanName}`);
-      setCurso('Materia del Documento');
+      setTitulo(`Temario: ${cleanName}`);
+      setAsignatura('Materia del Documento');
     }
   };
 
   // Select simulated Google Drive document
   const handleSelectDriveFile = (fileNameSimulated, folder) => {
     setFileName(fileNameSimulated);
-    setNombre(`Temario de ${fileNameSimulated.replace('.pdf', '')}`);
-    setCurso(folder || 'Google Drive');
+    setTitulo(`Temario de ${fileNameSimulated.replace('.pdf', '')}`);
+    setAsignatura(folder || 'Google Drive');
     setOrigenDetalle(`drive://root/katedra/${fileNameSimulated}`);
   };
 
@@ -87,8 +91,8 @@ export default function Dashboard() {
     e.preventDefault();
     setFormError('');
 
-    if (!nombre.trim() || !curso.trim()) {
-      setFormError('Por favor, ingresa el nombre del temario y la materia.');
+    if (!titulo.trim() || !asignatura.trim()) {
+      setFormError('Por favor, ingresa el título del temario y la asignatura.');
       return;
     }
 
@@ -112,8 +116,10 @@ export default function Dashboard() {
     };
 
     const payload = {
-      nombre,
-      curso,
+      titulo,
+      asignatura,
+      gradoAcademico,
+      descripcion,
       temas: parseInt(temas) || 6,
       origen: origenMap[activeTab],
       detalleOrigen: activeTab === 'pdf' ? fileName : origenDetalle
@@ -233,20 +239,20 @@ export default function Dashboard() {
                               <svg className="w-3.5 h-3.5 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
-                              <span className="font-sans font-semibold text-ink leading-snug select-text">{c.nombre}</span>
+                              <span className="font-sans font-semibold text-ink leading-snug select-text">{c.titulo || c.nombre}</span>
                             </td>
-                            <td className="px-6 py-4 text-ink-muted">{c.curso}</td>
-                            <td className="px-6 py-4 text-ink-muted">{c.temas} subtemas</td>
+                            <td className="px-6 py-4 text-ink-muted">{c.asignatura || c.curso}</td>
+                            <td className="px-6 py-4 text-ink-muted">{c.temas || 6} subtemas</td>
                             <td className="px-6 py-4">
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border bg-surface-2 text-ink-muted border-hairline">
                                 {c.origen || 'Manual'}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-ink-muted">{c.fecha}</td>
+                            <td className="px-6 py-4 text-ink-muted">{c.fecha || (c.createdAt ? c.createdAt.split('T')[0] : '')}</td>
                             <td className="px-6 py-4">
                               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-caption font-medium select-none">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                {c.estado}
+                                {c.estado || 'Completado'}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-right">
@@ -424,35 +430,77 @@ export default function Dashboard() {
                   </div>
                 )}
 
+                {activeTab === 'manual' && (
+                  <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl mb-2">
+                    <p className="text-xs text-indigo-400 leading-relaxed font-medium">
+                      Estás creando un temario manualmente. La IA tomará el título, asignatura, grado y descripción para generar los subtemas.
+                    </p>
+                  </div>
+                )}
+
                 {/* Form Standard Metadata inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="flex flex-col" style={{ gap: '8px' }}>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
-                      Nombre del Temario
-                    </label>
-                    <input
-                      type="text"
-                      value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
-                      placeholder="Ej. Programación Avanzada"
-                      disabled={isProcessing}
-                      className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
-                    />
+                <div className="flex flex-col gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="flex flex-col" style={{ gap: '8px' }}>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                        Título del Temario
+                      </label>
+                      <input
+                        type="text"
+                        value={titulo}
+                        onChange={(e) => setTitulo(e.target.value)}
+                        placeholder="Ej. Programación Avanzada"
+                        disabled={isProcessing}
+                        className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col" style={{ gap: '8px' }}>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                        Materia / Asignatura
+                      </label>
+                      <input
+                        type="text"
+                        value={asignatura}
+                        onChange={(e) => setAsignatura(e.target.value)}
+                        placeholder="Ej. Sistemas Computacionales"
+                        disabled={isProcessing}
+                        className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="flex flex-col" style={{ gap: '8px' }}>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
-                      Materia / Curso
-                    </label>
-                    <input
-                      type="text"
-                      value={curso}
-                      onChange={(e) => setCurso(e.target.value)}
-                      placeholder="Ej. Sistemas Computacionales"
-                      disabled={isProcessing}
-                      className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
-                    />
-                  </div>
+
+                  {activeTab === 'manual' && (
+                    <>
+                      <div className="flex flex-col" style={{ gap: '8px' }}>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                          Grado Académico
+                        </label>
+                        <input
+                          type="text"
+                          value={gradoAcademico}
+                          onChange={(e) => setGradoAcademico(e.target.value)}
+                          placeholder="Ej. Universidad, Secundaria..."
+                          disabled={isProcessing}
+                          className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3.5 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus"
+                        />
+                      </div>
+
+                      <div className="flex flex-col" style={{ gap: '8px' }}>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted select-none">
+                          Descripción (Opcional)
+                        </label>
+                        <textarea
+                          value={descripcion}
+                          onChange={(e) => setDescripcion(e.target.value)}
+                          placeholder="Breve descripción del objetivo del temario..."
+                          disabled={isProcessing}
+                          rows={2}
+                          className="w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl py-3 px-4 text-xs text-ink outline-none transition-all placeholder:text-ink-tertiary focus:ring-1 focus:ring-brand-primary-focus resize-none"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Temas Selection - Spacious select dropdown */}

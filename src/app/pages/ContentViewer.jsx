@@ -17,7 +17,7 @@ export default function ContentViewer() {
   const [checkedAnswers, setCheckedAnswers] = useState({});
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  const course = courses.find(c => c.id === id) || { nombre: 'Temario Generado', curso: 'Cargando...' };
+  const course = courses.find(c => c.id === id) || { titulo: 'Temario Generado', asignatura: 'Cargando...' };
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -47,8 +47,8 @@ export default function ContentViewer() {
         <header className="h-[56px] border-b border-hairline bg-canvas/80 backdrop-blur-md sticky top-0 z-30 w-full flex items-center">
           <div className="w-full px-6 sm:px-8 flex items-center justify-between">
             <div className="flex flex-col">
-              <h2 className="text-xs sm:text-sm font-semibold tracking-card-title text-ink truncate max-w-[200px] sm:max-w-xs">{course.nombre}</h2>
-              <span className="text-[10px] text-ink-muted truncate max-w-[200px] sm:max-w-xs">{course.curso}</span>
+              <h2 className="text-xs sm:text-sm font-semibold tracking-card-title text-ink truncate max-w-[200px] sm:max-w-xs">{course.titulo || course.nombre}</h2>
+              <span className="text-[10px] text-ink-muted truncate max-w-[200px] sm:max-w-xs">{course.asignatura || course.curso}</span>
             </div>
             <div className="flex items-center gap-3">
               <Button 
