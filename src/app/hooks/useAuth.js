@@ -13,19 +13,26 @@ export const useAuth = () => {
     loading,
     error,
     login,
+    loginWithGoogle,
+    loginWithMicrosoft,
     register,
     logout,
     clearError,
-    initAuth
+    initAuth,
+    handleOAuthCallback
   } = useAuthStore();
 
   // Run initial state restoration check
   useEffect(() => {
-    // Only run initialization if state is completely empty but hasn't been set yet
     if (!isAuthenticated && !user) {
+      if (window.location.search.includes('token=')) {
+        handleOAuthCallback();
+        return;
+      }
+
       initAuth();
     }
-  }, [isAuthenticated, user, initAuth]);
+  }, [isAuthenticated, user, initAuth, handleOAuthCallback]);
 
   return {
     user,
@@ -34,8 +41,11 @@ export const useAuth = () => {
     loading,
     error,
     login,
+    loginWithGoogle,
+    loginWithMicrosoft,
     register,
     logout,
-    clearError
+    clearError,
+    handleOAuthCallback
   };
 };

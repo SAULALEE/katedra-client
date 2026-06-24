@@ -11,8 +11,8 @@ export const useUsers = () => {
     loading,
     error,
     fetchUsers,
-    createUser,
-    updateUser
+    updateUser,
+    deleteUser
   } = useUserStore();
 
   // Proactively fetch users on mount to ensure views are populated
@@ -27,7 +27,7 @@ export const useUsers = () => {
     loading,
     error,
     refetchUsers: fetchUsers,
-    createUser,
-    updateUser
+    updateUser,
+    deleteUser
   };
 };

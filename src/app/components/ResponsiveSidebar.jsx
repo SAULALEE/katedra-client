@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeStore } from '../store/useThemeStore';
-import { formatRoleDisplay } from '../utils/roleUtils';
+import { formatRoleDisplay, isAdmin } from '../utils/roleUtils';
 
 export default function ResponsiveSidebar() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ export default function ResponsiveSidebar() {
         </svg>
       )
     }
-  ];
+  ].filter((item) => item.path !== '/usuarios' || isAdmin(user));
 
   const handleNavigation = (path) => {
     navigate(path);

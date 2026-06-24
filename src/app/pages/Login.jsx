@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeStore } from '../store/useThemeStore';
 import Button from '../components/Button';
@@ -8,7 +8,16 @@ import StatusBadge from '../components/StatusBadge';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, loading, error, clearError } = useAuth();
+  const location = useLocation();
+  const {
+    login,
+    loginWithGoogle,
+    handleOAuthCallback,
+    isAuthenticated,
+    loading,
+    error,
+    clearError
+  } = useAuth();
   const { isDarkMode, toggleTheme } = useThemeStore();
 
   const [email, setEmail] = useState('');
@@ -16,14 +25,20 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [isDemoFilling, setIsDemoFilling] = useState(false);
 
-  // Clear any existing errors when mounting
   useEffect(() => {
     clearError();
-  }, []);
+  }, [clearError]);
 
-  // Redirect if already authenticated
+  useEffect(() => {
+    if (location.search.includes('token=')) {
+      const success = handleOAuthCallback();
+      if (success) {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [location.search, handleOAuthCallback, navigate]);
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
@@ -46,69 +61,27 @@ export default function Login() {
     }
   };
 
-  // Elite UX helper to auto-fill mock credentials with a clean transition
-  const handleAutoFillDemo = () => {
-    setIsDemoFilling(true);
-    let emailStr = 'saul.martinez@katedra.com';
-    let passStr = 'admin123';
-    
-    // Smooth simulated typing effect
-    setEmail('');
-    setPassword('');
-    
-    let currentEmail = '';
-    let currentPass = '';
-    
-    let emailIdx = 0;
-    const emailInterval = setInterval(() => {
-      if (emailIdx < emailStr.length) {
-        currentEmail += emailStr[emailIdx];
-        setEmail(currentEmail);
-        emailIdx++;
-      } else {
-        clearInterval(emailInterval);
-        
-        let passIdx = 0;
-        const passInterval = setInterval(() => {
-          if (passIdx < passStr.length) {
-            currentPass += passStr[passIdx];
-            setPassword(currentPass);
-            passIdx++;
-          } else {
-            clearInterval(passInterval);
-            setIsDemoFilling(false);
-          }
-        }, 30);
-      }
-    }, 20);
-  };
-
   return (
     <div className="w-full min-h-screen bg-canvas text-ink flex flex-col justify-between selection:bg-brand-primary selection:text-white relative overflow-hidden">
-      
-      {/* Dynamic Background Glowing Accents & Tech Grids */}
       <div className="absolute top-[-25%] left-[-15%] w-[60vw] h-[60vw] rounded-full bg-brand-primary/10 blur-[130px] pointer-events-none z-0" />
       <div className="absolute bottom-[-15%] right-[-15%] w-[50vw] h-[50vw] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none z-0" />
-      
-      {/* Grid Pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none z-0 opacity-40"></div>
 
-      {/* Upper Navigation Header */}
       <header className="w-full h-[56px] border-b border-hairline bg-canvas/80 backdrop-blur-md flex items-center justify-between px-6 sm:px-10 md:px-16 lg:px-20 z-50">
-        <div 
-          className="flex items-center gap-3 cursor-pointer select-none group" 
+        <div
+          className="flex items-center gap-3 cursor-pointer select-none group"
           onClick={() => navigate('/')}
         >
           <div className="relative w-9 h-9 rounded-full overflow-hidden border border-hairline bg-surface-1 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:scale-105 group-hover:border-brand-primary/30 group-hover:shadow-[0_4px_12px_rgba(var(--brand-primary-rgb,5,43,88),0.15)]">
-            <img 
-              src={isDarkMode ? '/katedra-dark-mode.jpeg' : '/katedra-light-mode.jpeg'} 
-              alt="Katedra Logo" 
+            <img
+              src={isDarkMode ? '/katedra-dark-mode.jpeg' : '/katedra-light-mode.jpeg'}
+              alt="Katedra Logo"
               className="w-full h-full object-cover"
             />
           </div>
           <span className="font-sans font-semibold tracking-subhead text-[15px] text-ink group-hover:text-brand-primary transition-colors duration-300">Katedra</span>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
@@ -125,9 +98,9 @@ export default function Login() {
               </svg>
             )}
           </button>
-          
-          <Button 
-            variant="tertiary" 
+
+          <Button
+            variant="tertiary"
             onClick={() => navigate('/')}
             className="text-xs"
           >
@@ -136,42 +109,35 @@ export default function Login() {
         </div>
       </header>
 
-      {/* Main Login Form Area */}
       <main className="login-page-container flex-1 flex flex-col justify-center items-center py-16 px-4 z-10">
         <div className="w-full max-w-[420px] space-y-6">
-          
-          {/* Header Info */}
           <div className="login-header-area flex flex-col items-center text-center space-y-2">
             <StatusBadge pulseColor="bg-brand-primary" className="border border-brand-primary/20 bg-brand-primary/5">
-              Área de Acceso Autorizado
+              Area de Acceso Autorizado
             </StatusBadge>
-            
+
             <h1 className="font-sans font-bold text-3xl tracking-headline text-ink leading-tight pt-1">
               Ingresar a Katedra
             </h1>
-            
+
             <p className="text-ink-muted text-xs sm:text-sm tracking-body leading-relaxed max-w-[320px]">
-              Introduce tus credenciales para acceder a la plataforma de gestión académica.
+              Introduce tus credenciales para acceder a la plataforma de gestion academica.
             </p>
           </div>
 
-          {/* Form Container Card - Ultra-premium SaaS Glassmorphism */}
           <div className="login-card bg-surface-1/95 border border-hairline rounded-2xl p-8 shadow-2xl relative overflow-hidden group">
-            {/* Top decorative gradient glow border */}
             <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-brand-primary to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
-            
+
             <form onSubmit={handleSubmit} className="login-form space-y-5">
-              
-              {/* Email Input */}
               <div className="login-form-group flex flex-col space-y-1.5">
-                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Correo Electrónico</label>
+                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Correo Electronico</label>
                 <div className="relative">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="ejemplo@katedra.com"
-                    disabled={loading || isDemoFilling}
+                    disabled={loading}
                     className="login-input w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 text-xs text-ink outline-none transition-all duration-200 placeholder:text-ink-tertiary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                   />
                   <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-tertiary">
@@ -182,19 +148,17 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Password Input */}
               <div className="login-form-group flex flex-col space-y-1.5">
-                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Contraseña</label>
+                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Contrasena</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={loading || isDemoFilling}
+                    placeholder="********"
+                    disabled={loading}
                     className="login-input w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 text-xs text-ink outline-none transition-all duration-200 placeholder:text-ink-tertiary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                   />
-                  {/* Password visibility eye toggle */}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -215,7 +179,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Remember Me & Forgot Password Links */}
               <div className="login-row flex items-center justify-between text-[11px] pt-1">
                 <label className="flex items-center gap-2 text-ink-muted cursor-pointer hover:text-ink transition-colors duration-150">
                   <input
@@ -224,36 +187,33 @@ export default function Login() {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="accent-brand-primary rounded border-hairline bg-surface-2 cursor-pointer w-3.5 h-3.5"
                   />
-                  <span>Recuérdame</span>
+                  <span>Recuerdame</span>
                 </label>
-                
-                <span 
-                  onClick={() => {}} 
+
+                <span
+                  onClick={() => {}}
                   className="text-brand-primary hover:text-brand-primary/80 transition-colors duration-150 cursor-pointer font-medium"
                 >
-                  ¿Olvidaste tu contraseña?
+                  Olvidaste tu contrasena?
                 </span>
               </div>
 
-              {/* Error Feedbacks */}
               {(validationError || error) && (
                 <div className="login-error bg-red-500/10 border border-red-500/20 text-red-400 text-xs px-3.5 py-2.5 rounded-xl animate-fade-in font-medium">
                   {validationError || error}
                 </div>
               )}
 
-              {/* Submit CTA */}
               <Button
                 variant="primary"
                 type="submit"
-                disabled={loading || isDemoFilling}
+                disabled={loading}
                 className="w-full py-3.5 font-bold shadow-[0_4px_20px_rgba(5,43,88,0.3)] hover:shadow-[0_6px_25px_rgba(5,43,88,0.5)] transition-all rounded-xl cursor-pointer"
               >
-                {loading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
+                {loading ? 'Iniciando sesion...' : 'Iniciar sesion'}
               </Button>
             </form>
 
-            {/* Symmetrical SSO Separator */}
             <div className="relative my-6 select-none">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-hairline"></div>
@@ -263,11 +223,10 @@ export default function Login() {
               </div>
             </div>
 
-            {/* SSO / Identity Providers simulator */}
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                type="button" 
-                onClick={handleAutoFillDemo}
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                type="button"
+                onClick={loginWithGoogle}
                 className="flex items-center justify-center gap-2 bg-surface-2 border border-hairline hover:border-hairline-strong rounded-xl py-2.5 text-xs text-ink-muted hover:text-ink transition-all duration-150 cursor-pointer font-medium"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -278,53 +237,24 @@ export default function Login() {
                 </svg>
                 <span>Google</span>
               </button>
-              <button 
-                type="button" 
-                onClick={handleAutoFillDemo}
-                className="flex items-center justify-center gap-2 bg-surface-2 border border-hairline hover:border-hairline-strong rounded-xl py-2.5 text-xs text-ink-muted hover:text-ink transition-all duration-150 cursor-pointer font-medium"
-              >
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#F25022" d="M1 1h10v10H1z" />
-                  <path fill="#7FBA00" d="M13 1h10v10H13z" />
-                  <path fill="#01A6F0" d="M1 13h10v10H1z" />
-                  <path fill="#FFB900" d="M13 13h10v10H13z" />
-                </svg>
-                <span>Microsoft</span>
-              </button>
             </div>
 
-            {/* Link to Register */}
             <div className="mt-6 text-center">
               <p className="text-xs text-ink-muted">
-                ¿No tienes una cuenta?{' '}
-                <span 
+                No tienes una cuenta?{' '}
+                <span
                   onClick={() => navigate('/register')}
                   className="text-brand-primary hover:text-brand-primary/80 transition-colors duration-150 cursor-pointer font-bold"
                 >
-                  Regístrate
+                  Registrate
                 </span>
               </p>
-            </div>
-
-            {/* Quick Fill Demo Helper Badge Area */}
-            <div className="mt-6 border-t border-hairline/60 pt-4 text-center">
-              <button
-                type="button"
-                onClick={handleAutoFillDemo}
-                disabled={isDemoFilling || loading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-primary/20 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary text-[10px] font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer select-none active:scale-95 disabled:opacity-50"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse"></span>
-                <span>⚡ Autocompletar Cuenta Demo</span>
-              </button>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Global Symmetrical Footer */}
       <Footer />
     </div>
   );
 }
-
