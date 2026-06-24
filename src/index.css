@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Colors */
   --color-canvas: var(--app-canvas);
@@ -78,6 +80,7 @@
 
   /* Custom Transitions & Animations */
   --animate-fade-in: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-marquee: marquee 32s linear infinite;
 
   @keyframes fade-in {
     from {
@@ -89,64 +92,73 @@
       transform: translateY(0);
     }
   }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 :root {
   /* LIGHT MODE (Primary) */
-  --app-canvas: #f8fafc;
-  --app-surface-1: #ffffff;
-  --app-surface-2: #f1f5f9;
-  --app-surface-3: #e2e8f0;
-  --app-surface-4: #cbd5e1;
+  --app-canvas: #F0F4F8;
+  --app-surface-1: #FFFFFF;
+  --app-surface-2: #F8FAFC;
+  --app-surface-3: #E2E8F0;
+  --app-surface-4: #CBD5E1;
   
-  --app-brand-primary: #0ea5e9;
-  --app-brand-primary-hover: #0284c7;
-  --app-brand-primary-focus: #0369a1;
-  --app-brand-secure: #64748b;
-  --app-semantic-success: #10b981;
+  --app-brand-primary: #0F172A;
+  --app-brand-primary-hover: #1E293B;
+  --app-brand-primary-focus: #334155;
+  --app-brand-secure: #2563EB;
+  --app-semantic-success: #10B981;
   
-  --app-ink: #0f172a;
+  --app-ink: #0F172A;
   --app-ink-muted: #475569;
-  --app-ink-subtle: #64748b;
-  --app-ink-tertiary: #94a3b8;
+  --app-ink-subtle: #64748B;
+  --app-ink-tertiary: #94A3B8;
   
-  --app-hairline: #e2e8f0;
-  --app-hairline-strong: #cbd5e1;
-  --app-hairline-tertiary: #94a3b8;
+  --app-hairline: #E2E8F0;
+  --app-hairline-strong: #CBD5E1;
+  --app-hairline-tertiary: #94A3B8;
   
   --app-inverse-canvas: #010102;
-  --app-inverse-surface-1: #0f1011;
+  --app-inverse-surface-1: #0F1011;
   --app-inverse-surface-2: #141516;
-  --app-inverse-ink: #ffffff;
+  --app-inverse-ink: #FFFFFF;
 }
 
 .dark {
   /* DARK MODE (Secondary) */
   --app-canvas: #010102;
-  --app-surface-1: #0f1011;
+  --app-surface-1: #0F1011;
   --app-surface-2: #141516;
-  --app-surface-3: #18191a;
-  --app-surface-4: #191a1b;
+  --app-surface-3: #18191A;
+  --app-surface-4: #191A1B;
   
-  --app-brand-primary: #052B58;
-  --app-brand-primary-hover: #073b78;
-  --app-brand-primary-focus: #052B57;
-  --app-brand-secure: #7a7fad;
-  --app-semantic-success: #27a644;
+  --app-brand-primary: #2563EB;
+  --app-brand-primary-hover: #3B82F6;
+  --app-brand-primary-focus: #60A5FA;
+  --app-brand-secure: #3B82F6;
+  --app-semantic-success: #10B981;
   
   --app-ink: #F2F2F0;
   --app-ink-muted: #7C8C9C;
   --app-ink-subtle: #7C849C;
-  --app-ink-tertiary: #62666d;
+  --app-ink-tertiary: #62666D;
   
-  --app-hairline: #23252a;
-  --app-hairline-strong: #34343a;
-  --app-hairline-tertiary: #3e3e44;
+  --app-hairline: #23252A;
+  --app-hairline-strong: #34343A;
+  --app-hairline-tertiary: #3E3E44;
   
-  --app-inverse-canvas: #ffffff;
-  --app-inverse-surface-1: #f5f6f6;
-  --app-inverse-surface-2: #f6f7f7;
-  --app-inverse-ink: #000000;
+  --app-inverse-canvas: #F0F4F8;
+  --app-inverse-surface-1: #FFFFFF;
+  --app-inverse-surface-2: #F8FAFC;
+  --app-inverse-ink: #0F172A;
 }
 
 /* Base Styles */
@@ -231,9 +243,21 @@ body {
 .p-6 { padding: 1.5rem !important; }
 .p-8 { padding: 2rem !important; }
 
+.px-3 {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+}
+.px-3\.5 {
+  padding-left: 0.875rem !important;
+  padding-right: 0.875rem !important;
+}
 .px-4 {
   padding-left: 1rem !important;
   padding-right: 1rem !important;
+}
+.px-5 {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
 }
 .px-6 {
   padding-left: 1.5rem !important;
@@ -247,6 +271,10 @@ body {
   padding-left: 2.5rem !important;
   padding-right: 2.5rem !important;
 }
+.px-12 {
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
+}
 .px-16 {
   padding-left: 4rem !important;
   padding-right: 4rem !important;
@@ -255,6 +283,13 @@ body {
   padding-left: 5rem !important;
   padding-right: 5rem !important;
 }
+
+/* Single-Side Padding Fallbacks (Login + Header specific) */
+.px-2 {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+.pr-12 { padding-right: 3rem !important; }
 
 /* Responsive Horizontal Container Padding Fallbacks */
 @media (min-width: 640px) {
@@ -282,6 +317,8 @@ body {
   margin-bottom: 0.5rem !important;
 }
 .mt-1 { margin-top: 0.25rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-3 { margin-top: 0.75rem !important; }
 .mt-6 { margin-top: 1.5rem !important; }
 .mt-8 { margin-top: 2rem !important; }
 .mr-2 { margin-right: 0.5rem !important; }
@@ -290,6 +327,7 @@ body {
 .mb-4 { margin-bottom: 1rem !important; }
 .mb-16 { margin-bottom: 4rem !important; }
 .mb-20 { margin-bottom: 5rem !important; }
+.pt-3 { padding-top: 0.75rem !important; }
 
 /* Responsive Margins */
 @media (min-width: 1024px) {
@@ -316,6 +354,10 @@ body {
 .py-2\.5 {
   padding-top: 0.625rem !important;
   padding-bottom: 0.625rem !important;
+}
+.py-3 {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
 }
 .py-3\.5 {
   padding-top: 0.875rem !important;
@@ -347,6 +389,7 @@ body {
 }
 
 /* Flex/Grid Gap Fallbacks */
+.gap-1 { gap: 0.25rem !important; }
 .gap-1\.5 { gap: 0.375rem !important; }
 .gap-2 { gap: 0.5rem !important; }
 .gap-2\.5 { gap: 0.625rem !important; }
@@ -358,6 +401,12 @@ body {
 .gap-10 { gap: 2.5rem !important; }
 .gap-12 { gap: 3rem !important; }
 .gap-16 { gap: 4rem !important; }
+
+/* Fixed Dimension Fallbacks (icon badges, avatar/CTA touch targets) */
+.w-9 { width: 2.25rem !important; }
+.h-9 { height: 2.25rem !important; }
+.w-14 { width: 3.5rem !important; }
+.h-14 { height: 3.5rem !important; }
 
 /* ==========================================
    PREMIUM CUSTOM FOOTER SPECIFIC STYLES
@@ -418,7 +467,6 @@ body {
   user-select: none !important;
 }
 
-
 /* ==========================================
    BULLETPROOF PREMIUM LOGIN PAGE STYLES
    ==========================================
@@ -427,9 +475,12 @@ body {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important; /* Fixes the overlap! Pushes content down instead of centering blindly */
   flex: 1 !important;
-  padding: 4rem 1.5rem !important;   /* Dynamic outer padding */
+  padding-top: 12rem !important;          /* Massive top clearance for the header */
+  padding-bottom: 6rem !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
   z-index: 10 !important;
 }
 
@@ -438,60 +489,73 @@ body {
   flex-direction: column !important;
   align-items: center !important;
   text-align: center !important;
-  gap: 0.75rem !important;           /* Space between badge, title, and description */
-  margin-bottom: 2rem !important;    /* Separator space before the card */
+  gap: 1rem !important;
+  margin-bottom: 3rem !important;
 }
 
 .login-card {
   width: 100% !important;
-  max-width: 440px !important;
+  max-width: 480px !important;               /* Slightly wider for breathing room */
   background-color: var(--color-surface-1) !important;
   border: 1px solid var(--color-hairline) !important;
-  border-radius: 16px !important;
-  padding: 2.75rem 2.25rem !important; /* Beautiful, large inner spacing (paddings) */
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 16px !important;            /* Binary radius system: 16px for cards */
+  padding: 3.5rem 3rem !important;           /* HUGE padding for premium airy feel */
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.1) !important;
   position: relative !important;
+}
+
+.dark .login-card {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 .login-form {
   display: flex !important;
   flex-direction: column !important;
-  gap: 1.5rem !important;             /* Explicit vertical gap between fields (margins/paddings) */
+  gap: 1.75rem !important;                   /* Much larger gap between form elements */
   width: 100% !important;
 }
 
 .login-form-group {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.5rem !important;             /* Spacing between label and input */
+  gap: 0.6rem !important;
   width: 100% !important;
 }
 
 .login-label {
   display: block !important;
-  font-size: 0.75rem !important;      /* 12px label */
+  font-size: 0.75rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
-  color: #7c8c9c !important;
-  font-weight: 600 !important;
+  color: var(--color-ink-muted) !important;
+  font-weight: 800 !important;
   user-select: none !important;
+  margin-left: 0.25rem !important;
 }
 
 .login-input {
   width: 100% !important;
-  background-color: var(--color-surface-2) !important;
-  border: 1px solid var(--color-hairline-strong) !important;
-  border-radius: 8px !important;
-  padding: 0.875rem 1rem !important;   /* Substantial input padding */
-  font-size: 0.875rem !important;       /* Clean text size */
+  background-color: var(--color-surface-2) !important; /* Gentle contrast against card */
+  border: 2px solid transparent !important;
+  border-radius: 12px !important;            /* Binary radius system: 12px for UI inputs */
+  padding: 1.1rem 1.25rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
   color: var(--color-ink) !important;
   outline: none !important;
-  transition: all 0.2s ease-in-out !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .login-input:focus {
-  border-color: var(--color-brand-primary) !important;
-  box-shadow: 0 0 0 1px var(--color-brand-primary) !important;
+  background-color: var(--color-surface-1) !important;
+  border-color: var(--color-semantic-success) !important; /* Using the requested Green! */
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
+}
+
+.dark .login-input:focus {
+  border-color: var(--color-semantic-success) !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25) !important;
 }
 
 .login-row {
@@ -500,16 +564,59 @@ body {
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
-  margin-top: 0.25rem !important;
-  margin-bottom: 0.25rem !important;
+  margin-top: 0.125rem !important;
+  margin-bottom: 0.125rem !important;
 }
 
 .login-error {
   padding: 0.75rem 1rem !important;
-  background-color: rgba(244, 63, 94, 0.1) !important;
-  border: 1px solid rgba(244, 63, 94, 0.2) !important;
-  border-radius: 8px !important;
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  border-radius: 12px !important;
   font-size: 0.75rem !important;
-  color: #fb7185 !important;
+  color: #ef4444 !important;
   line-height: 1.5 !important;
+}
+
+/* ==========================================
+   LANDING PAGE COMPATIBILITY OVERRIDES
+   ==========================================
+   Guarantees generous-padding, illustrative-radius and fixed-size
+   utilities compile correctly under Tailwind v4.
+*/
+
+/* Paddings */
+.p-10 { padding: 2.5rem !important; }
+.p-12 { padding: 3rem !important; }
+.p-16 { padding: 4rem !important; }
+.pl-3\.5 { padding-left: 0.875rem !important; }
+.pr-6 { padding-right: 1.5rem !important; }
+
+/* Sizes */
+.w-16 { width: 4rem !important; }
+.h-16 { height: 4rem !important; }
+
+/* Illustrative Border Radii (Binary Radius System) */
+.rounded-\[28px\] { border-radius: 28px !important; }
+.rounded-\[32px\] { border-radius: 32px !important; }
+.rounded-\[40px\] { border-radius: 40px !important; }
+.rounded-\[80px\] { border-radius: 80px !important; }
+
+/* ==========================================
+   LANDING PAGE DEPTH SHADOW SYSTEM
+   ==========================================
+   Plum/ink-tinted elevation tiers used across the premium
+   illustrative cards, the sandbox viewer and the Pro pricing card.
+*/
+@utility shadow-soft {
+  box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+}
+@utility shadow-elevated {
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.08);
+}
+@utility shadow-illustrative {
+  box-shadow: 0 24px 48px -8px rgba(15, 23, 42, 0.10);
+}
+@utility shadow-hi {
+  box-shadow: 0 32px 64px -8px rgba(15, 23, 42, 0.12);
 }

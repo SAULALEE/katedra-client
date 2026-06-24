@@ -11,9 +11,9 @@ export function Input({
   ...props
 }) {
   return (
-    <div className={`space-y-2.5 w-full ${className}`}>
+    <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-[11px] uppercase tracking-widest text-ink-muted font-semibold select-none leading-none">
+        <label className="block text-[10px] font-extrabold uppercase tracking-[1.5px] text-ink-muted select-none mb-2">
           {label}
         </label>
       )}
@@ -22,7 +22,7 @@ export function Input({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full bg-surface-1 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl px-4.5 py-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-ink-tertiary focus:ring-2 focus:ring-brand-primary/20 ${
+        className={`w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-secure focus:bg-surface-1 rounded-xl py-3.5 px-4 text-sm text-ink outline-none transition-all duration-300 placeholder:text-ink-tertiary focus:ring-4 focus:ring-brand-secure/10 ${
           error ? 'border-rose-500/50 focus:border-rose-500' : ''
         }`}
         {...props}
@@ -43,9 +43,9 @@ export function Textarea({
   ...props
 }) {
   return (
-    <div className={`space-y-2.5 w-full ${className}`}>
+    <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-[11px] uppercase tracking-widest text-ink-muted font-semibold select-none leading-none">
+        <label className="block text-[10px] font-extrabold uppercase tracking-[1.5px] text-ink-muted select-none mb-2">
           {label}
         </label>
       )}
@@ -54,7 +54,7 @@ export function Textarea({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full bg-surface-1 border border-hairline hover:border-hairline-strong focus:border-brand-primary rounded-xl px-4.5 py-4 text-sm text-ink outline-none transition-all duration-200 resize-none font-mono placeholder:text-ink-tertiary focus:ring-2 focus:ring-brand-primary/20 ${
+        className={`w-full bg-surface-2 border border-hairline hover:border-hairline-strong focus:border-brand-secure focus:bg-surface-1 rounded-xl py-3.5 px-4 text-sm text-ink outline-none transition-all duration-300 resize-none font-mono placeholder:text-ink-tertiary focus:ring-4 focus:ring-brand-secure/10 ${
           error ? 'border-rose-500/50 focus:border-rose-500' : ''
         }`}
         {...props}
