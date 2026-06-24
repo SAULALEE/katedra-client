@@ -3,8 +3,41 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import Button from '../components/Button';
-import Card from '../components/Card';
 import ResponsiveSidebar from '../components/ResponsiveSidebar';
+
+// Reusable SVG Icons for exports
+const IconGoogleForms = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V7.5L14.5 2Z" fill="#7248B9" fillOpacity="0.1"/>
+    <path d="M14.5 2V7.5H20" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V7.5L14.5 2Z" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8 13H16M8 17H16M8 9H10" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconMSForms = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#00828A" fillOpacity="0.1"/>
+    <rect x="4" y="4" width="16" height="16" rx="2" stroke="#00828A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8 12L11 15L16 9" stroke="#00828A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconPDF = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" fill="#E11D48" fillOpacity="0.1"/>
+    <path d="M14 2V8H20M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9 15H15M9 11H15M9 19H11" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconPPTX = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 4H20C21.1046 4 22 4.89543 22 6V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4Z" fill="#EA580C" fillOpacity="0.1"/>
+    <path d="M4 4H20C21.1046 4 22 4.89543 22 6V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4Z" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8 10C8 8.89543 8.89543 8 10 8H14C15.1046 8 16 8.89543 16 10C16 11.1046 15.1046 12 14 12H8V10ZM8 12V16" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 export default function ContentViewer() {
   const { id } = useParams();
@@ -35,293 +68,285 @@ export default function ContentViewer() {
   }, [id]);
 
   return (
-    <div className="w-full min-h-screen bg-canvas text-ink flex flex-col md:flex-row selection:bg-brand-primary selection:text-white">
+    <div className="w-full min-h-screen bg-canvas text-ink flex flex-col md:flex-row font-sans">
       
-      {/* Sidebar */}
       <ResponsiveSidebar />
 
-      {/* Main Panel Content */}
-      <main className="flex-1 flex flex-col min-w-0 bg-canvas">
+      <main className="flex-1 flex flex-col min-w-0 bg-surface-2 relative h-screen">
         
-        {/* Top Navbar (Strictly h-[56px] Top-Nav token from DESIGN.md) */}
-        <header className="h-[56px] border-b border-hairline bg-canvas/80 backdrop-blur-md sticky top-0 z-30 w-full flex items-center">
-          <div className="w-full px-6 sm:px-8 flex items-center justify-between">
-            <div className="flex flex-col">
-              <h2 className="text-xs sm:text-sm font-semibold tracking-card-title text-ink truncate max-w-[200px] sm:max-w-xs">{course.titulo || course.nombre}</h2>
-              <span className="text-[10px] text-ink-muted truncate max-w-[200px] sm:max-w-xs">{course.asignatura || course.curso}</span>
+        {/* Top Navbar */}
+        <header className="min-h-[88px] border-b border-hairline bg-canvas/90 backdrop-blur-md sticky top-0 z-30 w-full flex items-center py-4 sm:py-0">
+          <div className="w-full px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col flex-1 min-w-0 pr-4">
+              <h2 className="text-sm sm:text-base font-bold text-ink leading-snug">{course.titulo || course.nombre}</h2>
+              <span className="text-[11px] font-medium text-ink-subtle mt-1">{course.asignatura || course.curso}</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               <Button 
                 variant="secondary" 
-                onClick={() => navigate('/dashboard')}
-                className="px-3.5 py-1.5 text-xs font-bold"
+                onClick={() => navigate(-1)}
+                className="px-5 py-2.5 text-xs font-bold bg-surface-1 hover:bg-surface-3 transition-colors border-hairline rounded-xl shadow-sm"
               >
-                Volver al Panel
-              </Button>
-              <Button 
-                variant="primary" 
-                onClick={() => window.print()}
-                className="px-4 py-1.5 text-xs font-bold shadow-[0_0_15px_rgba(5,43,88,0.25)]"
-              >
-                Exportar PDF
+                Volver
               </Button>
             </div>
           </div>
         </header>
 
         {/* Viewer Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto scrollbar-none">
           {loading ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4">
-              <div className="w-10 h-10 rounded-full border-2 border-hairline border-t-brand-primary animate-spin"></div>
-              <p className="text-xs text-ink-muted animate-pulse font-semibold">Recuperando contenido generado...</p>
+            <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-6">
+              <div className="w-12 h-12 rounded-full border-[3px] border-surface-3 border-t-brand-primary animate-spin"></div>
+              <p className="text-sm text-ink-subtle font-bold tracking-widest uppercase animate-pulse">Cargando Material...</p>
             </div>
           ) : !content ? (
-             <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4">
-                <p className="text-sm font-bold text-rose-400">Error al cargar el contenido.</p>
+             <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-5">
+                <div className="w-16 h-16 rounded-[20px] bg-red-500/10 text-red-500 flex items-center justify-center">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                </div>
+                <p className="text-base font-bold text-ink">Material No Encontrado</p>
              </div>
           ) : (
-            <div className="flex flex-col w-full">
+            <div className="flex flex-col w-full h-full bg-surface-2">
               
-              {/* Tab Navigation (Strict px-6 sm:px-8 from DESIGN.md) */}
-              <div className="border-b border-hairline bg-surface-1/40 px-6 sm:px-8 flex gap-6 overflow-x-auto sticky top-0 z-20 backdrop-blur-md">
-                <button 
-                  onClick={() => setActiveTab('teoria')}
-                  className={`py-3.5 text-xs sm:text-sm font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap ${activeTab === 'teoria' ? 'border-brand-primary text-ink' : 'border-transparent text-ink-subtle hover:text-ink'}`}
-                >
-                  Teoría Docente
-                </button>
-                <button 
-                  onClick={() => setActiveTab('ejercicios')}
-                  className={`py-3.5 text-xs sm:text-sm font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap ${activeTab === 'ejercicios' ? 'border-brand-primary text-ink' : 'border-transparent text-ink-subtle hover:text-ink'}`}
-                >
-                  Ejercicios Prácticos
-                </button>
-                <button 
-                  onClick={() => setActiveTab('evaluacion')}
-                  className={`py-3.5 text-xs sm:text-sm font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap ${activeTab === 'evaluacion' ? 'border-brand-primary text-ink' : 'border-transparent text-ink-subtle hover:text-ink'}`}
-                >
-                  Evaluación (Quizzes)
-                </button>
-                <button 
-                  onClick={() => setActiveTab('diapositivas')}
-                  className={`py-3.5 text-xs sm:text-sm font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap ${activeTab === 'diapositivas' ? 'border-brand-primary text-ink' : 'border-transparent text-ink-subtle hover:text-ink'}`}
-                >
-                  Diapositivas
-                </button>
+              {/* Navigation Tabs */}
+              <div className="border-b border-hairline bg-canvas px-6 sm:px-10 flex gap-8 sm:gap-10 overflow-x-auto sticky top-0 z-20 backdrop-blur-md scrollbar-none select-none">
+                {[
+                  { id: 'teoria', label: 'Teoría Docente' },
+                  { id: 'ejercicios', label: 'Ejercicios Prácticos' },
+                  { id: 'evaluacion', label: 'Evaluación' },
+                  { id: 'diapositivas', label: 'Diapositivas' }
+                ].map((tab) => (
+                  <button 
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`py-5 text-[13px] font-bold transition-all border-b-[3px] cursor-pointer whitespace-nowrap ${
+                      activeTab === tab.id 
+                        ? 'border-brand-primary text-brand-primary' 
+                        : 'border-transparent text-ink-subtle hover:text-ink hover:border-hairline-strong'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
-              {/* Content Body (Strict p-6 sm:p-8 md:p-10 w-full max-w-5xl mx-auto) */}
-              <div className="p-6 sm:p-8 md:p-10 w-full max-w-5xl mx-auto animate-fade-in pb-20">
+              {/* Dynamic Content Body Container */}
+              <div className="p-6 sm:p-10 lg:p-12 w-full max-w-5xl mx-auto animate-fade-in pb-24">
                 
-                {/* 1. Teoría */}
+                {/* 1. Teoría Docente */}
                 {activeTab === 'teoria' && (
-                  <Card surface="1" className="p-6 sm:p-8 md:p-10 shadow-xl border-hairline bg-surface-1 rounded-2xl">
-                    <div className="prose prose-invert max-w-none text-ink-muted text-xs sm:text-sm leading-relaxed whitespace-pre-line">
-                      {content.teoria}
+                  <div className="flex flex-col gap-6 w-full">
+                    <div className="flex justify-end sticky top-[80px] z-10 pt-2 pb-2">
+                      <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-canvas border border-hairline hover:bg-surface-3 shadow-sm transition-all cursor-pointer text-ink">
+                        <IconPDF />
+                        <span>Exportar PDF</span>
+                      </button>
                     </div>
-                  </Card>
-                )}
 
-                {/* 2. Ejercicios */}
-                {activeTab === 'ejercicios' && (
-                  <Card surface="1" className="p-6 sm:p-8 md:p-10 shadow-xl border-hairline bg-surface-1 rounded-2xl flex flex-col gap-6">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b border-hairline pb-5 select-none">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] uppercase tracking-wider text-brand-primary font-bold bg-brand-primary/10 border border-brand-primary/20 px-3 py-1.5 rounded-lg">Guía Práctica</span>
-                        <span className="text-xs text-ink-muted font-medium hidden md:inline">Contiene ejercicios resueltos</span>
+                    <div className="p-8 sm:p-12 bg-canvas border border-hairline rounded-[24px] shadow-illustrative flex flex-col">
+                      <div className="mb-8 border-b border-hairline pb-6">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-2">{course.titulo || 'Módulo Teórico'}</h1>
+                        <p className="text-sm font-bold text-brand-primary">{course.asignatura || 'Material Académico'}</p>
                       </div>
                       
-                      {/* Export buttons row */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase tracking-widest text-ink-muted font-bold mr-1">Exportar a:</span>
-                        <button 
-                          onClick={() => alert('Exportar ejercicios a Google Forms (Simulado)')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#7248B9]/30 bg-[#7248B9]/5 hover:bg-[#7248B9]/15 text-[#7248B9] dark:text-[#b392f0] transition-colors cursor-pointer select-none"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          Google Forms
-                        </button>
-                        <button 
-                          onClick={() => alert('Exportar ejercicios a Microsoft Forms (Simulado)')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#00828a]/30 bg-[#00828a]/5 hover:bg-[#00828a]/15 text-[#00828a] dark:text-[#33c2cc] transition-colors cursor-pointer select-none"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                          </svg>
-                          MS Forms
-                        </button>
+                      <div className="text-sm sm:text-base text-ink-muted leading-relaxed font-medium whitespace-pre-line">
+                        {content.teoria}
                       </div>
                     </div>
-                    <div className="prose prose-invert max-w-none text-ink-muted text-xs sm:text-sm leading-relaxed whitespace-pre-line">
-                      {content.ejercicios}
-                    </div>
-                  </Card>
-                )}
-
-                {/* 3. Evaluacion */}
-                {activeTab === 'evaluacion' && (
-                  <div className="flex flex-col gap-6">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b border-hairline pb-5 select-none">
-                      <div className="flex flex-col gap-1">
-                        <h3 className="text-sm sm:text-base font-bold text-ink tracking-tight">Banco de Preguntas</h3>
-                        <p className="text-xs text-ink-muted">Valida el conocimiento de tus alumnos con estas preguntas autogeneradas.</p>
-                      </div>
-
-                      {/* Export buttons row */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] uppercase tracking-widest text-ink-muted font-bold mr-1">Exportar a:</span>
-                        <button 
-                          onClick={() => alert('Exportar examen a Google Forms (Simulado)')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#7248B9]/30 bg-[#7248B9]/5 hover:bg-[#7248B9]/15 text-[#7248B9] dark:text-[#b392f0] transition-colors cursor-pointer select-none"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          Google Forms
-                        </button>
-                        <button 
-                          onClick={() => alert('Exportar examen a Microsoft Forms (Simulado)')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase border border-[#00828a]/30 bg-[#00828a]/5 hover:bg-[#00828a]/15 text-[#00828a] dark:text-[#33c2cc] transition-colors cursor-pointer select-none"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                          </svg>
-                          MS Forms
-                        </button>
-                      </div>
-                    </div>
-                    {content.evaluacion.map((q, qIndex) => {
-                      const isCorrect = checkedAnswers[qIndex] === q.opcionCorrectaIndex;
-                      const isAnswered = checkedAnswers[qIndex] !== undefined;
-
-                      return (
-                        <Card key={qIndex} surface="1" className="flex flex-col gap-5 p-6 sm:p-8 shadow-md hover:shadow-xl transition-shadow duration-300 border-hairline rounded-2xl">
-                          <span className="text-[10px] font-mono text-ink-muted font-bold uppercase tracking-wider bg-surface-2 w-max px-3 py-1 rounded-lg">Pregunta #{qIndex + 1}</span>
-                          <h4 className="text-xs sm:text-sm font-semibold text-ink leading-relaxed">{q.pregunta}</h4>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {q.opciones.map((opt, optIndex) => {
-                              const isSelected = checkedAnswers[qIndex] === optIndex;
-                              return (
-                                <button
-                                  key={optIndex}
-                                  onClick={() => setCheckedAnswers({...checkedAnswers, [qIndex]: optIndex})}
-                                  className={`text-left p-4 rounded-xl text-xs transition-all border flex justify-between items-center cursor-pointer ${
-                                    isSelected 
-                                      ? 'bg-brand-primary/10 border-brand-primary text-ink font-semibold shadow-[0_2px_10px_rgba(5,43,88,0.15)]' 
-                                      : 'bg-surface-2 border-hairline hover:border-hairline-strong text-ink-muted hover:text-ink'
-                                  }`}
-                                >
-                                  <span>{opt}</span>
-                                  {isSelected && <span className="w-2 h-2 rounded-full bg-brand-primary shadow-[0_0_8px_rgba(5,43,88,1)]"></span>}
-                                </button>
-                              );
-                            })}
-                          </div>
-
-                          {/* FeedBack */}
-                          {isAnswered && (
-                            <div className={`mt-1 p-5 rounded-xl border text-xs leading-relaxed flex flex-col gap-1.5 animate-fade-in ${isCorrect ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/5 border-rose-500/20 text-rose-400'}`}>
-                              <span className="font-semibold block text-xs flex items-center gap-1.5">
-                                {isCorrect ? (
-                                  <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> ¡Respuesta Correcta!</>
-                                ) : (
-                                  <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg> Respuesta Incorrecta</>
-                                )}
-                              </span>
-                              <p className="text-ink-muted text-[11px] mt-0.5">{q.explicacion}</p>
-                            </div>
-                          )}
-                        </Card>
-                      );
-                    })}
                   </div>
                 )}
 
-                {/* 4. Diapositivas */}
-                {activeTab === 'diapositivas' && (
-                  <div className="flex flex-col gap-6 sm:gap-8 animate-fade-in">
+                {/* 2. Ejercicios Prácticos */}
+                {activeTab === 'ejercicios' && (
+                  <div className="flex flex-col gap-8 w-full">
                     
-                    {/* Header & Actions */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-surface-1 p-6 sm:p-8 rounded-2xl border border-hairline shadow-md">
-                      <div className="flex flex-col gap-1">
-                        <h3 className="text-xs sm:text-sm font-bold text-ink tracking-tight">Presentación Generada</h3>
-                        <p className="text-[11px] text-ink-muted leading-relaxed">Vista previa de las diapositivas. Exporta en el formato que prefieras.</p>
+                    <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 bg-canvas p-6 rounded-[24px] border border-hairline shadow-sm select-none">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center shrink-0 border border-brand-primary/20">
+                          <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        </div>
+                        <div className="flex flex-col">
+                          <h3 className="text-lg font-bold text-ink">Hoja de Ejercicios</h3>
+                          <span className="text-xs font-medium text-ink-subtle">Problemas resueltos y casos prácticos.</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <Button variant="secondary" className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 bg-surface-2 hover:bg-surface-3 border-hairline hover:border-hairline-strong transition-all rounded-xl" onClick={() => alert('Generando y descargando PPTX...')}>
-                          <svg className="w-3.5 h-3.5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            <text x="9" y="15" fontSize="6" fontWeight="bold" fill="currentColor" stroke="none">PPT</text>
-                          </svg>
-                          <span className="font-bold text-[10px] uppercase">Descargar PPTX</span>
-                        </Button>
-                        <Button variant="secondary" className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 bg-surface-2 hover:bg-surface-3 border-hairline hover:border-hairline-strong transition-all rounded-xl" onClick={() => alert('Generando y descargando PDF...')}>
-                          <svg className="w-3.5 h-3.5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            <text x="9" y="15" fontSize="6" fontWeight="bold" fill="currentColor" stroke="none">PDF</text>
-                          </svg>
-                          <span className="font-bold text-[10px] uppercase">Descargar PDF</span>
-                        </Button>
+                      
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-[10px] uppercase tracking-widest text-ink-subtle font-bold mr-2 hidden sm:block">Extraer a:</span>
+                        <button onClick={() => alert('Exportar a Google Forms')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#7248B9]/20 bg-[#7248B9]/5 hover:bg-[#7248B9]/10 text-[#7248B9] transition-all cursor-pointer">
+                          <IconGoogleForms /> <span className="mt-0.5">Forms</span>
+                        </button>
+                        <button onClick={() => alert('Exportar a MS Forms')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#00828A]/20 bg-[#00828A]/5 hover:bg-[#00828A]/10 text-[#00828A] transition-all cursor-pointer">
+                          <IconMSForms /> <span className="mt-0.5">MS Forms</span>
+                        </button>
+                        <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#E11D48]/20 bg-[#E11D48]/5 hover:bg-[#E11D48]/10 text-[#E11D48] transition-all cursor-pointer">
+                          <IconPDF /> <span className="mt-0.5">PDF</span>
+                        </button>
                       </div>
                     </div>
 
-                    {/* Preview Area */}
-                    <div className="flex flex-col items-center bg-surface-2/50 p-6 sm:p-8 rounded-2xl border border-hairline">
+                    <div className="p-8 sm:p-12 bg-canvas border border-hairline rounded-[24px] shadow-illustrative flex flex-col text-sm sm:text-base text-ink-muted leading-relaxed font-medium whitespace-pre-line">
+                      {content.ejercicios}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Evaluacion Tab View */}
+                {activeTab === 'evaluacion' && (
+                  <div className="flex flex-col gap-8 w-full">
+                    
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5 border border-hairline bg-canvas p-6 rounded-[24px] shadow-sm select-none">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-lg font-bold text-ink">Banco de Preguntas</h3>
+                        <p className="text-xs font-medium text-ink-subtle">Cuestionario interactivo autogenerado.</p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => alert('Exportar a Google Forms')} className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#7248B9]/20 bg-[#7248B9]/5 hover:bg-[#7248B9]/10 text-[#7248B9] transition-all cursor-pointer group">
+                          <IconGoogleForms />
+                        </button>
+                        <button onClick={() => alert('Exportar a MS Forms')} className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#00828a]/20 bg-[#00828a]/5 hover:bg-[#00828a]/10 text-[#00828a] transition-all cursor-pointer group">
+                          <IconMSForms />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-8">
+                      {content.evaluacion.map((q, qIndex) => {
+                        const isCorrect = checkedAnswers[qIndex] === q.opcionCorrectaIndex;
+                        const isAnswered = checkedAnswers[qIndex] !== undefined;
+
+                        return (
+                          <div key={qIndex} className="flex flex-col gap-6 p-6 sm:p-8 shadow-soft border border-hairline bg-canvas rounded-[24px] relative">
+                            <span className="text-[10px] text-brand-primary font-bold uppercase tracking-widest bg-brand-primary/10 px-3 py-1.5 rounded-lg w-max select-none">Pregunta #{qIndex + 1}</span>
+                            
+                            <h4 className="text-base sm:text-lg font-bold text-ink leading-relaxed mt-1">{q.pregunta}</h4>
+                            
+                            <div className="flex flex-col gap-3">
+                              {q.opciones.map((opt, optIndex) => {
+                                const isSelected = checkedAnswers[qIndex] === optIndex;
+                                return (
+                                  <button
+                                    key={optIndex}
+                                    onClick={() => setCheckedAnswers({...checkedAnswers, [qIndex]: optIndex})}
+                                    disabled={isAnswered}
+                                    className={`w-full text-left p-4 rounded-xl text-sm font-semibold transition-all border-2 flex justify-between items-center ${
+                                      isSelected 
+                                        ? 'bg-brand-primary/10 border-brand-primary text-brand-primary' 
+                                        : isAnswered
+                                          ? 'bg-surface-2 border-transparent text-ink-muted opacity-60 cursor-not-allowed'
+                                          : 'bg-canvas border-hairline hover:border-ink-subtle text-ink cursor-pointer hover:bg-surface-1'
+                                    }`}
+                                  >
+                                    <span className="flex items-center gap-3">
+                                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 ${isSelected ? 'border-brand-primary bg-brand-primary text-white' : 'border-hairline-strong text-ink-subtle'}`}>
+                                        {String.fromCharCode(65 + optIndex)}
+                                      </span>
+                                      {opt}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {isAnswered && (
+                              <div className={`mt-2 p-5 rounded-xl border flex gap-4 animate-fade-in ${
+                                isCorrect 
+                                  ? 'bg-semantic-success/10 border-semantic-success/20 text-semantic-success' 
+                                  : 'bg-red-500/10 border-red-500/20 text-red-500'
+                              }`}>
+                                <div className="shrink-0 mt-0.5">
+                                  {isCorrect ? (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                  ) : (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                  )}
+                                </div>
+                                <div className="flex flex-col">
+                                  <h5 className="text-sm font-bold uppercase tracking-widest mb-1">
+                                    {isCorrect ? 'Correcto' : 'Incorrecto'}
+                                  </h5>
+                                  <p className="text-ink text-xs font-medium leading-relaxed">{q.explicacion}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Diapositivas Tab View */}
+                {activeTab === 'diapositivas' && (
+                  <div className="flex flex-col gap-8 w-full">
+                    
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-canvas p-6 rounded-[24px] border border-hairline shadow-sm select-none">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-lg font-bold text-ink">Presentación Visual</h3>
+                        <p className="text-xs font-medium text-ink-subtle">Visor de láminas autogeneradas (16:9).</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => alert('Generando PPTX...')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#EA580C]/20 bg-[#EA580C]/5 hover:bg-[#EA580C]/10 text-[#EA580C] transition-all cursor-pointer">
+                          <IconPPTX /> <span className="mt-0.5">PPTX</span>
+                        </button>
+                        <button onClick={() => alert('Generando PDF...')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#E11D48]/20 bg-[#E11D48]/5 hover:bg-[#E11D48]/10 text-[#E11D48] transition-all cursor-pointer">
+                          <IconPDF /> <span className="mt-0.5">PDF</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Presentation Simulator */}
+                    <div className="flex flex-col items-center bg-surface-2 p-6 sm:p-10 rounded-[32px] border border-hairline shadow-inner">
                       
-                      {/* Slide Frame (16:9 Aspect Ratio) */}
-                      <div className="w-full max-w-4xl aspect-video bg-white text-gray-900 rounded-xl shadow-2xl overflow-hidden flex flex-col p-8 sm:p-12 transition-all duration-500 transform relative group">
-                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-primary to-indigo-400"></div>
+                      <div className="w-full max-w-4xl aspect-video bg-white dark:bg-[#0B0F19] text-gray-900 dark:text-gray-100 rounded-[16px] shadow-illustrative overflow-hidden flex flex-col p-10 sm:p-16 transition-all duration-300 relative border border-hairline-strong">
+                        
+                        <div className="absolute top-0 left-0 w-full h-2 bg-brand-primary"></div>
                         
                         <div className="flex-1 flex flex-col justify-center">
-                          <h2 className="text-xl sm:text-3xl font-extrabold mb-6 text-slate-800 leading-tight tracking-tight">
+                          <h2 className="text-2xl sm:text-4xl font-extrabold mb-8 leading-tight tracking-tight text-[#0F172A] dark:text-white">
                             {content.diapositivas[currentSlideIndex].titulo}
                           </h2>
-                          <ul className="flex flex-col gap-4 text-xs sm:text-base text-slate-600 list-none ml-1">
+                          <ul className="flex flex-col gap-5 text-sm sm:text-xl text-slate-600 dark:text-slate-300 font-medium">
                             {content.diapositivas[currentSlideIndex].puntos.map((pt, pIndex) => (
-                              <li key={pIndex} className="flex items-start gap-3">
-                                <span className="text-brand-primary mt-1 shrink-0 text-xs sm:text-sm">■</span>
-                                <span className="leading-relaxed">{pt}</span>
+                              <li key={pIndex} className="flex items-start gap-4">
+                                <span className="text-brand-primary mt-1.5 shrink-0 text-xl font-bold">✓</span>
+                                <span className="leading-relaxed opacity-90">{pt}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
                         
-                        {/* Slide Footer */}
-                        <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-200">
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 bg-brand-primary rounded flex items-center justify-center shadow-md">
-                              <span className="text-white text-[9px] font-bold">K</span>
+                        <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-200 dark:border-slate-800 select-none">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 bg-brand-primary rounded-md flex items-center justify-center">
+                              <span className="text-white text-[10px] font-black">K</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Katedra</span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{course.asignatura}</span>
                           </div>
-                          <span className="text-[10px] font-bold text-slate-400 font-mono">
-                            {currentSlideIndex + 1} / {content.diapositivas.length}
+                          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 font-mono tracking-widest">
+                            {String(currentSlideIndex + 1).padStart(2, '0')} / {String(content.diapositivas.length).padStart(2, '0')}
                           </span>
                         </div>
                       </div>
 
-                      {/* Presentation Controls */}
-                      <div className="flex items-center gap-6 mt-8">
+                      <div className="flex items-center justify-center gap-6 mt-10 select-none">
                         <button 
                           onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                           disabled={currentSlideIndex === 0}
-                          className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-1 border border-hairline text-ink hover:bg-surface-3 hover:border-hairline-strong disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
-                          aria-label="Diapositiva Anterior"
+                          className="w-10 h-10 rounded-full flex items-center justify-center bg-canvas border border-hairline text-ink hover:bg-surface-3 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                         </button>
                         
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-2">
                           {content.diapositivas.map((_, idx) => (
                             <button
                               key={idx}
                               onClick={() => setCurrentSlideIndex(idx)}
-                              className={`h-1.5 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'w-6 bg-brand-primary' : 'w-1.5 bg-hairline-strong hover:bg-ink-muted'}`}
-                              aria-label={`Ir a diapositiva ${idx + 1}`}
+                              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${currentSlideIndex === idx ? 'w-6 bg-brand-primary' : 'w-2 bg-ink-tertiary hover:bg-ink-muted'}`}
                             />
                           ))}
                         </div>
@@ -329,10 +354,9 @@ export default function ContentViewer() {
                         <button 
                           onClick={() => setCurrentSlideIndex(Math.min(content.diapositivas.length - 1, currentSlideIndex + 1))}
                           disabled={currentSlideIndex === content.diapositivas.length - 1}
-                          className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-1 border border-hairline text-ink hover:bg-surface-3 hover:border-hairline-strong disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
-                          aria-label="Siguiente Diapositiva"
+                          className="w-10 h-10 rounded-full flex items-center justify-center bg-canvas border border-hairline text-ink hover:bg-surface-3 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
                         </button>
                       </div>
 
