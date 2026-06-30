@@ -1,0 +1,79 @@
+{
+  "skills": [
+    {
+      "name": "Caveman Method",
+      "file": "skills/00-core/caveman-method.md",
+      "status": "Active"
+    },
+    {
+      "name": "System Context & Technology Stack",
+      "file": "skills/architecture/context-client.md",
+      "status": "Active"
+    },
+    {
+      "name": "Frontend Architecture & Data Flow",
+      "file": "skills/architecture/architecture-client.md",
+      "status": "Active"
+    },
+    {
+      "name": "Architectural Decision Records (ADR) & Policy Keeper",
+      "file": "skills/architecture/decisions-client.md",
+      "status": "Active"
+    },
+    {
+      "name": "Database Architecture, JPA, & Flyway",
+      "file": "skills/database/database-jpa.md",
+      "status": "Active"
+    },
+    {
+      "name": "Linear Design System",
+      "file": "skills/design/ui-design-client.md",
+      "status": "Active"
+    },
+    {
+      "name": "Frontend Excellence",
+      "file": "skills/design/frontend-excellence.md",
+      "status": "Active"
+    },
+    {
+      "name": "React Patterns",
+      "file": "skills/design/react-patterns.md",
+      "status": "Active"
+    },
+    {
+      "name": "Accessibility WCAG",
+      "file": "skills/design/accessibility-wcag.md",
+      "status": "Active"
+    },
+    {
+      "name": "Style Seed",
+      "file": "skills/design/styleseed.md",
+      "status": "Active"
+    },
+    {
+      "name": "Git Branching Strategy & Workflow",
+      "file": "skills/git/git-workflow.md",
+      "status": "Active"
+    },
+    {
+      "name": "AI Integration & Prompt Engineering",
+      "file": "skills/workflows/ai-integration.md",
+      "status": "Active"
+    },
+    {
+      "name": "Testing Strategy & TDD",
+      "file": "skills/workflows/test-driven-development.md",
+      "status": "Active"
+    },
+    {
+      "name": "Subagent-Driven Development",
+      "file": "skills/workflows/subagent-driven-development.md",
+      "status": "Active"
+    },
+    {
+      "name": "Security Hardening",
+      "file": "skills/security/security-hardening.md",
+      "status": "Active"
+    }
+  ]
+}

@@ -63,7 +63,7 @@ export default function ResponsiveSidebar() {
     navigate('/');
   };
 
-  const SidebarContent = () => (
+  const renderSidebarContent = () => (
     <div className="flex flex-col h-full bg-surface-1">
       {/* Top Section */}
       <div className="p-5 flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-none">
@@ -202,12 +202,12 @@ export default function ResponsiveSidebar() {
       <aside className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-[260px] border-r border-hairline bg-surface-1 transform transition-transform duration-300 ease-in-out shadow-illustrative ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <SidebarContent />
+        {renderSidebarContent()}
       </aside>
 
       {/* Desktop Persistent Sidebar */}
       <aside className="hidden md:flex md:w-[260px] border-r border-hairline bg-surface-1 flex-col shrink-0 h-screen sticky top-0">
-        <SidebarContent />
+        {renderSidebarContent()}
       </aside>
     </>
   );

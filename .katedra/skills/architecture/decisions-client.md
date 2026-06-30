@@ -1,3 +1,8 @@
+---
+name: decisions-client
+description: Architectural Decision Records (ADR)
+---
+
 # SKILL: ARCHITECTURAL DECISION RECORDS (ADR) & POLICY KEEPER
 
 ## 1. CONTEXT OF ACTIVATION (C_σ)
@@ -18,6 +23,6 @@
 ## 4. COMPACT RECIPE (FEW-SHOT)
 Input: "Should I use NestJS for the new reporting module?"
 Output Expected:
-> **Check:** Current architecture is "Monolito modular en Spring Boot" (ADR-002)[cite: 1].
+> **Check:** Current architecture is "Modular Monolith in Spring Boot" (ADR-002)[cite: 1].
 > **Decision:** Rejected. Adding NestJS creates a polyglot architecture, increasing complexity for a 1-dev team[cite: 1].
 > **Proposed Path:** Implement the reporting module as a new package within the existing `katedra-server` Spring Boot project[cite: 1].

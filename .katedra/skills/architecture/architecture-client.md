@@ -1,3 +1,8 @@
+---
+name: architecture-client
+description: General architecture of the project
+---
+
 # SKILL: Full-Stack Architecture & Data Flow (Katedra Core)
 
 ## 1. CONTEXT OF ACTIVATION (C_σ)
@@ -59,3 +64,4 @@ export const Temarios = () => {
   if (loading) return <p>Loading...</p>;
   return <div>{temarios.map(t => <span key={t.id}>{t.nombre}</span>)}</div>;
 };
+```

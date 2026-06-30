@@ -1,3 +1,8 @@
+---
+name: database-jpa
+description: Database and JPA rules
+---
+
 # SKILL: Database Architecture, JPA, & Flyway (Katedra Core)
 
 ## 1. CONTEXT OF ACTIVATION (C_σ)
@@ -7,8 +12,8 @@
 ## 2. STRICT ARCHITECTURAL RULES (T_σ)
 - **Database Engine:** MySQL 8.0.
 - **Naming Conventions:**
-  - **Database:** `snake_case` for all table names and column names (e.g., `temarios_conceptos`, `deleted_at`).
-  - **Java Entities:** `camelCase` for fields, PascalCase for Class names (e.g., `TemarioConcepto`).
+  - **Database:** `snake_case` for all table names and column names (e.g., `syllabus_concepts`, `deleted_at`).
+  - **Java Entities:** `camelCase` for fields, PascalCase for Class names (e.g., `SyllabusConcept`).
 - **Primary Keys:** Always use UUIDs stored as `CHAR(36)`.
   - **Java Mapping:**
     ```java
@@ -38,14 +43,14 @@
 4. **DTO and Mapping:** Construct the matching Request/Response DTOs and implement mapper logic in the service layer.
 
 ## 4. COMPACT RECIPE (FEW-SHOT)
-Input: "Add a database table and JPA entity for 'Modulo' with soft deletes and UUID"
+Input: "Add a database table and JPA entity for 'Module' with soft deletes and UUID"
 Output Expected:
 ```sql
--- 1. Flyway: src/main/resources/db/migration/V2__create_modulo_table.sql
-CREATE TABLE modulo (
+-- 1. Flyway: src/main/resources/db/migration/V2__create_module_table.sql
+CREATE TABLE module (
     id CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-    nombre VARCHAR(255) NOT NULL,
-    descripcion TEXT,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -54,7 +59,7 @@ CREATE TABLE modulo (
 ```
 
 ```java
-// 2. Entity: src/main/java/com/katedra/model/Modulo.java
+// 2. Entity: src/main/java/com/katedra/model/Module.java
 package com.katedra.model;
 
 import jakarta.persistence.*;
@@ -64,21 +69,21 @@ import org.hibernate.annotations.Where;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "modulo")
-@SQLDelete(sql = "UPDATE modulo SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@Table(name = "module")
+@SQLDelete(sql = "UPDATE module SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
-public class Modulo {
+public class Module {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", updatable = false, nullable = false, length = 36)
     private String id;
 
-    @Column(name = "nombre", nullable = false)
-    private String nombre;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "descripcion", columnDefinition = "TEXT")
-    private String descripcion;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
