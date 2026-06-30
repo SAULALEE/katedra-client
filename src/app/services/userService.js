@@ -112,17 +112,7 @@ export const createUserRequest = async (userData) => {
  * @returns {Promise<object>} Updated user
  */
 export const updateUserRequest = async (id, userData) => {
-  // Option 1: Real Backend Integration
-  /*
-  try {
-    const response = await api.put(`/usuarios/${id}`, userData);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al actualizar usuario');
-  }
-  */
 
-  // Option 2: Mock Static Simulation
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const stored = localStorage.getItem('katedra_mock_users');
