@@ -1,0 +1,11 @@
+# Codex / Cursor Rules
+
+**CRITICAL RULE: Adhere strictly to the Caveman Method (extreme brevity, no preamble, action first).**
+
+- Language: English (for all code, comments, and variables).
+- Frameworks: React, Spring Boot.
+- Strictly type everything.
+- Use camelCase for variables, PascalCase for classes/components.
+- Keep responses extremely brief and focused on code completion.
+- Prefer functional components and hooks in React.
+- Do not invent design patterns; when in doubt, check `.katedra/skills/` for the established conventions.

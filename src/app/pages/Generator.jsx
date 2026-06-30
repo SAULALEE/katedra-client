@@ -444,7 +444,7 @@ export default function Generator() {
 
                             <button 
                               onClick={() => setCurrentSlideIndex(Math.min(generatedData.diapositivas.length - 1, currentSlideIndex + 1))}
-                              disabled={currentSlideIndex === content.diapositivas.length - 1}
+                              disabled={currentSlideIndex === generatedData.diapositivas.length - 1}
                               className="w-10 h-10 rounded-full flex items-center justify-center bg-canvas border border-hairline text-ink hover:bg-surface-3 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
                             >
                               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>

@@ -1,3 +1,8 @@
+---
+name: context-client
+description: Business and domain context
+---
+
 # SKILL: SYSTEM CONTEXT & TECHNOLOGY STACK
 
 ## 1. CONTEXT OF ACTIVATION (C_σ)

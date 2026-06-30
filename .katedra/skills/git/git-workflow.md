@@ -1,3 +1,8 @@
+---
+name: git-workflow
+description: Git and branching workflow
+---
+
 # SKILL: Git Branching Strategy & Workflow
 
 ## 1. CONTEXT OF ACTIVATION (C_σ)

@@ -1,3 +1,8 @@
+---
+name: ai-integration
+description: How to integrate AI calls into the code
+---
+
 # SKILL: AI Integration & Prompt Engineering (Katedra Core)
 
 ## 1. CONTEXT OF ACTIVATION (C_σ)
@@ -22,39 +27,39 @@ Input: "Create a prompt template and parser structure for generating 3 multiple 
 Output Expected:
 ```java
 // 1. DTO for Structured AI Response
-public record EvaluacionPreguntaDTO(
-    String pregunta,
-    List<String> opciones,
-    Integer opcionCorrectaIndex,
-    String explicacion
+public record EvaluationQuestionDTO(
+    String question,
+    List<String> options,
+    Integer correctOptionIndex,
+    String explanation
 ) {}
 
-public record EvaluacionResponseDTO(
-    List<EvaluacionPreguntaDTO> preguntas
+public record EvaluationResponseDTO(
+    List<EvaluationQuestionDTO> questions
 ) {}
 
 // 2. Service Prompt Constant & Parsing logic
 @Service
-public class EvaluacionAIService {
+public class EvaluationAIService {
     private static final String SYSTEM_PROMPT = """
-        Eres un generador académico experto. Genera un JSON válido que contenga preguntas de opción múltiple.
-        Cumple estrictamente con este formato:
+        You are an expert academic generator. Generate a valid JSON containing multiple choice questions.
+        Strictly comply with this format:
         {
-          "preguntas": [
+          "questions": [
             {
-              "pregunta": "Texto de la pregunta",
-              "opciones": ["Opción A", "Opción B", "Opción C", "Opción D"],
-              "opcionCorrectaIndex": 0,
-              "explicacion": "Explicación detallada"
+              "question": "Question text",
+              "options": ["Option A", "Option B", "Option C", "Option D"],
+              "correctOptionIndex": 0,
+              "explanation": "Detailed explanation"
             }
           ]
         }
-        El contenido debe estar en español y ser apto para nivel universitario.
+        The content must be in Spanish and suitable for university level.
         """;
 
-    public EvaluacionResponseDTO generarPreguntas(String tema) {
-        String rawJson = llmClient.call(SYSTEM_PROMPT, "Tema a evaluar: " + tema);
-        return objectMapper.readValue(rawJson, EvaluacionResponseDTO.class);
+    public EvaluationResponseDTO generateQuestions(String topic) {
+        String rawJson = llmClient.call(SYSTEM_PROMPT, "Topic to evaluate: " + topic);
+        return objectMapper.readValue(rawJson, EvaluationResponseDTO.class);
     }
 }
 ```
