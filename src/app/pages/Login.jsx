@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Button from '../components/Button';
 import Footer from '../components/Footer';
-import LandingHeader from '../components/LandingHeader';
+import Navbar from '../components/Navbar';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function Login() {
   const [validationError, setValidationError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  useEffect(() => { clearError(); }, []);
+  useEffect(() => { clearError(); }, [clearError]);
   useEffect(() => { if (isAuthenticated) navigate('/dashboard'); }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
@@ -42,7 +42,7 @@ export default function Login() {
       </div>
 
       {/* Floating capsule navigation header */}
-      <LandingHeader />
+      <Navbar />
 
       {/* Main Container */}
       <main className="flex-1 flex flex-col justify-center items-center w-full px-4 pt-36 pb-16 relative z-10">

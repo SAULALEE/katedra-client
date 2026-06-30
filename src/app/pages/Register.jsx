@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeStore } from '../store/useThemeStore';
@@ -22,7 +22,7 @@ export default function Register() {
   // Clear errors when mounting
   useEffect(() => {
     clearError();
-  }, []);
+  }, [clearError]);
 
   // Redirect if already authenticated
   useEffect(() => {
