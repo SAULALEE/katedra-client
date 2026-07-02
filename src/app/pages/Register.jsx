@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useThemeStore } from '../store/useThemeStore';
-import Button from '../components/Button';
-import Footer from '../components/Footer';
-import StatusBadge from '../components/StatusBadge';
 
 export default function Register() {
   const navigate = useNavigate();
   const { register, isAuthenticated, loading, error, clearError } = useAuth();
-  const { isDarkMode, toggleTheme } = useThemeStore();
 
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
@@ -18,18 +13,10 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
-  // Clear errors when mounting
-  useEffect(() => {
-    clearError();
-  }, []);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
+  useEffect(() => { clearError(); }, [clearError]);
+  useEffect(() => { if (isAuthenticated) navigate('/dashboard'); }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,205 +50,478 @@ export default function Register() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-canvas text-ink flex flex-col justify-between selection:bg-brand-primary selection:text-white relative overflow-hidden">
-      
-      {/* Dynamic Background Glowing Accents & Tech Grids */}
-      <div className="absolute top-[-25%] left-[-15%] w-[60vw] h-[60vw] rounded-full bg-brand-primary/10 blur-[130px] pointer-events-none z-0" />
-      <div className="absolute bottom-[-15%] right-[-15%] w-[50vw] h-[50vw] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none z-0" />
-      
-      {/* Grid Pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none z-0 opacity-40"></div>
+    <>
+      <style>{`
+        @keyframes blobFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(28px, -34px) scale(1.12); }
+        }
+        @keyframes blobFloat2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-30px, 26px) scale(1.08); }
+        }
+        @keyframes grainShift {
+          0% { transform: translate(0, 0); }
+          25% { transform: translate(-4%, 3%); }
+          50% { transform: translate(3%, -2%); }
+          75% { transform: translate(-2%, -3%); }
+          100% { transform: translate(0, 0); }
+        }
+        @keyframes cardRise {
+          0% { opacity: 0; transform: translateY(26px) scale(.985); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes sway {
+          0%, 100% { transform: rotate(-1.8deg) translateY(0); }
+          50% { transform: rotate(1.8deg) translateY(-5px); }
+        }
+        @keyframes blink {
+          0%, 92%, 100% { transform: scaleY(1); }
+          96% { transform: scaleY(.08); }
+        }
+        @keyframes wave {
+          0%, 100% { transform: rotate(-4deg); }
+          50% { transform: rotate(9deg); }
+        }
+        @keyframes waveFast {
+          0%, 100% { transform: rotate(-8deg); }
+          25% { transform: rotate(16deg); }
+          50% { transform: rotate(-4deg); }
+          75% { transform: rotate(16deg); }
+        }
+        @keyframes floatY {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-9px); }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .kt-char {
+          animation: sway 5.5s ease-in-out infinite;
+          transform-origin: 50% 90%;
+          transform-box: view-box;
+        }
+        .kt-eyes {
+          animation: blink 5s ease-in-out infinite;
+          transform-origin: 130px 92px;
+          transform-box: view-box;
+        }
+        .kt-arm {
+          animation: wave 3.4s ease-in-out infinite;
+          transform-origin: 162px 176px;
+          transform-box: view-box;
+          transition: animation 0.3s;
+        }
+        .kt-wave-fast {
+          animation: waveFast 1s ease-in-out infinite !important;
+        }
+        .kt-float {
+          animation: floatY 6s ease-in-out infinite;
+        }
+        .kt-input {
+          width: 100%;
+          height: 46px;
+          padding: 0 14px;
+          border: 1.5px solid #E2E8F0;
+          border-radius: 10px;
+          background: #F8FAFC;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 500;
+          font-size: 14.5px;
+          color: #0F172A;
+          transition: border-color .2s, box-shadow .2s, background .2s;
+          outline: none;
+        }
+        .kt-input:focus {
+          border-color: #10B981;
+          background: #fff;
+          box-shadow: 0 0 0 4px rgba(16, 185, 129, .15);
+        }
+        .kt-oauth-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          height: 46px;
+          border: 1px solid #E2E8F0;
+          border-radius: 10px;
+          background: #fff;
+          cursor: pointer;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 700;
+          font-size: 13.5px;
+          color: #0F172A;
+          transition: box-shadow .25s, transform .25s, border-color .25s;
+        }
+        .kt-oauth-btn:hover {
+          box-shadow: 0 10px 22px -12px rgba(15, 23, 42, .4);
+          transform: translateY(-2px);
+          border-color: #CBD5E1;
+        }
+        .kt-submit-btn {
+          width: 100%;
+          height: 50px;
+          border: none;
+          border-radius: 11px;
+          background: linear-gradient(150deg, #10B981, #059669);
+          color: #fff;
+          cursor: pointer;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: 15px;
+          letter-spacing: .2px;
+          box-shadow: 0 12px 26px -10px rgba(16, 185, 129, .75);
+          transition: transform .18s, box-shadow .25s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+        }
+        .kt-submit-btn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 18px 32px -10px rgba(16, 185, 129, .8);
+        }
+        .kt-submit-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        .kt-submit-btn:disabled {
+          opacity: 0.8;
+          cursor: not-allowed;
+        }
+        @media(max-width:860px){
+          .kt-card{grid-template-columns:1fr !important;max-width:440px !important}
+          .kt-left{display:none !important}
+          .kt-mobchar{display:flex !important}
+          .kt-right{padding:36px 30px !important}
+        }
+        @media(max-width:520px){
+          .kt-page{padding:18px !important}
+          .kt-right{padding:30px 22px !important}
+        }
+        @media(max-width:768px){
+          .kt-nav-links{display:none !important}
+          .kt-nav{padding:14px 20px !important}
+        }
+      `}</style>
 
-      {/* Upper Navigation Header */}
-      <header className="w-full h-[56px] border-b border-hairline bg-canvas/80 backdrop-blur-md flex items-center justify-between px-6 sm:px-10 md:px-16 lg:px-20 z-50">
-        <div 
-          className="flex items-center gap-3 cursor-pointer select-none group" 
-          onClick={() => navigate('/')}
-        >
-          <div className="relative w-9 h-9 rounded-full overflow-hidden border border-hairline bg-surface-1 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:scale-105 group-hover:border-brand-primary/30 group-hover:shadow-[0_4px_12px_rgba(var(--brand-primary-rgb,5,43,88),0.15)]">
-            <img 
-              src={isDarkMode ? '/katedra-dark-mode.jpeg' : '/katedra-light-mode.jpeg'} 
-              alt="Katedra Logo" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <span className="font-sans font-semibold tracking-subhead text-[15px] text-ink group-hover:text-brand-primary transition-colors duration-300">Katedra</span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button
-            onClick={toggleTheme}
-            className="p-1.5 rounded-full border border-hairline bg-surface-1 hover:bg-surface-2 text-ink-muted hover:text-ink transition-colors cursor-pointer"
-            aria-label="Alternar Tema"
-          >
-            {isDarkMode ? (
-              <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            )}
-          </button>
+      <div data-root className="kt-page" style={{ position: 'fixed', inset: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', fontFamily: "'Manrope', sans-serif", background: 'radial-gradient(130% 135% at 12% 6%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 86%, #FCD34D 112%)', zIndex: 9999 }}>
+        <nav className="kt-nav" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 40px',
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(16px) saturate(120%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(120%)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.03)',
+          transition: 'all 0.3s ease'
+        }}>
+          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <span style={{ display: 'grid', placeItems: 'center', width: '32px', height: '32px', borderRadius: '9px', overflow: 'hidden' }}>
+              <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </span>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#fff' }}>Katedra</span>
+          </a>
           
-          <Button 
-            variant="tertiary" 
-            onClick={() => navigate('/login')}
-            className="text-xs"
-          >
-            Iniciar Sesión
-          </Button>
-        </div>
-      </header>
-
-      {/* Main Register Form Area */}
-      <main className="login-page-container flex-1 flex flex-col justify-center items-center py-16 px-4 z-10">
-        <div className="w-full max-w-[440px] space-y-6">
-          
-          {/* Header Info */}
-          <div className="login-header-area flex flex-col items-center text-center space-y-2">
-            <StatusBadge pulseColor="bg-brand-primary" className="border border-brand-primary/20 bg-brand-primary/5">
-              Registro de Nuevo Docente
-            </StatusBadge>
-            
-            <h1 className="font-sans font-bold text-3xl tracking-headline text-ink leading-tight pt-1">
-              Crear Cuenta
-            </h1>
-            
-            <p className="text-ink-muted text-xs sm:text-sm tracking-body leading-relaxed max-w-[320px]">
-              Regístrate en Katedra para empezar a generar y gestionar tu contenido curricular.
-            </p>
+          <div className="kt-nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {['Características', 'Integraciones', 'Planes', 'FAQs'].map((label, i) => {
+              const targets = ['/#features', '/#integrations', '/#pricing', '/#faqs'];
+              return (
+                <a 
+                  key={i} 
+                  href={targets[i]} 
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    textDecoration: 'none',
+                    padding: '8px 13px',
+                    borderRadius: '8px',
+                    transition: 'background 0.2s, color 0.2s'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = '#fff'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'; }}
+                >
+                  {label}
+                </a>
+              );
+            })}
           </div>
 
-          {/* Form Container Card - Ultra-premium SaaS Glassmorphism */}
-          <div className="login-card bg-surface-1/95 border border-hairline rounded-2xl p-8 shadow-2xl relative overflow-hidden group">
-            {/* Top decorative gradient glow border */}
-            <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-brand-primary to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <a 
+              href="/login" 
+              onClick={(e) => { e.preventDefault(); navigate('/login'); }}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                fontSize: '14px',
+                color: '#fff',
+                textDecoration: 'none',
+                padding: '9px 15px',
+                borderRadius: '9px',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                background: 'rgba(255, 255, 255, 0.08)',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.18)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+            >
+              Acceder
+            </a>
+          </div>
+        </nav>
+
+        {/* decorative layer */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+          {/* glow blobs */}
+          <div style={{ position: 'absolute', top: '-140px', left: '-120px', width: '520px', height: '520px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 50%, rgba(52,211,153,.55), rgba(52,211,153,0) 68%)', filter: 'blur(30px)', animation: 'blobFloat 14s ease-in-out infinite', pointerEvents: 'none' }}></div>
+          <div style={{ position: 'absolute', bottom: '-180px', right: '-120px', width: '560px', height: '560px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 50%, rgba(252,211,77,.5), rgba(252,211,77,0) 66%)', filter: 'blur(34px)', animation: 'blobFloat2 17s ease-in-out infinite', pointerEvents: 'none' }}></div>
+          <div style={{ position: 'absolute', top: '36%', right: '16%', width: '340px', height: '340px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 50%, rgba(6,182,212,.4), rgba(6,182,212,0) 70%)', filter: 'blur(30px)', animation: 'blobFloat 20s ease-in-out infinite', pointerEvents: 'none' }}></div>
+
+          {/* grain overlay */}
+          <svg style={{ position: 'absolute', inset: '-6%', width: '112%', height: '112%', pointerEvents: 'none', opacity: .16, mixBlendMode: 'overlay', animation: 'grainShift 8s steps(6) infinite' }} xmlns="http://www.w3.org/2000/svg">
+            <filter id="ktGrain">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"></feTurbulence>
+              <feColorMatrix type="saturate" values="0"></feColorMatrix>
+            </filter>
+            <rect width="100%" height="100%" filter="url(#ktGrain)"></rect>
+          </svg>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', alignItems: 'safe center', justifyContent: 'center', padding: '80px 28px 40px', position: 'relative', zIndex: 2 }}>
+          {/* register card */}
+          <div className="kt-card kt-stage" style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.02fr 1fr', width: '100%', maxWidth: '940px', background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(22px) saturate(1.3)', WebkitBackdropFilter: 'blur(22px) saturate(1.3)', border: '1px solid rgba(255,255,255,.6)', borderRadius: '26px', overflow: 'hidden', boxShadow: '0 40px 90px -30px rgba(15,23,42,.55), 0 8px 24px -12px rgba(15,23,42,.3)', animation: 'cardRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
             
-            <form onSubmit={handleSubmit} className="login-form space-y-4">
+            {/* LEFT: illustration pane */}
+            <div className="kt-left" style={{ position: 'relative', padding: '44px 40px', background: 'linear-gradient(165deg,#ECFDF5 0%,#F0FDFA 46%,#FEFCE8 100%)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 20% 0%, rgba(16,185,129,.10), transparent 60%)', pointerEvents: 'none' }}></div>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '10px', letterSpacing: '1.35px', textTransform: 'uppercase', color: '#059669', marginBottom: '12px' }}>Comienza tu viaje, educador</div>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '29px', lineHeight: '1.12', letterSpacing: '-1.4px', color: '#0F172A', margin: '0 0 8px' }}>Potencia tu<br />enseñanza.</h2>
+                <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: '1.55', color: '#475569', margin: 0, maxWidth: '280px' }}>
+                  Diseña temarios, teoría y ejercicios de clase con inteligencia artificial en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>segundos</span>.
+                </p>
+              </div>
+
+              {/* character */}
+              <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', minHeight: '250px', marginTop: '10px' }}>
+                {/* floating doodle bits */}
+                <svg className="kt-float" style={{ position: 'absolute', top: '8%', left: '6%', width: '44px', height: '44px', animationDuration: '5s' }} viewBox="0 0 44 44" fill="none"><rect x="7" y="10" width="30" height="26" rx="3" stroke="#0F172A" strokeWidth="2.4"></rect><path d="M13 18h18M13 24h18M13 30h11" stroke="#10B981" strokeWidth="2.4" strokeLinecap="round"></path></svg>
+                <svg className="kt-float" style={{ position: 'absolute', top: '2%', right: '8%', width: '40px', height: '40px', animationDuration: '6.5s' }} viewBox="0 0 40 40" fill="none"><path d="M20 6a10 10 0 0 0-6 18c1 .8 1.5 1.6 1.6 2.8h8.8c.1-1.2.6-2 1.6-2.8A10 10 0 0 0 20 6Z" stroke="#0F172A" strokeWidth="2.4"></path><path d="M16.5 32h7M17.5 36h5" stroke="#F59E0B" strokeWidth="2.4" strokeLinecap="round"></path></svg>
+                <svg className="kt-float" style={{ position: 'absolute', bottom: '20%', right: '2%', width: '38px', height: '38px', animationDuration: '7s' }} viewBox="0 0 38 38" fill="none"><path d="M6 12c5-3 9-3 13 0 4-3 8-3 13 0v18c-5-3-9-3-13 0-4-3-8-3-13 0V12Z" stroke="#0F172A" strokeWidth="2.4" strokeLinejoin="round"></path><path d="M19 12v18" stroke="#0F172A" stroke-width="2.4"></path></svg>
+
+                {/* teacher */}
+                <svg className="kt-char" width="230" height="300" viewBox="0 0 260 360" fill="none" style={{ overflow: 'visible' }}>
+                  {/* legs */}
+                  <path d="M112,262 L108,330 M148,262 L152,330" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round"></path>
+                  <path d="M98,332 h22 M142,332 h22" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round"></path>
+                  {/* torso / sweater */}
+                  <path d="M92,258 L96,182 Q99,160 122,158 L138,158 Q161,160 164,182 L168,258 Q130,270 92,258 Z" fill="#fff" stroke="#0F172A" strokeWidth="4.4" strokeLinejoin="round"></path>
+                  <path d="M118,159 Q130,172 142,159" stroke="#0F172A" strokeWidth="3.4" strokeLinecap="round"></path>
+                  {/* right arm holding pencil */}
+                  <path d="M96,184 Q74,206 72,240" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                  <circle cx="72" cy="244" r="8" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                  <path d="M60,262 L84,226" stroke="#F59E0B" strokeWidth="6" strokeLinecap="round"></path>
+                  <path d="M84,226 l5,-7" stroke="#0F172A" strokeWidth="6" strokeLinecap="round"></path>
+                  {/* waving arm */}
+                  <g className={`kt-arm ${isFocused ? 'kt-wave-fast' : ''}`}>
+                    <path d="M162,182 Q190,158 198,120" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                    <circle cx="200" cy="112" r="9" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                    <path d="M196,104 v-9 M203,104 v-11 M209,107 v-8" stroke="#0F172A" strokeWidth="3.4" strokeLinecap="round"></path>
+                  </g>
+                  {/* head */}
+                  <circle cx="130" cy="96" r="48" fill="#fff" stroke="#0F172A" strokeWidth="4.4"></circle>
+                  {/* ears */}
+                  <circle cx="82" cy="98" r="7" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                  <circle cx="178" cy="98" r="7" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                  {/* hair */}
+                  <path d="M92,66 Q104,44 130,46 Q158,48 168,68" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                  <path d="M100,58 q6,-8 14,-8 M128,50 q10,-2 18,4" stroke="#0F172A" strokeWidth="3.4" strokeLinecap="round"></path>
+                  {/* cheeks */}
+                  <circle cx="104" cy="108" r="9" fill="#10B981" opacity=".18"></circle>
+                  <circle cx="156" cy="108" r="9" fill="#10B981" opacity=".18"></circle>
+                  {/* glasses */}
+                  <circle cx="112" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle>
+                  <circle cx="148" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle>
+                  <path d="M128,92 h4 M96,90 l-12,-3 M164,90 l12,-3" stroke="#0F172A" strokeWidth="3.6" strokeLinecap="round"></path>
+                  {/* eyes (blink) */}
+                  <g className="kt-eyes"><circle cx="112" cy="92" r="4.6" fill="#0F172A"></circle><circle cx="148" cy="92" r="4.6" fill="#0F172A"></circle></g>
+                  {/* mouth */}
+                  <path className="kt-mouth" d={isFocused ? "M112,116 Q130,134 148,116" : "M116,118 Q130,128 144,118"} stroke="#0F172A" strokeWidth="3.6" strokeLinecap="round" fill="none"></path>
+                </svg>
+              </div>
+            </div>
+
+            {/* RIGHT: form pane */}
+            <div className="kt-right" style={{ position: 'relative', padding: '40px 46px', background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               
-              {/* Nombre Input */}
-              <div className="login-form-group flex flex-col space-y-1.5">
-                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Nombre Completo</label>
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Prof. Alejandro Ruiz"
-                  disabled={loading}
-                  className="login-input w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 text-xs text-ink outline-none transition-all duration-200 placeholder:text-ink-tertiary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
-                />
+              {/* mobile mini character */}
+              <div className="kt-mobchar" style={{ display: 'none', justifyContent: 'center', marginBottom: '6px' }}>
+                <svg width="96" height="96" viewBox="70 40 120 120" fill="none" style={{ overflow: 'visible' }}>
+                  <circle cx="130" cy="96" r="48" fill="#ECFDF5" stroke="#0F172A" strokeWidth="4.4"></circle>
+                  <path d="M92,66 Q104,44 130,46 Q158,48 168,68" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                  <circle cx="104" cy="108" r="9" fill="#10B981" opacity=".2"></circle><circle cx="156" cy="108" r="9" fill="#10B981" opacity=".2"></circle>
+                  <circle cx="112" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle><circle cx="148" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle><path d="M128,92 h4" stroke="#0F172A" strokeWidth="3.6"></path>
+                  <g className="kt-eyes"><circle cx="112" cy="92" r="4.6" fill="#0F172A"></circle><circle cx="148" cy="92" r="4.6" fill="#0F172A"></circle></g>
+                  <path d="M116,118 Q130,128 144,118" stroke="#0F172A" strokeWidth="3.6" strokeLinecap="round" fill="none"></path>
+                </svg>
               </div>
 
-              {/* Email Input */}
-              <div className="login-form-group flex flex-col space-y-1.5">
-                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Correo Electrónico</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ejemplo@katedra.com"
-                  disabled={loading}
-                  className="login-input w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 text-xs text-ink outline-none transition-all duration-200 placeholder:text-ink-tertiary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
-                />
+              {/* brand */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+                <div style={{ width: '30px', height: '30px', borderRadius: '9px', background: 'linear-gradient(150deg,#10B981,#059669)', display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px -3px rgba(16,185,129,.6)' }}><span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '17px', color: '#fff', letterSpacing: '-1px' }}>K</span></div>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '18px', letterSpacing: '-.8px', color: '#0F172A' }}>Katedra</span>
               </div>
 
-              {/* Password Input */}
-              <div className="login-form-group flex flex-col space-y-1.5">
-                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Contraseña</label>
-                <div className="relative">
+              <h1 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '27px', lineHeight: 1.1, letterSpacing: '-1px', color: '#0F172A', margin: '0 0 7px' }}>Crea tu cuenta</h1>
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14px', color: '#64748B', margin: '0 0 20px' }}>Comienza gratis — no requiere tarjeta de crédito.</p>
+
+              {/* OAuth */}
+              <div style={{ display: 'flex', gap: '11px', marginBottom: '18px' }}>
+                <button type="button" className="kt-oauth-btn">
+                  <svg width="17" height="17" viewBox="0 0 18 18" style={{ marginRight: '2px' }}><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18Z"></path><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33Z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"></path></svg>
+                  Google
+                </button>
+                <button type="button" className="kt-oauth-btn">
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="#0F172A" style={{ marginRight: '2px' }}><path d="M13.4 9.6c-.02-1.9 1.55-2.8 1.62-2.85-.88-1.3-2.26-1.47-2.75-1.49-1.17-.12-2.28.69-2.87.69-.59 0-1.5-.67-2.47-.66-1.27.02-2.44.74-3.1 1.87-1.32 2.3-.34 5.7.95 7.56.63.91 1.38 1.93 2.37 1.9.95-.04 1.31-.61 2.46-.61(1-opacity-opacity) 1.15 0 1.47.61 2.47.59 1.02-.02 1.66-.93 2.29-1.85.72-1.06 1.02-2.08 1.03-2.13-.02-.01-1.97-.76-2-3.01ZM11.5 4.13c.52-.64.88-1.51.78-2.4-.75.03-1.68.5-2.22 1.13-.48.56-.91 1.46-.8 2.32.84.06 1.7-.42 2.24-1.05Z"></path></svg>
+                  Apple
+                </button>
+              </div>
+
+              {/* divider */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '18px' }}>
+                <div style={{ flex: 1, height: '1px', background: '#EDF0F4' }}></div>
+                <span style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 600, fontSize: '11px', letterSpacing: '.4px', color: '#94A3B8', textTransform: 'uppercase' }}>o con correo electrónico</span>
+                <div style={{ flex: 1, height: '1px', background: '#EDF0F4' }}></div>
+              </div>
+
+              {/* form */}
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12.5px', letterSpacing: '-.2px', color: '#334155', marginBottom: '4px' }}>Nombre completo</label>
+                  <input
+                    type="text"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="Prof. Alejandro Ruiz"
+                    className="kt-input"
+                    disabled={loading}
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12.5px', letterSpacing: '-.2px', color: '#334155', marginBottom: '4px' }}>Correo electrónico</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="tucorreo@escuela.edu"
+                    className="kt-input"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12.5px', letterSpacing: '-.2px', color: '#334155', marginBottom: '4px' }}>Contraseña</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      placeholder="Mínimo 6 caracteres"
+                      className="kt-input"
+                      style={{ paddingRight: '44px' }}
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label="Mostrar contraseña"
+                      style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '34px', height: '34px', display: 'grid', placeItems: 'center', border: 'none', background: 'none', cursor: 'pointer', color: '#94A3B8', borderRadius: '8px' }}
+                    >
+                      {showPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12.5px', letterSpacing: '-.2px', color: '#334155', marginBottom: '4px' }}>Confirmar Contraseña</label>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="Repite tu contraseña"
+                    className="kt-input"
                     disabled={loading}
-                    className="login-input w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 text-xs text-ink outline-none transition-all duration-200 placeholder:text-ink-tertiary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-tertiary hover:text-ink transition-colors cursor-pointer"
-                    tabIndex="-1"
-                  >
-                    {showPassword ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
                 </div>
-              </div>
 
-              {/* Confirm Password Input */}
-              <div className="login-form-group flex flex-col space-y-1.5">
-                <label className="login-label text-[10px] uppercase tracking-wider text-ink-muted font-bold">Confirmar Contraseña</label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repite tu contraseña"
-                  disabled={loading}
-                  className="login-input w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 text-xs text-ink outline-none transition-all duration-200 placeholder:text-ink-tertiary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
-                />
-              </div>
-
-              {/* Accept Terms Checkbox */}
-              <div className="login-row flex items-start gap-2 text-[11px] pt-1">
-                <input
-                  type="checkbox"
-                  id="acceptTerms"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="accent-brand-primary rounded border-hairline bg-surface-2 cursor-pointer w-3.5 h-3.5 mt-0.5"
-                />
-                <label htmlFor="acceptTerms" className="text-ink-muted cursor-pointer hover:text-ink transition-colors duration-150 leading-relaxed">
-                  Acepto los <span className="text-brand-primary font-medium">Términos del Servicio</span> y la <span className="text-brand-primary font-medium">Política de Privacidad</span> de Katedra.
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', margin: '4px 0 8px', cursor: 'pointer', fontFamily: "'Manrope', sans-serif", fontSize: '12px', color: '#475569', lineHeight: '1.4' }}>
+                  <input
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    style={{ width: '16px', height: '16px', accentColor: '#10B981', cursor: 'pointer', flexShrink: 0, marginTop: '2px' }}
+                  />
+                  <span>
+                    Acepto los <span style={{ color: '#059669', fontWeight: 600 }}>Términos del Servicio</span> y la <span style={{ color: '#059669', fontWeight: 600 }}>Política de Privacidad</span> de Katedra.
+                  </span>
                 </label>
-              </div>
 
-              {/* Error Feedbacks */}
-              {(validationError || error) && (
-                <div className="login-error bg-red-500/10 border border-red-500/20 text-red-400 text-xs px-3.5 py-2.5 rounded-xl animate-fade-in font-medium">
-                  {validationError || error}
-                </div>
-              )}
+                {/* Error messages */}
+                {(validationError || error) && (
+                  <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '10px', color: '#EF4444', fontFamily: "'Manrope', sans-serif", fontSize: '13px', fontWeight: 600, lineHeight: '1.4' }}>
+                    {validationError || error}
+                  </div>
+                )}
 
-              {/* Submit CTA */}
-              <Button
-                variant="primary"
-                type="submit"
-                disabled={loading}
-                className="w-full py-3.5 font-bold shadow-[0_4px_20px_rgba(5,43,88,0.3)] hover:shadow-[0_6px_25px_rgba(5,43,88,0.5)] transition-all rounded-xl cursor-pointer mt-2"
-              >
-                {loading ? 'Creando Cuenta...' : 'Registrar Cuenta'}
-              </Button>
-            </form>
-
-            {/* Back to Login Redirect Link */}
-            <div className="mt-6 border-t border-hairline/60 pt-4 text-center">
-              <p className="text-xs text-ink-muted">
-                ¿Ya tienes una cuenta?{' '}
-                <span 
-                  onClick={() => navigate('/login')}
-                  className="text-brand-primary hover:text-brand-primary/80 transition-colors duration-150 cursor-pointer font-bold"
+                <button
+                  type="submit"
+                  className="kt-submit-btn"
+                  disabled={loading}
                 >
-                  Iniciar Sesión
+                  {loading ? (
+                    <>
+                      <span style={{ width: '16px', height: '16px', border: '2.5px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin .7s linear infinite' }}></span>
+                      <span>Creando cuenta…</span>
+                    </>
+                  ) : (
+                    <span>Crear Cuenta</span>
+                  )}
+                </button>
+              </form>
+
+              <p style={{ textAlign: 'center', fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '13.5px', color: '#64748B', margin: '18px 0 0' }}>
+                ¿Ya tienes una cuenta?{' '}
+                <span onClick={() => navigate('/login')} style={{ color: '#059669', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
+                  Inicia sesión
                 </span>
               </p>
             </div>
           </div>
         </div>
-      </main>
-
-      {/* Global Symmetrical Footer */}
-      <Footer />
-    </div>
+      </div>
+    </>
   );
 }
