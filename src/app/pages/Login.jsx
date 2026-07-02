@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import Button from '../components/Button';
-import Footer from '../components/Footer';
-import LandingHeader from '../components/LandingHeader';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,8 +11,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
-  useEffect(() => { clearError(); }, []);
+  useEffect(() => { clearError(); }, [clearError]);
   useEffect(() => { if (isAuthenticated) navigate('/dashboard'); }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
@@ -31,165 +29,451 @@ export default function Login() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col justify-between relative overflow-hidden bg-canvas transition-colors duration-300">
-      {/* Premium ambient gradient wash background matching the screenshot mountains vibe but with Katedra colors */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(at_top_right,rgba(37,99,235,0.08),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(at_bottom_left,rgba(16,185,129,0.07),transparent_50%)]" />
-        {/* Soft background light/dark shape */}
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-500/5 blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-emerald-500/5 blur-[120px]" />
-      </div>
+    <>
+      <style>{`
+        @keyframes blobFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(28px, -34px) scale(1.12); }
+        }
+        @keyframes blobFloat2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-30px, 26px) scale(1.08); }
+        }
+        @keyframes grainShift {
+          0% { transform: translate(0, 0); }
+          25% { transform: translate(-4%, 3%); }
+          50% { transform: translate(3%, -2%); }
+          75% { transform: translate(-2%, -3%); }
+          100% { transform: translate(0, 0); }
+        }
+        @keyframes cardRise {
+          0% { opacity: 0; transform: translateY(26px) scale(.985); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes sway {
+          0%, 100% { transform: rotate(-1.8deg) translateY(0); }
+          50% { transform: rotate(1.8deg) translateY(-5px); }
+        }
+        @keyframes blink {
+          0%, 92%, 100% { transform: scaleY(1); }
+          96% { transform: scaleY(.08); }
+        }
+        @keyframes wave {
+          0%, 100% { transform: rotate(-4deg); }
+          50% { transform: rotate(9deg); }
+        }
+        @keyframes waveFast {
+          0%, 100% { transform: rotate(-8deg); }
+          25% { transform: rotate(16deg); }
+          50% { transform: rotate(-4deg); }
+          75% { transform: rotate(16deg); }
+        }
+        @keyframes floatY {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-9px); }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .kt-char {
+          animation: sway 5.5s ease-in-out infinite;
+          transform-origin: 50% 90%;
+          transform-box: view-box;
+        }
+        .kt-eyes {
+          animation: blink 5s ease-in-out infinite;
+          transform-origin: 130px 92px;
+          transform-box: view-box;
+        }
+        .kt-arm {
+          animation: wave 3.4s ease-in-out infinite;
+          transform-origin: 162px 176px;
+          transform-box: view-box;
+          transition: animation 0.3s;
+        }
+        .kt-wave-fast {
+          animation: waveFast 1s ease-in-out infinite !important;
+        }
+        .kt-float {
+          animation: floatY 6s ease-in-out infinite;
+        }
+        .kt-input {
+          width: 100%;
+          height: 46px;
+          padding: 0 14px;
+          border: 1.5px solid #E2E8F0;
+          border-radius: 10px;
+          background: #F8FAFC;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 500;
+          font-size: 14.5px;
+          color: #0F172A;
+          transition: border-color .2s, box-shadow .2s, background .2s;
+          outline: none;
+        }
+        .kt-input:focus {
+          border-color: #10B981;
+          background: #fff;
+          box-shadow: 0 0 0 4px rgba(16, 185, 129, .15);
+        }
+        .kt-oauth-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          height: 46px;
+          border: 1px solid #E2E8F0;
+          border-radius: 10px;
+          background: #fff;
+          cursor: pointer;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 700;
+          font-size: 13.5px;
+          color: #0F172A;
+          transition: box-shadow .25s, transform .25s, border-color .25s;
+        }
+        .kt-oauth-btn:hover {
+          box-shadow: 0 10px 22px -12px rgba(15, 23, 42, .4);
+          transform: translateY(-2px);
+          border-color: #CBD5E1;
+        }
+        .kt-submit-btn {
+          width: 100%;
+          height: 50px;
+          border: none;
+          border-radius: 11px;
+          background: linear-gradient(150deg, #10B981, #059669);
+          color: #fff;
+          cursor: pointer;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: 15px;
+          letter-spacing: .2px;
+          box-shadow: 0 12px 26px -10px rgba(16, 185, 129, .75);
+          transition: transform .18s, box-shadow .25s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+        }
+        .kt-submit-btn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 18px 32px -10px rgba(16, 185, 129, .8);
+        }
+        .kt-submit-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        .kt-submit-btn:disabled {
+          opacity: 0.8;
+          cursor: not-allowed;
+        }
+        @media(max-width:860px){
+          .kt-card{grid-template-columns:1fr !important;max-width:440px !important}
+          .kt-left{display:none !important}
+          .kt-mobchar{display:flex !important}
+          .kt-right{padding:36px 30px !important}
+        }
+        @media(max-width:520px){
+          .kt-page{padding:18px !important}
+          .kt-right{padding:30px 22px !important}
+        }
+        @media(max-width:768px){
+          .kt-nav-links{display:none !important}
+          .kt-nav{padding:14px 20px !important}
+        }
+      `}</style>
 
-      {/* Floating capsule navigation header */}
-      <LandingHeader />
-
-      {/* Main Container */}
-      <main className="flex-1 flex flex-col justify-center items-center w-full px-4 pt-36 pb-16 relative z-10">
-        <div className="w-full max-w-[460px] flex flex-col items-center">
+      <div data-root className="kt-page" style={{ position: 'fixed', inset: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', fontFamily: "'Manrope', sans-serif", background: 'radial-gradient(130% 135% at 12% 6%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 86%, #FCD34D 112%)', zIndex: 9999 }}>
+        <nav className="kt-nav" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 40px',
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(16px) saturate(120%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(120%)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.03)',
+          transition: 'all 0.3s ease'
+        }}>
+          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <span style={{ display: 'grid', placeItems: 'center', width: '32px', height: '32px', borderRadius: '9px', overflow: 'hidden' }}>
+              <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </span>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#fff' }}>Katedra</span>
+          </a>
           
-          {/* Main Card with 28px radius (illustrative capsule) and soft backdrop blur */}
-          <div className="w-full bg-surface-1/80 dark:bg-surface-1/90 backdrop-blur-md border border-hairline rounded-[28px] p-8 sm:p-10 shadow-hi relative overflow-hidden transition-all duration-300">
-            {/* Top brand icon inside the card */}
-            <div className="flex flex-col items-center text-center mb-8">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 select-none shadow-soft bg-gradient-to-br from-blue-600 to-emerald-500 text-white">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
+          <div className="kt-nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {['Características', 'Integraciones', 'Planes', 'FAQs'].map((label, i) => {
+              const targets = ['/#features', '/#integrations', '/#pricing', '/#faqs'];
+              return (
+                <a 
+                  key={i} 
+                  href={targets[i]} 
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    textDecoration: 'none',
+                    padding: '8px 13px',
+                    borderRadius: '8px',
+                    transition: 'background 0.2s, color 0.2s'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = '#fff'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'; }}
+                >
+                  {label}
+                </a>
+              );
+            })}
+          </div>
 
-              <h1 className="font-bold text-2xl md:text-3xl tracking-tight text-ink">
-                ¡Bienvenido de vuelta!
-              </h1>
-              <p className="text-sm text-ink-muted mt-2">
-                Introduce tus datos para acceder a tu cuenta.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <a 
+              href="/register" 
+              onClick={(e) => { e.preventDefault(); navigate('/register'); }}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                fontSize: '14px',
+                color: '#0F172A',
+                textDecoration: 'none',
+                padding: '10px 17px',
+                borderRadius: '9px',
+                background: '#fff',
+                boxShadow: '0 4px 14px rgba(255, 255, 255, 0.2)',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(0.95)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.filter = 'none'; }}
+            >
+              Registrarse
+            </a>
+          </div>
+        </nav>
+        
+        {/* decorative layer */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+          {/* glow blobs */}
+          <div style={{ position: 'absolute', top: '-140px', left: '-120px', width: '520px', height: '520px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 50%, rgba(52,211,153,.55), rgba(52,211,153,0) 68%)', filter: 'blur(30px)', animation: 'blobFloat 14s ease-in-out infinite', pointerEvents: 'none' }}></div>
+          <div style={{ position: 'absolute', bottom: '-180px', right: '-120px', width: '560px', height: '560px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 50%, rgba(252,211,77,.5), rgba(252,211,77,0) 66%)', filter: 'blur(34px)', animation: 'blobFloat2 17s ease-in-out infinite', pointerEvents: 'none' }}></div>
+          <div style={{ position: 'absolute', top: '36%', right: '16%', width: '340px', height: '340px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 50%, rgba(6,182,212,.4), rgba(6,182,212,0) 70%)', filter: 'blur(30px)', animation: 'blobFloat 20s ease-in-out infinite', pointerEvents: 'none' }}></div>
+
+          {/* grain overlay */}
+          <svg style={{ position: 'absolute', inset: '-6%', width: '112%', height: '112%', pointerEvents: 'none', opacity: .16, mixBlendMode: 'overlay', animation: 'grainShift 8s steps(6) infinite' }} xmlns="http://www.w3.org/2000/svg">
+            <filter id="ktGrain">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"></feTurbulence>
+              <feColorMatrix type="saturate" values="0"></feColorMatrix>
+            </filter>
+            <rect width="100%" height="100%" filter="url(#ktGrain)"></rect>
+          </svg>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', alignItems: 'safe center', justifyContent: 'center', padding: '80px 28px 40px', position: 'relative', zIndex: 2 }}>
+          {/* login card */}
+          <div className="kt-card kt-stage" style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.02fr 1fr', width: '100%', maxWidth: '940px', background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(22px) saturate(1.3)', WebkitBackdropFilter: 'blur(22px) saturate(1.3)', border: '1px solid rgba(255,255,255,.6)', borderRadius: '26px', overflow: 'hidden', boxShadow: '0 40px 90px -30px rgba(15,23,42,.55), 0 8px 24px -12px rgba(15,23,42,.3)', animation: 'cardRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
+          
+          {/* LEFT: illustration pane */}
+          <div className="kt-left" style={{ position: 'relative', padding: '44px 40px', background: 'linear-gradient(165deg,#ECFDF5 0%,#F0FDFA 46%,#FEFCE8 100%)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 20% 0%, rgba(16,185,129,.10), transparent 60%)', pointerEvents: 'none' }}></div>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '10px', letterSpacing: '1.35px', textTransform: 'uppercase', color: '#059669', marginBottom: '12px' }}>Bienvenido de vuelta, educador</div>
+              <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '29px', lineHeight: '1.12', letterSpacing: '-1.4px', color: '#0F172A', margin: '0 0 8px' }}>Tu aula,<br />supercargada.</h2>
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: '1.55', color: '#475569', margin: 0, maxWidth: '280px' }}>
+                Continúa donde lo dejaste — lecciones, cuestionarios y rúbricas, generados en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>segundos</span>.
               </p>
             </div>
 
-            {/* Google SSO button at the top as shown in the Whimsical reference */}
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-canvas dark:bg-[#010102] border border-hairline rounded-xl font-bold hover:bg-surface-2 dark:hover:bg-[#141516] transition-all duration-300 shadow-soft hover:-translate-y-0.5 select-none cursor-pointer"
-            >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-              </svg>
-              <span className="text-sm text-ink">Continuar con Google</span>
-            </button>
+            {/* character */}
+            <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', minHeight: '250px', marginTop: '10px' }}>
+              {/* floating doodle bits */}
+              <svg className="kt-float" style={{ position: 'absolute', top: '8%', left: '6%', width: '44px', height: '44px', animationDuration: '5s' }} viewBox="0 0 44 44" fill="none"><rect x="7" y="10" width="30" height="26" rx="3" stroke="#0F172A" strokeWidth="2.4"></rect><path d="M13 18h18M13 24h18M13 30h11" stroke="#10B981" strokeWidth="2.4" strokeLinecap="round"></path></svg>
+              <svg className="kt-float" style={{ position: 'absolute', top: '2%', right: '8%', width: '40px', height: '40px', animationDuration: '6.5s' }} viewBox="0 0 40 40" fill="none"><path d="M20 6a10 10 0 0 0-6 18c1 .8 1.5 1.6 1.6 2.8h8.8c.1-1.2.6-2 1.6-2.8A10 10 0 0 0 20 6Z" stroke="#0F172A" strokeWidth="2.4"></path><path d="M16.5 32h7M17.5 36h5" stroke="#F59E0B" strokeWidth="2.4" strokeLinecap="round"></path></svg>
+              <svg className="kt-float" style={{ position: 'absolute', bottom: '20%', right: '2%', width: '38px', height: '38px', animationDuration: '7s' }} viewBox="0 0 38 38" fill="none"><path d="M6 12c5-3 9-3 13 0 4-3 8-3 13 0v18c-5-3-9-3-13 0-4-3-8-3-13 0V12Z" stroke="#0F172A" strokeWidth="2.4" strokeLinejoin="round"></path><path d="M19 12v18" stroke="#0F172A" stroke-width="2.4"></path></svg>
 
-            {/* Separator */}
-            <div className="relative my-6 select-none">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-hairline"></div>
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-wider font-extrabold text-ink-muted">
-                <span className="px-3 bg-surface-1 dark:bg-surface-1">o ingresar con correo</span>
-              </div>
+              {/* teacher */}
+              <svg className="kt-char" width="230" height="300" viewBox="0 0 260 360" fill="none" style={{ overflow: 'visible' }}>
+                {/* legs */}
+                <path d="M112,262 L108,330 M148,262 L152,330" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round"></path>
+                <path d="M98,332 h22 M142,332 h22" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round"></path>
+                {/* torso / sweater */}
+                <path d="M92,258 L96,182 Q99,160 122,158 L138,158 Q161,160 164,182 L168,258 Q130,270 92,258 Z" fill="#fff" stroke="#0F172A" strokeWidth="4.4" strokeLinejoin="round"></path>
+                <path d="M118,159 Q130,172 142,159" stroke="#0F172A" strokeWidth="3.4" strokeLinecap="round"></path>
+                {/* right arm holding pencil */}
+                <path d="M96,184 Q74,206 72,240" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                <circle cx="72" cy="244" r="8" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                <path d="M60,262 L84,226" stroke="#F59E0B" strokeWidth="6" strokeLinecap="round"></path>
+                <path d="M84,226 l5,-7" stroke="#0F172A" strokeWidth="6" strokeLinecap="round"></path>
+                {/* waving arm */}
+                <g className={`kt-arm ${isFocused ? 'kt-wave-fast' : ''}`}>
+                  <path d="M162,182 Q190,158 198,120" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                  <circle cx="200" cy="112" r="9" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                  <path d="M196,104 v-9 M203,104 v-11 M209,107 v-8" stroke="#0F172A" strokeWidth="3.4" strokeLinecap="round"></path>
+                </g>
+                {/* head */}
+                <circle cx="130" cy="96" r="48" fill="#fff" stroke="#0F172A" strokeWidth="4.4"></circle>
+                {/* ears */}
+                <circle cx="82" cy="98" r="7" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                <circle cx="178" cy="98" r="7" fill="#fff" stroke="#0F172A" strokeWidth="4"></circle>
+                {/* hair */}
+                <path d="M92,66 Q104,44 130,46 Q158,48 168,68" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                <path d="M100,58 q6,-8 14,-8 M128,50 q10,-2 18,4" stroke="#0F172A" strokeWidth="3.4" strokeLinecap="round"></path>
+                {/* cheeks */}
+                <circle cx="104" cy="108" r="9" fill="#10B981" opacity=".18"></circle>
+                <circle cx="156" cy="108" r="9" fill="#10B981" opacity=".18"></circle>
+                {/* glasses */}
+                <circle cx="112" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle>
+                <circle cx="148" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle>
+                <path d="M128,92 h4 M96,90 l-12,-3 M164,90 l12,-3" stroke="#0F172A" strokeWidth="3.6" strokeLinecap="round"></path>
+                {/* eyes (blink) */}
+                <g className="kt-eyes"><circle cx="112" cy="92" r="4.6" fill="#0F172A"></circle><circle cx="148" cy="92" r="4.6" fill="#0F172A"></circle></g>
+                {/* mouth */}
+                <path className="kt-mouth" d={isFocused ? "M112,116 Q130,134 148,116" : "M116,118 Q130,128 144,118"} stroke="#0F172A" strokeWidth="3.6" strokeLinecap="round" fill="none"></path>
+              </svg>
+            </div>
+          </div>
+
+          {/* RIGHT: form pane */}
+          <div className="kt-right" style={{ position: 'relative', padding: '48px 46px', background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            
+            {/* mobile mini character */}
+            <div className="kt-mobchar" style={{ display: 'none', justifyContent: 'center', marginBottom: '6px' }}>
+              <svg width="96" height="96" viewBox="70 40 120 120" fill="none" style={{ overflow: 'visible' }}>
+                <circle cx="130" cy="96" r="48" fill="#ECFDF5" stroke="#0F172A" strokeWidth="4.4"></circle>
+                <path d="M92,66 Q104,44 130,46 Q158,48 168,68" stroke="#0F172A" strokeWidth="4.4" strokeLinecap="round" fill="none"></path>
+                <circle cx="104" cy="108" r="9" fill="#10B981" opacity=".2"></circle><circle cx="156" cy="108" r="9" fill="#10B981" opacity=".2"></circle>
+                <circle cx="112" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle><circle cx="148" cy="92" r="16" fill="none" stroke="#0F172A" strokeWidth="3.6"></circle><path d="M128,92 h4" stroke="#0F172A" strokeWidth="3.6"></path>
+                <g className="kt-eyes"><circle cx="112" cy="92" r="4.6" fill="#0F172A"></circle><circle cx="148" cy="92" r="4.6" fill="#0F172A"></circle></g>
+                <path d="M116,118 Q130,128 144,118" stroke="#0F172A" strokeWidth="3.6" strokeLinecap="round" fill="none"></path>
+              </svg>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
-              {/* Email Input */}
-              <div className="flex flex-col gap-1.5 w-full">
-                <label className="text-[10px] font-extrabold uppercase tracking-wider text-ink-muted ml-1">Correo Electrónico</label>
-                <div className="relative group w-full">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="nombre@dominio.com"
-                    disabled={loading}
-                    className="w-full bg-canvas dark:bg-canvas border border-hairline rounded-xl px-4 py-3 pr-12 text-sm text-ink placeholder-ink-tertiary focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all duration-300"
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-ink-subtle transition-colors duration-300 group-focus-within:text-blue-600">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
-                  </div>
-                </div>
-              </div>
+            {/* brand */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '26px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+              <div style={{ width: '30px', height: '30px', borderRadius: '9px', background: 'linear-gradient(150deg,#10B981,#059669)', display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px -3px rgba(16,185,129,.6)' }}><span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '17px', color: '#fff', letterSpacing: '-1px' }}>K</span></div>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '18px', letterSpacing: '-.8px', color: '#0F172A' }}>Katedra</span>
+            </div>
 
-              {/* Password Input */}
-              <div className="flex flex-col gap-1.5 w-full">
-                <label className="text-[10px] font-extrabold uppercase tracking-wider text-ink-muted ml-1">Contraseña</label>
-                <div className="relative group w-full">
+            <h1 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '27px', lineHeight: 1.1, letterSpacing: '-1px', color: '#0F172A', margin: '0 0 7px' }}>Inicia sesión en tu cuenta</h1>
+            <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14.5px', color: '#64748B', margin: '0 0 26px' }}>Bienvenido de vuelta — construyamos algo grandioso.</p>
+
+            {/* OAuth */}
+            <div style={{ display: 'flex', gap: '11px', marginBottom: '22px' }}>
+              <button type="button" className="kt-oauth-btn">
+                <svg width="17" height="17" viewBox="0 0 18 18" style={{ marginRight: '2px' }}><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18Z"></path><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33Z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"></path></svg>
+                Google
+              </button>
+              <button type="button" className="kt-oauth-btn">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="#0F172A" style={{ marginRight: '2px' }}><path d="M13.4 9.6c-.02-1.9 1.55-2.8 1.62-2.85-.88-1.3-2.26-1.47-2.75-1.49-1.17-.12-2.28.69-2.87.69-.59 0-1.5-.67-2.47-.66-1.27.02-2.44.74-3.1 1.87-1.32 2.3-.34 5.7.95 7.56.63.91 1.38 1.93(1-opacity-opacity) 2.37 1.9.95-.04 1.31-.61 2.46-.61 1.15 0 1.47.61 2.47.59 1.02-.02 1.66-.93 2.29-1.85.72-1.06 1.02-2.08 1.03-2.13-.02-.01-1.97-.76-2-3.01ZM11.5 4.13c.52-.64.88-1.51.78-2.4-.75.03-1.68.5-2.22 1.13-.48.56-.91 1.46-.8 2.32.84.06 1.7-.42 2.24-1.05Z"></path></svg>
+                Apple
+              </button>
+            </div>
+
+            {/* divider */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
+              <div style={{ flex: 1, height: '1px', background: '#EDF0F4' }}></div>
+              <span style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 600, fontSize: '11px', letterSpacing: '.4px', color: '#94A3B8', textTransform: 'uppercase' }}>o con correo electrónico</span>
+              <div style={{ flex: 1, height: '1px', background: '#EDF0F4' }}></div>
+            </div>
+
+            {/* form */}
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div>
+                <label style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12.5px', letterSpacing: '-.2px', color: '#334155', marginBottom: '6px' }}>Correo electrónico</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder="tucorreo@escuela.edu"
+                  className="kt-input"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                  <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12.5px', letterSpacing: '-.2px', color: '#334155' }}>Contraseña</label>
+                  <a href="#" style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '12px', color: '#059669', textDecoration: 'none' }}>¿La olvidaste?</a>
+                </div>
+                <div style={{ position: 'relative' }}>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="••••••••••"
+                    className="kt-input"
+                    style={{ paddingRight: '44px' }}
                     disabled={loading}
-                    className="w-full bg-canvas dark:bg-canvas border border-hairline rounded-xl px-4 py-3 pr-12 text-sm text-ink placeholder-ink-tertiary focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all duration-300"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-ink-subtle hover:text-ink transition-colors"
-                    tabIndex="-1"
+                    aria-label="Mostrar contraseña"
+                    style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '34px', height: '34px', display: 'grid', placeItems: 'center', border: 'none', background: 'none', cursor: 'pointer', color: '#94A3B8', borderRadius: '8px' }}
                   >
                     {showPassword ? (
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                     ) : (
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     )}
                   </button>
                 </div>
               </div>
 
-              {/* Remember Me */}
-              <div className="flex items-center justify-between text-xs pt-1 select-none w-full">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-ink-muted">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded cursor-pointer w-4 h-4 accent-blue-600"
-                  />
-                  <span className="hover:text-ink transition-colors">Recuérdame</span>
-                </label>
-              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '9px', margin: '5px 0 10px', cursor: 'pointer', fontFamily: "'Manrope', sans-serif", fontWeight: 600, fontSize: '13px', color: '#475569' }}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: '#10B981', cursor: 'pointer' }}
+                />
+                Mantener sesión iniciada
+              </label>
 
-              {/* Error Feedbacks */}
+              {/* Error messages */}
               {(validationError || error) && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-bold text-red-500 leading-relaxed">
+                <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '10px', color: '#EF4444', fontFamily: "'Manrope', sans-serif", fontSize: '13px', fontWeight: 600, lineHeight: '1.4' }}>
                   {validationError || error}
                 </div>
               )}
 
-              {/* Submit CTA */}
-              <Button
-                variant="primary"
+              <button
                 type="submit"
+                className="kt-submit-btn"
                 disabled={loading}
-                className="w-full py-3.5 text-sm font-bold rounded-xl cursor-pointer transition-all duration-300 mt-2 bg-brand-primary text-white hover:bg-brand-primary-hover shadow-soft hover:shadow-elevated hover:-translate-y-0.5"
               >
-                {loading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
-              </Button>
+                {loading ? (
+                  <>
+                    <span style={{ width: '16px', height: '16px', border: '2.5px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin .7s linear infinite' }}></span>
+                    <span>Iniciando sesión…</span>
+                  </>
+                ) : (
+                  <span>Iniciar Sesión</span>
+                )}
+              </button>
             </form>
 
-            {/* Forgot Password Link centered inside card */}
-            <div className="mt-4 text-center">
-              <span onClick={() => {}} className="cursor-pointer text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors">
-                ¿Olvidaste tu contraseña?
+            <p style={{ textAlign: 'center', fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '13.5px', color: '#64748B', margin: '22px 0 0' }}>
+              ¿Nuevo en Katedra?{' '}
+              <span onClick={() => navigate('/register')} style={{ color: '#059669', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
+                Crea una cuenta
               </span>
-            </div>
+            </p>
           </div>
-
-          {/* Link to Register outside the card */}
-          <p className="text-sm font-medium text-ink-muted mt-6 text-center">
-            ¿No tienes una cuenta?{' '}
-            <span
-              onClick={() => navigate('/register')}
-              className="cursor-pointer font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-            >
-              Regístrate gratis
-            </span>
-          </p>
         </div>
-      </main>
-
-      {/* Footer */}
-      <Footer />
+      </div>
     </div>
+    </>
   );
 }
