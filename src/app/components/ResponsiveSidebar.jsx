@@ -71,7 +71,7 @@ export default function ResponsiveSidebar() {
         <div className="flex items-center gap-3 cursor-pointer group px-1" onClick={() => handleNavigation('/')}>
           <div className="relative w-10 h-10 rounded-[12px] overflow-hidden border border-hairline bg-surface-2 flex items-center justify-center shadow-soft transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-hover">
             <img 
-              src={isDarkMode ? '/katedra-dark-mode.jpeg' : '/katedra-light-mode.jpeg'} 
+              src="/katedra.svg" 
               alt="Katedra Logo" 
               className="w-full h-full object-cover"
             />
@@ -167,7 +167,7 @@ export default function ResponsiveSidebar() {
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
           <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-hairline bg-surface-1 flex items-center justify-center shadow-soft">
             <img 
-              src={isDarkMode ? '/katedra-dark-mode.jpeg' : '/katedra-light-mode.jpeg'} 
+              src="/katedra.svg" 
               alt="Katedra Logo" 
               className="w-full h-full object-cover"
             />

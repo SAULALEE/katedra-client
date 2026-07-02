@@ -59,7 +59,7 @@ export default function LandingHeader() {
           >
             <div className="relative w-9 h-9 shrink-0 rounded-full overflow-hidden border border-hairline bg-surface-1 shadow-sm flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
               <img
-                src={isDarkMode ? '/katedra-dark-mode.jpeg' : '/katedra-light-mode.jpeg'}
+                src="/katedra.svg"
                 alt="Katedra"
                 className="w-full h-full object-cover"
               />
