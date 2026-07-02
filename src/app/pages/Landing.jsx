@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -336,11 +336,8 @@ export default function Landing() {
         transition: 'all 0.3s ease'
       }}>
         <a href="#top" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <span style={{ display: 'grid', placeItems: 'center', width: '32px', height: '32px', borderRadius: '9px', background: 'linear-gradient(135deg, #2B6CB0, #2C5282)', boxShadow: '0 4px 12px rgba(43, 108, 176, 0.4)' }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-              <path d="M3 9.5L12 4l9 5.5-9 5.5-9-5.5Z" fill="#fff" />
-              <path d="M6.5 12v4.2c0 .9 2.46 2.3 5.5 2.3s5.5-1.4 5.5-2.3V12" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
+          <span style={{ display: 'grid', placeItems: 'center', width: '32px', height: '32px', borderRadius: '9px', overflow: 'hidden' }}>
+            <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </span>
           <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#0F172A' }}>Katedra</span>
         </a>
@@ -373,12 +370,13 @@ export default function Landing() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <a 
-            href="#" 
+            href="/login" 
+            onClick={(e) => { e.preventDefault(); navigate('/login'); }}
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: '14px',
-              color: '#0F172A',
+              color: '#475569',
               textDecoration: 'none',
               padding: '9px 15px',
               borderRadius: '9px',
@@ -392,7 +390,8 @@ export default function Landing() {
             Acceder
           </a>
           <a 
-            href="#" 
+            href="/register" 
+            onClick={(e) => { e.preventDefault(); navigate('/register'); }}
             style={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 700,
@@ -444,7 +443,7 @@ export default function Landing() {
             transition={{ duration: 0.75, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
             style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 'clamp(38px, 6.6vw, 76px)', lineHeight: 1.02, letterSpacing: '-2px', color: '#fff', margin: '0 0 22px', textWrap: 'balance' }}
           >
-            Diseña tu plan de estudios a la velocidad del pensamiento.
+            Diseña temarios con el poder de la IA.
           </motion.h1>
 
           <motion.p 
@@ -463,7 +462,8 @@ export default function Landing() {
             style={{ display: 'flex', flexWrap: 'wrap', gap: '13px', justifyContent: 'center' }}
           >
             <a 
-              href="#" 
+              href="/register" 
+              onClick={(e) => { e.preventDefault(); navigate('/register'); }}
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 700,
@@ -1215,7 +1215,8 @@ export default function Landing() {
                 <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#94A3B8' }}>/siempre</span>
               </div>
               <a 
-                href="#" 
+                href="/register" 
+                onClick={(e) => { e.preventDefault(); navigate('/register'); }}
                 style={{
                   textAlign: 'center',
                   fontFamily: "'Inter', sans-serif",
@@ -1266,7 +1267,8 @@ export default function Landing() {
               </div>
               
               <a 
-                href="#" 
+                href="/register" 
+                onClick={(e) => { e.preventDefault(); navigate('/register'); }}
                 style={{
                   textAlign: 'center',
                   fontFamily: "'Inter', sans-serif",
@@ -1396,7 +1398,8 @@ export default function Landing() {
               Únete a más de 10,000 educadores que diseñan mejores clases en menos tiempo.
             </p>
             <a 
-              href="#" 
+              href="/register" 
+              onClick={(e) => { e.preventDefault(); navigate('/register'); }}
               style={{
                 display: 'inline-block',
                 fontFamily: "'Inter', sans-serif",
@@ -1426,8 +1429,8 @@ export default function Landing() {
           <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: '40px', paddingBottom: '48px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
             <div className="footer-grid-brand">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                <span style={{ display: 'grid', placeItems: 'center', width: '30px', height: '30px', borderRadius: '9px', background: 'linear-gradient(135deg, #2B6CB0, #2C5282)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 4l9 5.5-9 5.5-9-5.5Z" fill="#fff" /><path d="M6.5 12v4.2c0 .9 2.46 2.3 5.5 2.3s5.5-1.4 5.5-2.3V12" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" /></svg>
+                <span style={{ display: 'grid', placeItems: 'center', width: '30px', height: '30px', borderRadius: '9px', overflow: 'hidden' }}>
+                  <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </span>
                 <span style={{ fontFamily: "'Inter'", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#fff' }}>Katedra</span>
               </div>
