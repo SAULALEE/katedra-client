@@ -5,6 +5,8 @@ import Dashboard from './app/pages/Dashboard';
 import Generator from './app/pages/Generator';
 import Login from './app/pages/Login';
 import Register from './app/pages/Register';
+import AuthCallback from './app/pages/AuthCallback';
+import AuthError from './app/pages/AuthError';
 import Users from './app/pages/Users';
 import ContentViewer from './app/pages/ContentViewer';
 import GeneratedContents from './app/pages/GeneratedContents';
@@ -25,6 +27,8 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/error" element={<AuthError />} />
 
         {/* Protected Dashboard Routes */}
         <Route 
@@ -46,7 +50,7 @@ function App() {
         <Route 
           path="/usuarios" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly>
               <Users />
             </ProtectedRoute>
           } 

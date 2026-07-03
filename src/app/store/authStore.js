@@ -1,5 +1,12 @@
 import { create } from 'zustand';
-import { loginRequest, logoutRequest, registerRequest } from '../services/authService';
+import {
+  buildSessionFromToken,
+  loginRequest,
+  logoutRequest,
+  registerRequest,
+  startGoogleLogin,
+  startMicrosoftLogin
+} from '../services/authService';
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -84,6 +91,56 @@ export const useAuthStore = create((set, get) => ({
         error: err.message || 'Error al registrar la cuenta',
         loading: false,
         isAuthenticated: false
+      });
+      return false;
+    }
+  },
+
+  loginWithGoogle: () => {
+    set({ error: null });
+    startGoogleLogin();
+  },
+
+  loginWithMicrosoft: () => {
+    set({ error: null });
+    startMicrosoftLogin();
+  },
+
+  handleOAuthCallback: () => {
+    try {
+      const currentUrl = new URL(window.location.href);
+      const token = currentUrl.searchParams.get('token');
+
+      if (!token) {
+        return false;
+      }
+
+      const session = buildSessionFromToken(token);
+
+      localStorage.setItem('katedra_user', JSON.stringify(session.user));
+      localStorage.setItem('katedra_token', session.token);
+
+      currentUrl.searchParams.delete('token');
+      window.history.replaceState({}, document.title, `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+
+      set({
+        user: session.user,
+        token: session.token,
+        isAuthenticated: true,
+        loading: false,
+        error: null
+      });
+
+      return true;
+    } catch (err) {
+      localStorage.removeItem('katedra_user');
+      localStorage.removeItem('katedra_token');
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        loading: false,
+        error: err.message || 'Error al procesar el inicio de sesión social'
       });
       return false;
     }
