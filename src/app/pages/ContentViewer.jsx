@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getContenidoTemario } from '../services/temarioService';
+import { getContenidoTemario, generarMaterialParaTemario } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import Button from '../components/Button';
 import ResponsiveSidebar from '../components/ResponsiveSidebar';
@@ -46,6 +46,9 @@ export default function ContentViewer() {
   
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [contentNotFound, setContentNotFound] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [genError, setGenError] = useState('');
   const [activeTab, setActiveTab] = useState('teoria');
   const [checkedAnswers, setCheckedAnswers] = useState({});
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -55,17 +58,37 @@ export default function ContentViewer() {
   useEffect(() => {
     const fetchContent = async () => {
       setLoading(true);
+      setContentNotFound(false);
       try {
         const data = await getContenidoTemario(id);
         setContent(data);
       } catch (err) {
-        console.error("Error cargando el contenido", err);
+        if (err.cause?.response?.status === 404) {
+          setContentNotFound(true);
+        } else {
+          console.error("Error cargando el contenido", err);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchContent();
   }, [id]);
+
+  const handleGenerarMaterial = async () => {
+    setIsGenerating(true);
+    setGenError('');
+    try {
+      const data = await generarMaterialParaTemario(id);
+      setContent(data);
+      setContentNotFound(false);
+    } catch (err) {
+      console.error("Error generando el material", err);
+      setGenError('No se pudo generar el material. Intenta de nuevo.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen bg-canvas text-ink flex flex-col md:flex-row font-sans">
@@ -100,6 +123,36 @@ export default function ContentViewer() {
               <div className="w-12 h-12 rounded-full border-[3px] border-surface-3 border-t-brand-primary animate-spin"></div>
               <p className="text-sm text-ink-subtle font-bold tracking-widest uppercase animate-pulse">Cargando Material...</p>
             </div>
+          ) : isGenerating ? (
+            <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-8 text-center px-8">
+              <div className="w-12 h-12 rounded-full border-[3px] border-surface-3 border-t-brand-primary animate-spin"></div>
+              <div className="flex flex-col gap-3 max-w-lg">
+                <p className="text-xl font-bold text-ink tracking-tight">El motor de IA está generando tu contenido...</p>
+                <p className="text-xs text-brand-primary font-bold uppercase tracking-widest animate-pulse bg-brand-primary/10 px-4 py-2 rounded-xl w-max mx-auto border border-brand-primary/20">Esto puede tardar hasta 30 segundos</p>
+              </div>
+            </div>
+          ) : contentNotFound ? (
+             <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-6 text-center px-8">
+                <div className="w-16 h-16 rounded-[20px] bg-brand-primary/10 text-brand-primary flex items-center justify-center border border-brand-primary/20">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div className="flex flex-col gap-2 max-w-md">
+                  <p className="text-lg font-bold text-ink">Material Aún No Generado</p>
+                  <p className="text-sm text-ink-subtle leading-relaxed font-medium">Este temario todavía no tiene contenido. Genera teoría, ejercicios, evaluación y diapositivas con IA.</p>
+                </div>
+                {genError && (
+                  <div className="p-4 rounded-2xl text-sm font-bold bg-red-500/10 border border-red-500/20 text-red-500 max-w-md">
+                    {genError}
+                  </div>
+                )}
+                <Button
+                  variant="primary"
+                  onClick={handleGenerarMaterial}
+                  className="px-8 py-3.5 text-sm font-bold rounded-xl shadow-elevated hover:-translate-y-1 transition-all duration-300 bg-brand-primary text-white"
+                >
+                  Generar Material con IA
+                </Button>
+             </div>
           ) : !content ? (
              <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-5">
                 <div className="w-16 h-16 rounded-[20px] bg-red-500/10 text-red-500 flex items-center justify-center">
