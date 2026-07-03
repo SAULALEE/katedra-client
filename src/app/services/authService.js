@@ -1,5 +1,97 @@
 import api from './api';
 
+const getAvatarInitials = (nombre) => {
+  if (!nombre) return 'U';
+
+  return nombre
+    .split(' ')
+    .filter(Boolean)
+    .map((segment) => segment[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+};
+
+const normalizeAuthResponse = ({ token, id, email, usuario }) => ({
+  user: {
+    id,
+    email,
+    nombre: usuario?.nombre || 'Usuario Katedra',
+    rol: usuario?.rol || 'ROLE_USER',
+    avatarInitials: getAvatarInitials(usuario?.nombre || 'Usuario Katedra')
+  },
+  token
+});
+
+const decodeJwtPayload = (token) => {
+  try {
+    const [, payload] = token.split('.');
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+    const decoded = atob(padded);
+    const bytes = Uint8Array.from(decoded, (char) => char.charCodeAt(0));
+    const text = new TextDecoder().decode(bytes);
+    return JSON.parse(text);
+  } catch (error) {
+    console.warn('No se pudo decodificar el JWT OAuth:', error);
+    return null;
+  }
+};
+
+export const buildSessionFromToken = (token) => {
+  if (!token) {
+    throw new Error('Token OAuth no proporcionado');
+  }
+
+  const payload = decodeJwtPayload(token);
+  const nombre =
+    payload?.nombre ||
+    payload?.name ||
+    payload?.usuario?.nombre ||
+    payload?.given_name ||
+    'Usuario Katedra';
+  const email =
+    payload?.email ||
+    payload?.preferred_username ||
+    payload?.upn ||
+    payload?.sub ||
+    '';
+  const rol =
+    payload?.rol ||
+    payload?.role ||
+    payload?.authorities?.[0] ||
+    payload?.roles?.[0] ||
+    payload?.usuario?.rol ||
+    'ROLE_USER';
+  const id =
+    payload?.id ||
+    payload?.userId ||
+    payload?.usuarioId ||
+    payload?.sub ||
+    `oauth-${Date.now()}`;
+
+  return {
+    user: {
+      id,
+      email,
+      nombre,
+      rol,
+      avatarInitials: getAvatarInitials(nombre)
+    },
+    token
+  };
+};
+
+export const startGoogleLogin = () => {
+  window.location.href = '/api/v1/auth/google';
+};
+
+export const startMicrosoftLogin = () => {
+  window.location.href = '/api/v1/auth/microsoft';
+};
+
 /**
  * Authenticates user with email and password using the real backend API.
  * 
@@ -10,25 +102,8 @@ import api from './api';
 export const loginRequest = async (email, password) => {
   try {
     const response = await api.post('/auth/login', { email, password });
-    
-    // Parse backend response data
     const { token, id, email: responseEmail, usuario } = response.data;
-    
-    // Generate avatar initials from usuario's name
-    const avatarInitials = usuario?.nombre
-      ? usuario.nombre.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase()
-      : 'U';
-
-    return {
-      user: {
-        id,
-        email: responseEmail,
-        nombre: usuario?.nombre || 'Usuario Katedra',
-        rol: usuario?.rol || 'ROLE_USER',
-        avatarInitials
-      },
-      token
-    };
+    return normalizeAuthResponse({ token, id, email: responseEmail, usuario });
   } catch (error) {
     const errorMessage = error.response?.data?.message 
       || error.response?.data?.error 
@@ -48,25 +123,8 @@ export const loginRequest = async (email, password) => {
 export const registerRequest = async (email, password, nombre) => {
   try {
     const response = await api.post('/auth/register', { email, password, nombre });
-    
-    // Parse backend response data
     const { token, id, email: responseEmail, usuario } = response.data;
-    
-    // Generate avatar initials from usuario's name
-    const avatarInitials = usuario?.nombre
-      ? usuario.nombre.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase()
-      : 'U';
-
-    return {
-      user: {
-        id,
-        email: responseEmail,
-        nombre: usuario?.nombre || 'Usuario Katedra',
-        rol: usuario?.rol || 'ROLE_USER',
-        avatarInitials
-      },
-      token
-    };
+    return normalizeAuthResponse({ token, id, email: responseEmail, usuario });
   } catch (error) {
     const errorMessage = error.response?.data?.message 
       || error.response?.data?.error 
