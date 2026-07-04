@@ -38,6 +38,21 @@ export const generarMaterialAI = async (materia, tema, unidades) => {
   }
 };
 
+/**
+ * Triggers AI generation of material for an existing temario.
+ * Takes 10-30 seconds (real AI generation, not instant).
+ *
+ * @param {string} id - the temario UUID
+ */
+export const generarMaterialParaTemario = async (id) => {
+  try {
+    const response = await api.post(`/temarios/${id}/generar-material`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Error al generar material con IA', { cause: error });
+  }
+};
+
 export const getContenidoTemario = async (id) => {
   try {
     const response = await api.get(`/temarios/${id}/contenido`);
