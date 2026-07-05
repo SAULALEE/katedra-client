@@ -87,5 +87,27 @@ To ensure a pixel-perfect, consistent experience across all views, strictly adhe
 
 7. **Animations:** Use `framer-motion` for smooth staggered fade-in-up animations (`ease: [0.16, 1, 0.3, 1]`, duration `0.75s`). Interactive elements must translate slightly (`-3px` on Y axis) on hover.
 
+## CRUD & App Interface Standards
+
+To ensure a unified experience across all administration panels, all CRUD modules must follow these exact structural and functional patterns:
+
+1. **Left Sidebar (Navigation):** The left sidebar must be consistent across all app modules (`width: 256px` expanded, `76px` collapsed). It contains brand logo, navigation links, theme toggle, user profile info, and logout button.
+2. **Right Sidebar (Details Drawer):** For viewing details or secondary information, use a right-side collapsible drawer. When active, it must mirror the left sidebar's expanded width (`width: 256px`), creating a balanced 3-column layout (Left Nav - Main Content - Right Details). Include a close button (`<X />`) and edit actions inside it. Implement this only when explicitly requested or required by the flow, but it is the standard for all CRUD detail views.
+3. **In-App Notifications (Toasts & Dropdown):** 
+   - All CRUD actions (create, update, delete, errors) must trigger an immediate notification.
+   - Use a dual-system: a temporary Toast notification AND a persistent notification logged in a top-right dropdown (bell icon with unread badge).
+   - Notification states must use semantic colors (Success = Emerald/Green, Error = Rose/Red, Warning = Amber/Yellow).
+4. **Data Tables & Rows:** 
+   - Use CSS Grid for table rows (`display: grid`) rather than native `<table>` elements for better responsive control.
+   - Include a distinct hover effect (`var(--kt-row-hover)`).
+   - Action buttons (View, Edit, Delete) should be grouped at the end of the row with subtle backgrounds that change color on hover (e.g., delete turns red).
+5. **State and Type Badges (Pills):**
+   - Distinct colors must be applied to differentiate roles, statuses, and data types. 
+   - Examples: Admin/Primary (Blue/Sky), Premium/Secondary (Amber/Orange), Free/Default (Emerald/Slate).
+   - Statuses: Active (Emerald Green with a pulsing dot), Inactive/Error (Rose Red with pulsing dot).
+   - Avatars or initials should use gradients matching their role.
+6. **Modals for Creation/Edition:** Use centered modals with a blurred backdrop (`backdrop-filter: blur(8px)`) for forms.
+7. **Search & Counters:** The header of the CRUD panel must include a search input and a chip indicating the total count of registered items.
+
 ## Important Development Rule
 Always translate these exact design values into standard React components (or Tailwind CSS where applicable). Maintain this exact styling to ensure uniform design across all interfaces.
