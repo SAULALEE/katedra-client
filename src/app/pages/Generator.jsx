@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useGenerator, PIEZAS, MODELOS } from '../hooks/useGenerator';
 import {
   Users as UsersIcon,
@@ -163,6 +165,16 @@ export default function Generator() {
     --kt-shadow-panel:0 30px 60px -30px rgba(0,0,0,.6);
     --kt-shadow-modal:0 40px 90px -30px rgba(0,0,0,.8);
   }
+
+  /* markdown rendering (mirrors ContentViewer) */
+  .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 { font-family:'Inter', sans-serif; font-weight:600; color:var(--kt-heading); margin-bottom:12px; margin-top:24px; }
+  .markdown-body h1:first-child, .markdown-body h2:first-child, .markdown-body h3:first-child { margin-top:0; }
+  .markdown-body p, .markdown-body li { font-family:'Manrope', sans-serif; font-weight:500; font-size:14.5px; line-height:1.75; color:var(--kt-text); margin-bottom:14px; }
+  .markdown-body ul, .markdown-body ol { margin-left:24px; margin-bottom:16px; }
+  .markdown-body strong { color:var(--kt-heading); }
+  .markdown-body code { font-family:'JetBrains Mono', monospace; font-size:12.5px; padding:2px 6px; border-radius:6px; background:var(--kt-chip-bg); color:var(--kt-heading); }
+  .markdown-body pre { background:var(--kt-bg2); color:var(--kt-text); padding:16px; border-radius:12px; overflow-x:auto; margin-bottom:16px; font-family:'JetBrains Mono', monospace; border:1px solid var(--kt-border); }
+  .markdown-body pre code { background:transparent; padding:0; color:inherit; font-size:13px; }
 
   @keyframes ktBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-28px) scale(1.14)}}
   @keyframes ktBlob2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-26px,24px) scale(1.1)}}
@@ -629,8 +641,10 @@ export default function Generator() {
                         <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'40px', boxShadow:'var(--kt-shadow-panel)' }}>
                           <h1 style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'28px', color:'var(--kt-heading)', margin:'0 0 8px' }}>{temarioSeleccionado?.titulo || 'Módulo Teórico'}</h1>
                           <p style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'14px', color:'#10B981', margin:'0 0 30px' }}>{temarioSeleccionado?.asignatura || 'Material Académico'}</p>
-                          <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'15px', color:'var(--kt-text)', lineHeight:'1.7', whiteSpace:'pre-line' }}>
-                            {displayData.teoria}
+                          <div className="markdown-body">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {displayData.teoria || ''}
+                            </ReactMarkdown>
                           </div>
                         </div>
                       </div>
@@ -648,8 +662,10 @@ export default function Generator() {
                            </button>
                         </div>
                         <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'40px', boxShadow:'var(--kt-shadow-panel)' }}>
-                          <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'15px', color:'var(--kt-text)', lineHeight:'1.7', whiteSpace:'pre-line' }}>
-                            {displayData.ejercicios}
+                          <div className="markdown-body">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {displayData.ejercicios || ''}
+                            </ReactMarkdown>
                           </div>
                         </div>
                       </div>
