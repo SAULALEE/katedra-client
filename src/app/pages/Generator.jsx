@@ -1,9 +1,27 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useGenerator } from '../hooks/useGenerator';
-import { Input, Textarea } from '../components/Input';
-import Button from '../components/Button';
-import ResponsiveSidebar from '../components/ResponsiveSidebar';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useGenerator, PIEZAS, MODELOS } from '../hooks/useGenerator';
+import {
+  Users as UsersIcon,
+  FolderDot,
+  Sparkles,
+  Wand2,
+  ChevronLeft,
+  Moon,
+  Sun,
+  LogOut,
+  Bell,
+  CheckCircle2,
+  AlertCircle,
+  MonitorPlay,
+  FileText,
+  CheckSquare,
+  Settings,
+  FileQuestion,
+  RefreshCw,
+  BookOpen,
+  Cpu
+} from 'lucide-react';
 
 // Reusable SVG Icons for exports
 const IconGoogleForms = () => (
@@ -41,281 +59,622 @@ const IconPPTX = () => (
 
 export default function Generator() {
   const navigate = useNavigate();
-  const [mobileActiveTab, setMobileActiveTab] = useState('config');
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [theme, setTheme] = useState('dark');
+  const [collapsed, setCollapsed] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
   const {
-    tema, setTema,
-    materia, setMateria,
-    unidades, setUnidades,
+    courses,
+    temarioId, setTemarioId,
+    temarioSeleccionado,
+    piezas, togglePieza,
+    modelo, setModelo,
+    regenerarPiezas, toggleRegenerar,
+    piezaYaGenerada,
+    contenidoExistente,
+    loadingContenido,
     isGenerating,
     generationStep,
     generatedData,
+    genError,
+    piezasOmitidas,
     activeTab, setActiveTab,
     checkedAnswers, setCheckedAnswers,
     handleGenerate
   } = useGenerator();
 
+  // Latest known material for the selected temario (fresh generation wins)
+  const displayData = generatedData || contenidoExistente;
+  const pieceHasContent = (piezaId) => {
+    if (!displayData) return false;
+    const value = displayData[piezaId];
+    if (value == null) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    return false;
+  };
+  const canGenerate = temarioId && piezas.length > 0 && !isGenerating;
+
+  useEffect(() => {
+    const linkId = 'katedra-fonts';
+    if (!document.getElementById(linkId)) {
+      const link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap';
+      document.head.appendChild(link);
+    }
+  }, []);
+
+  const timeAgo = (ts) => {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 10) return 'justo ahora';
+    if (s < 60) return `hace ${s}s`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `hace ${m}min`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `hace ${h}h`;
+    return `hace ${Math.floor(h / 24)}d`;
+  };
+
+  const notify = (kind, title, msg) => {
+    setNotifications(prev => [{ id: Date.now() + Math.random(), kind, title, msg, ts: Date.now() }, ...prev].slice(0, 20));
+  };
+
+  const unreadCount = notifications.length;
+
   return (
-    <div className="w-full h-screen bg-canvas text-ink flex flex-col md:flex-row font-sans overflow-hidden">
-      
-      <ResponsiveSidebar />
+    <>
+      <style>{`[data-root]{margin:0;padding:0}
+  *{box-sizing:border-box}
+  input{outline:none;font-family:inherit}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--kt-scrollbar);border-radius:8px;border:2px solid transparent;background-clip:content-box}
 
-      <main className="flex-1 flex flex-col min-w-0 bg-surface-2 relative h-screen">
-        
-        <header className="min-h-[88px] border-b border-hairline bg-canvas/90 backdrop-blur-md sticky top-0 z-30 w-full flex items-center py-4 sm:py-0">
-          <div className="w-full px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col flex-1 min-w-0 pr-4">
-              <h2 className="text-sm sm:text-base font-bold text-ink leading-snug">Editor de Temarios con IA</h2>
-              <span className="text-[11px] font-medium text-brand-secure mt-1">Generación de Contenido Académico</span>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <Button 
-                variant="secondary"
-                onClick={() => navigate('/dashboard')}
-                className="px-5 py-2.5 text-xs font-bold bg-surface-1 hover:bg-surface-3 transition-colors border-hairline rounded-xl shadow-sm"
-              >
-                Volver al Panel
-              </Button>
-            </div>
+  /* ===== THEME TOKENS ===== */
+  [data-root]{
+    --kt-bg1:#FFFFFF;--kt-bg2:#EEF2F7;--kt-bg3:#F8FAFC;--kt-blob-scale:.5;
+    --kt-grain-op:.035;--kt-grain-blend:multiply;
+    --kt-text:#334155;--kt-heading:#0F172A;--kt-muted:#64748B;--kt-faint:#94A3B8;--kt-label:#94A3B8;
+    --kt-border:rgba(15,23,42,.09);--kt-border-soft:rgba(15,23,42,.06);
+    --kt-sidebar-bg:rgba(255,255,255,.75);--kt-panel-bg:rgba(255,255,255,.85);--kt-panel-border:rgba(15,23,42,.08);
+    --kt-chip-bg:rgba(15,23,42,.045);--kt-chip-border:rgba(15,23,42,.08);--kt-chip-hover:rgba(15,23,42,.08);
+    --kt-row-hover:rgba(15,23,42,.03);
+    --kt-input-bg:rgba(241,245,249,.7);--kt-input-border:rgba(15,23,42,.12);
+    --kt-modal-bg1:rgba(255,255,255,.98);--kt-modal-bg2:rgba(248,250,252,.98);--kt-modal-border:rgba(15,23,42,.09);--kt-modal-backdrop:rgba(15,23,42,.25);
+    --kt-scrollbar:rgba(15,23,42,.16);
+    --kt-shadow-panel:0 24px 50px -28px rgba(15,23,42,.16);
+    --kt-shadow-modal:0 30px 70px -25px rgba(15,23,42,.25);
+  }
+  [data-root][data-kt-theme="dark"]{
+    --kt-bg1:#0F172A;--kt-bg2:#1E293B;--kt-bg3:#0F172A;--kt-blob-scale:1;
+    --kt-grain-op:.09;--kt-grain-blend:overlay;
+    --kt-text:#E2E8F0;--kt-heading:#F8FAFC;--kt-muted:#94A3B8;--kt-faint:#64748B;--kt-label:#64748B;
+    --kt-border:rgba(148,163,184,.1);--kt-border-soft:rgba(148,163,184,.06);
+    --kt-sidebar-bg:rgba(11,17,32,.72);--kt-panel-bg:rgba(17,24,39,.66);--kt-panel-border:rgba(148,163,184,.12);
+    --kt-chip-bg:rgba(148,163,184,.08);--kt-chip-border:rgba(148,163,184,.14);--kt-chip-hover:rgba(148,163,184,.16);
+    --kt-row-hover:rgba(148,163,184,.05);
+    --kt-input-bg:rgba(15,23,42,.6);--kt-input-border:rgba(148,163,184,.14);
+    --kt-modal-bg1:rgba(23,31,48,.96);--kt-modal-bg2:rgba(15,23,42,.96);--kt-modal-border:rgba(148,163,184,.16);--kt-modal-backdrop:rgba(2,6,23,.6);
+    --kt-scrollbar:rgba(148,163,184,.22);
+    --kt-shadow-panel:0 30px 60px -30px rgba(0,0,0,.6);
+    --kt-shadow-modal:0 40px 90px -30px rgba(0,0,0,.8);
+  }
+
+  @keyframes ktBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-28px) scale(1.14)}}
+  @keyframes ktBlob2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-26px,24px) scale(1.1)}}
+  @keyframes ktGrainShift{0%{transform:translate(0,0)}25%{transform:translate(-4%,3%)}50%{transform:translate(3%,-2%)}75%{transform:translate(-2%,-3%)}100%{transform:translate(0,0)}}
+  @keyframes ktPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.35)}}
+  @keyframes ktToastIn{0%{transform:translateX(130%) scale(.9);opacity:0}55%{transform:translateX(-10px) scale(1.02);opacity:1}75%{transform:translateX(5px) scale(.99)}100%{transform:translateX(0) scale(1)}}
+  @keyframes ktToastOut{to{transform:translateX(130%) scale(.92);opacity:0}}
+
+  .kt-nav:hover{background:var(--kt-chip-hover) !important}
+  .kt-actbtn:hover{background:var(--kt-chip-hover) !important;color:var(--kt-heading) !important}
+  .kt-actbtn.del:hover{background:rgba(244,63,94,.16) !important;color:#FB7185 !important}
+  .kt-row{transition:background .18s ease}
+  .kt-row:hover{background:var(--kt-row-hover)}
+  .kt-primary:hover{transform:translateY(-2px);box-shadow:0 16px 34px -12px rgba(16,185,129,.7)}
+  .kt-primary:active{transform:translateY(0)}
+
+  /* sidebar collapse (manual, works at any width) */
+  .kt-sidebar{width:256px}
+  [data-root][data-kt-collapsed="true"] .kt-sidebar{width:76px}
+  [data-root][data-kt-collapsed="true"] .kt-sidelabel{display:none}
+  [data-root][data-kt-collapsed="true"] .kt-menutitle{opacity:0}
+  [data-root][data-kt-collapsed="true"] .kt-navrow{justify-content:center}
+  [data-root][data-kt-collapsed="true"] .kt-collapse-icon{transform:rotate(180deg)}
+
+  /* theme switch */
+  .kt-theme-icon-sun{display:none}
+  .kt-theme-icon-moon{display:inline-flex}
+  [data-root][data-kt-theme="dark"] .kt-theme-icon-sun{display:inline-flex}
+  [data-root][data-kt-theme="dark"] .kt-theme-icon-moon{display:none}
+  .kt-theme-label-light{display:none}
+  .kt-theme-label-dark{display:inline}
+  [data-root][data-kt-theme="dark"] .kt-theme-label-light{display:inline}
+  [data-root][data-kt-theme="dark"] .kt-theme-label-dark{display:none}
+  .kt-theme-track{background:#CBD5E1}
+  [data-root][data-kt-theme="dark"] .kt-theme-track{background:#10B981}
+  .kt-theme-knob{transform:translateX(0)}
+  [data-root][data-kt-theme="dark"] .kt-theme-knob{transform:translateX(16px)}
+
+  /* create/edit modal mode swap */
+  .kt-only-create{display:inline}
+  .kt-only-edit{display:none}
+  [data-root][data-kt-modal-mode="edit"] .kt-only-create{display:none}
+  [data-root][data-kt-modal-mode="edit"] .kt-only-edit{display:inline}
+
+  /* modal open/close */
+  [data-modal]{opacity:0;pointer-events:none;transition:opacity .22s ease}
+  [data-root][data-kt-modal="true"] [data-modal]{opacity:1;pointer-events:auto}
+  [data-modal-panel]{transform:scale(.94) translateY(10px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+  [data-root][data-kt-modal="true"] [data-modal-panel]{transform:scale(1) translateY(0)}
+
+  /* modal role/status pill selector */
+  [data-role-opt]{background:transparent;color:var(--kt-muted)}
+  [data-root][data-kt-form-role="Libre"] [data-role-opt="Libre"],
+  [data-root][data-kt-form-role="Premium"] [data-role-opt="Premium"],
+  [data-root][data-kt-form-role="Admin"] [data-role-opt="Admin"]{background:linear-gradient(150deg,#10B981,#059669);color:#fff;box-shadow:0 6px 16px -8px rgba(16,185,129,.7)}
+  [data-status-opt]{background:var(--kt-input-bg);border-color:var(--kt-input-border) !important;color:var(--kt-muted)}
+  [data-root][data-kt-form-status="Activo"] [data-status-opt="Activo"]{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.5) !important;color:#059669}
+  [data-root][data-kt-theme="dark"][data-kt-form-status="Activo"] [data-status-opt="Activo"]{color:#34D399}
+  [data-root][data-kt-form-status="Inactivo"] [data-status-opt="Inactivo"]{background:rgba(244,63,94,.14);border-color:rgba(244,63,94,.5) !important;color:#BE123C}
+  [data-root][data-kt-theme="dark"][data-kt-form-status="Inactivo"] [data-status-opt="Inactivo"]{color:#FB7185}
+
+  /* role / status pills (table rows + details drawer) */
+  [data-rolepill]{background:var(--kt-chip-bg);color:var(--kt-muted);border:1px solid var(--kt-chip-border)}
+  [data-statuspill]{background:var(--kt-chip-bg);color:var(--kt-muted);border:1px solid var(--kt-chip-border)}
+  [data-statusdot]{background:var(--kt-muted)}
+  .kt-row[data-role="Admin"] [data-rolepill], [data-details-drawer][data-role="Admin"] [data-rolepill]{background:rgba(56,189,248,.16);color:#0369A1;border-color:rgba(56,189,248,.35)}
+  .kt-row[data-role="Premium"] [data-rolepill], [data-details-drawer][data-role="Premium"] [data-rolepill]{background:rgba(245,158,11,.16);color:#B45309;border-color:rgba(245,158,11,.35)}
+  .kt-row[data-role="Libre"] [data-rolepill], [data-details-drawer][data-role="Libre"] [data-rolepill]{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
+  [data-root][data-kt-theme="dark"] .kt-row[data-role="Admin"] [data-rolepill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-role="Admin"] [data-rolepill]{color:#7DD3FC}
+  [data-root][data-kt-theme="dark"] .kt-row[data-role="Premium"] [data-rolepill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-role="Premium"] [data-rolepill]{color:#FBBF24}
+  [data-root][data-kt-theme="dark"] .kt-row[data-role="Libre"] [data-rolepill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-role="Libre"] [data-rolepill]{color:#CBD5E1}
+  .kt-row[data-status="Activo"] [data-statuspill], [data-details-drawer][data-status="Activo"] [data-statuspill]{background:rgba(16,185,129,.16);color:#047857;border-color:rgba(16,185,129,.35)}
+  .kt-row[data-status="Inactivo"] [data-statuspill], [data-details-drawer][data-status="Inactivo"] [data-statuspill]{background:rgba(244,63,94,.16);color:#BE123C;border-color:rgba(244,63,94,.35)}
+  [data-root][data-kt-theme="dark"] .kt-row[data-status="Activo"] [data-statuspill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-status="Activo"] [data-statuspill]{color:#34D399}
+  [data-root][data-kt-theme="dark"] .kt-row[data-status="Inactivo"] [data-statuspill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-status="Inactivo"] [data-statuspill]{color:#FB7185}
+  .kt-row[data-status="Activo"] [data-statusdot], [data-details-drawer][data-status="Activo"] [data-statusdot]{background:#10B981;box-shadow:0 0 8px #10B981}
+  .kt-row[data-status="Inactivo"] [data-statusdot], [data-details-drawer][data-status="Inactivo"] [data-statusdot]{background:#F43F5E;box-shadow:0 0 8px #F43F5E}
+  .kt-row[data-role="Admin"] [data-avatar]{background:linear-gradient(150deg,#38BDF8,#2563EB)}
+  .kt-row[data-role="Premium"] [data-avatar]{background:linear-gradient(150deg,#FBBF24,#D97706)}
+  .kt-row[data-role="Libre"] [data-avatar]{background:linear-gradient(150deg,#34D399,#059669)}
+  [data-details-drawer][data-role="Admin"] [data-avatar-lg]{background:linear-gradient(150deg,#38BDF8,#2563EB)}
+  [data-details-drawer][data-role="Premium"] [data-avatar-lg]{background:linear-gradient(150deg,#FBBF24,#D97706)}
+  [data-details-drawer][data-role="Libre"] [data-avatar-lg]{background:linear-gradient(150deg,#34D399,#059669)}
+
+  /* notifications dropdown */
+  [data-notif-panel]{opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+  [data-root][data-kt-notif="true"] [data-notif-panel]{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+  [data-notif-catcher]{display:none}
+  [data-root][data-kt-notif="true"] [data-notif-catcher]{display:block}
+  [data-notif-icon][data-kind="success"]{background:rgba(16,185,129,.16);color:#10B981}
+  [data-notif-icon][data-kind="error"]{background:rgba(244,63,94,.16);color:#F43F5E}
+  [data-notif-icon][data-kind="warn"]{background:rgba(245,158,11,.16);color:#F59E0B}
+
+  /* details drawer */
+  [data-details-backdrop]{opacity:0;pointer-events:none;transition:opacity .25s ease}
+  [data-root][data-kt-details="true"] [data-details-backdrop]{opacity:1;pointer-events:auto}
+  [data-details-drawer]{transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
+  [data-root][data-kt-details="true"] [data-details-drawer]{transform:translateX(0)}
+
+  @media(max-width:1024px){
+    .kt-sidebar{width:74px !important}
+    .kt-sidelabel{display:none !important}
+    .kt-menutitle{opacity:0 !important}
+    .kt-navrow{justify-content:center !important}
+    .kt-collapsebtn{display:none !important}
+  }
+  @media(max-width:760px){
+    .kt-tablewrap{overflow-x:auto}
+    .kt-table{min-width:680px}
+    .kt-headtitle{font-size:22px !important}
+    .kt-main-pad{padding:18px !important}
+  }
+  @media(max-width:560px){
+    .kt-sidebar{position:absolute !important;z-index:40;height:100%;box-shadow:0 0 60px rgba(0,0,0,.6)}
+  }
+
+  [data-root][data-kt-collapsed="true"] .kt-brand-logo { display: none !important; }
+  [data-root][data-kt-collapsed="true"] .kt-brand-header { padding-left: 0 !important; padding-right: 0 !important; justify-content: center !important; }
+  [data-root][data-kt-collapsed="true"] .kt-collapsebtn { margin-left: 0 !important; }
+`}</style>
+      <div 
+        data-root 
+        data-kt-theme={theme} 
+        data-kt-collapsed={collapsed ? "true" : "false"}
+        data-kt-notif={notifOpen ? "true" : "false"}
+        style={{ position:'fixed', inset:0, display:'flex', overflow:'hidden', fontFamily:"'Manrope',sans-serif", background:'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)', color:'var(--kt-text)' }}
+      >
+        {/* decorative ambient layer */}
+        <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none', zIndex:0 }}>
+          <div style={{ position:'absolute', inset:0, opacity:'var(--kt-blob-scale)' }}>
+            <div style={{ position:'absolute', top:'-160px', left:'120px', width:'520px', height:'520px', borderRadius:'50%', background:'radial-gradient(circle at 50% 50%, rgba(16,185,129,.32), rgba(16,185,129,0) 68%)', filter:'blur(30px)', animation:'ktBlob 16s ease-in-out infinite' }}></div>
+            <div style={{ position:'absolute', bottom:'-200px', right:'-80px', width:'560px', height:'560px', borderRadius:'50%', background:'radial-gradient(circle at 50% 50%, rgba(245,158,11,.24), rgba(245,158,11,0) 66%)', filter:'blur(34px)', animation:'ktBlob2 20s ease-in-out infinite' }}></div>
+            <div style={{ position:'absolute', top:'30%', right:'26%', width:'360px', height:'360px', borderRadius:'50%', background:'radial-gradient(circle at 50% 50%, rgba(56,189,248,.18), rgba(56,189,248,0) 70%)', filter:'blur(32px)', animation:'ktBlob 24s ease-in-out infinite' }}></div>
           </div>
-        </header>
-
-        <div className="lg:hidden flex border-b border-hairline bg-canvas p-4 gap-3 sticky top-[88px] z-20 w-full">
-          <button
-            onClick={() => setMobileActiveTab('config')}
-            className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer text-center ${
-              mobileActiveTab === 'config'
-                ? 'bg-brand-primary text-white shadow-soft'
-                : 'text-ink-subtle hover:text-ink bg-surface-2 hover:bg-surface-3 border border-transparent'
-            }`}
-          >
-            Configuración
-          </button>
-          <button
-            onClick={() => setMobileActiveTab('content')}
-            className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 relative ${
-              mobileActiveTab === 'content'
-                ? 'bg-brand-primary text-white shadow-soft'
-                : 'text-ink-subtle hover:text-ink bg-surface-2 hover:bg-surface-3 border border-transparent'
-            }`}
-          >
-            {isGenerating ? 'Generando...' : 'Contenido AI'}
-            {isGenerating && (
-              <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-              </span>
-            )}
-          </button>
+          <svg style={{ position:'absolute', inset:'-6%', width:'112%', height:'112%', opacity:'var(--kt-grain-op)', mixBlendMode:'var(--kt-grain-blend)', animation:'ktGrainShift 8s steps(6) infinite' }} xmlns="http://www.w3.org/2000/svg">
+            <filter id="ktnoise"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix></filter>
+            <rect width="100%" height="100%" filter="url(#ktnoise)"></rect>
+          </svg>
         </div>
 
-        <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-          
-          <section className={`w-full lg:w-[460px] border-b lg:border-b-0 lg:border-r border-hairline bg-canvas p-6 sm:p-10 flex flex-col gap-10 overflow-y-auto shrink-0 scrollbar-none ${
-            mobileActiveTab === 'config' ? 'flex' : 'hidden lg:flex'
-          }`}>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-3xl font-bold tracking-tight text-ink">Configuración</h3>
-              <p className="text-sm text-ink-subtle leading-relaxed font-medium">Proporciona los datos del curso para la IA y personaliza los subtemas a estructurar.</p>
+        {/* SIDEBAR */}
+        <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .28s cubic-bezier(.4,0,.2,1)' }}>
+          <div className="kt-brand-header" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'22px 20px 20px', position: 'relative', transition: 'padding 0.2s' }}>
+            <div className="kt-brand-logo" style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', display:'grid', placeItems:'center', boxShadow:'0 6px 16px -5px rgba(16,185,129,.6)' }}>
+              <span style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'19px', color:'#fff', letterSpacing:'-1px' }}>K</span>
             </div>
-
-            <div className="flex flex-col gap-8">
-              <Input 
-                label="Asignatura / Curso"
-                value={materia}
-                onChange={(e) => setMateria(e.target.value)}
-                placeholder="Ej. Programación I"
-                className="py-4 px-5 text-sm rounded-2xl"
-              />
-              <Input 
-                label="Tema Principal"
-                value={tema}
-                onChange={(e) => setTema(e.target.value)}
-                placeholder="Ej. Estructuras de Datos Lineales"
-                className="py-4 px-5 text-sm rounded-2xl"
-              />
-              <Textarea 
-                label="Subtemas o Unidades (Sílabo)"
-                rows={7}
-                value={unidades}
-                onChange={(e) => setUnidades(e.target.value)}
-                placeholder="Ej. 1.1 Pilas (push, pop)&#10;1.2 Listas enlazadas&#10;1.3 Colas de prioridad"
-                className="py-4 px-5 text-sm rounded-2xl"
-              />
-
-              <Button
-                variant="primary"
-                onClick={() => {
-                  handleGenerate();
-                  setMobileActiveTab('content');
-                }}
-                disabled={isGenerating || !tema || !materia}
-                className="w-full py-4.5 text-sm font-bold shadow-elevated hover:-translate-y-1 transition-all duration-300 rounded-xl bg-brand-primary text-white mt-4 disabled:opacity-50 disabled:hover:translate-y-0"
-              >
-                {isGenerating ? 'Generando Material...' : 'Generar Material con IA'}
-              </Button>
-            </div>
-
-            <div className="p-6 text-xs text-brand-primary leading-relaxed border border-brand-primary/20 bg-brand-primary/5 rounded-2xl mt-auto shadow-sm">
-              <span className="font-bold block mb-2 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                Nota del Motor AI
-              </span>
-              Esta integración generará teoría completa, ejercicios con soluciones, un examen evaluatorio estructurado de opción múltiple y el esquema para diapositivas docentes de apoyo.
-            </div>
-          </section>
-
-          <section className={`flex-1 flex flex-col bg-surface-2 min-w-0 ${
-            mobileActiveTab === 'content' ? 'flex' : 'hidden lg:flex'
-          }`}>
+            <span className="kt-sidelabel" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.8px', color:'var(--kt-heading)' }}>Katedra</span>
             
-            <div className="h-[72px] border-b border-hairline bg-canvas overflow-x-auto w-full select-none sticky top-0 z-10 scrollbar-none">
-              <div className="w-full h-full px-6 sm:px-10 flex items-center gap-6 sm:gap-10 min-w-[600px]">
-                {[
-                  { id: 'teoria', label: 'Teoría Docente' },
-                  { id: 'ejercicios', label: 'Ejercicios Prácticos' },
-                  { id: 'evaluacion', label: 'Evaluación' },
-                  { id: 'diapositivas', label: 'Diapositivas' }
-                ].map((tab) => (
-                  <button 
-                    key={tab.id}
-                    disabled={!generatedData}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`h-full text-xs sm:text-[13px] px-2 font-bold transition-all border-b-[3px] cursor-pointer whitespace-nowrap ${
-                      activeTab === tab.id && generatedData 
-                        ? 'text-brand-primary border-brand-primary' 
-                        : 'text-ink-subtle border-transparent hover:text-ink hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+            <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{ marginLeft: 'auto', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'8px', color:'var(--kt-muted)', cursor:'pointer' }}>
+              <ChevronLeft className="kt-collapse-icon" size={16} style={{ transition:'transform .25s' }} />
+            </button>
+          </div>
+
+          <div className="kt-menutitle" style={{ padding:'6px 22px 10px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1.4px', textTransform:'uppercase', color:'var(--kt-label)', transition:'opacity .2s' }}>Menú Principal</div>
+
+          <nav style={{ display:'flex', flexDirection:'column', gap:'4px', padding:'0 12px' }}>
+            <Link to="/usuarios" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', color:'var(--kt-muted)', border:'1px solid transparent' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><UsersIcon size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px' }}>Usuarios</span>
+            </Link>
+            <Link to="/dashboard" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', color:'var(--kt-muted)', border:'1px solid transparent' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><FolderDot size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px' }}>Mis Temarios</span>
+            </Link>
+            <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', color:'var(--kt-muted)', border:'1px solid transparent' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><Sparkles size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px' }}>Contenidos Generados</span>
+            </Link>
+            <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background:'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))', border:'1px solid rgba(16,185,129,.28)', color:'var(--kt-heading)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color:'#10B981' }}><Wand2 size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'14px' }}>Generador</span>
+            </Link>
+          </nav>
+
+          <div style={{ marginTop:'auto', padding:'16px 14px 18px', display:'flex', flexDirection:'column', gap:'12px' }}>
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'10px 12px', borderRadius:'12px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', cursor:'pointer', textAlign:'left', width:'100%' }}>
+              {theme === 'dark' ? <Sun size={18} color="#F59E0B" style={{ flex:'none' }} /> : <Moon size={18} style={{ flex:'none', color:'var(--kt-muted)' }} />}
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px', color:'var(--kt-text)' }}>{theme === 'dark' ? 'Claro' : 'Oscuro'}</span>
+              <span className="kt-sidelabel" style={{ marginLeft:'auto', width:'38px', height:'22px', borderRadius:'20px', position:'relative', flex:'none', transition:'background .25s', background: theme === 'dark' ? '#10B981' : '#CBD5E1' }}>
+                <span style={{ position:'absolute', top:'2px', left:'2px', width:'18px', height:'18px', borderRadius:'50%', background:'#fff', transition:'transform .25s', transform: theme === 'dark' ? 'translateX(16px)' : 'translateX(0)' }}></span>
+              </span>
+            </button>
+            <div className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'6px 8px' }}>
+              <div style={{ width:'38px', height:'38px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,#38BDF8,#2563EB)', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>SM</div>
+              <div className="kt-sidelabel" style={{ minWidth:0 }}>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>Saul Martinez</div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)' }}>Usuario Normal</div>
               </div>
             </div>
+          </div>
+        </aside>
 
-            <div className="flex-1 overflow-y-auto scrollbar-none">
-              <div className="p-6 sm:p-10 lg:p-12 w-full max-w-5xl mx-auto">
+        {/* MAIN */}
+        <main style={{ position:'relative', zIndex:5, flex:1, minWidth:0, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <header className="kt-main-pad" style={{ display:'flex', alignItems:'center', gap:'18px', padding:'26px 32px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+            <div style={{ minWidth:0 }}>
+              <h1 className="kt-headtitle" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'27px', lineHeight:1.15, letterSpacing:'-1.2px', color:'var(--kt-heading)', margin:0 }}>Generador de Contenido</h1>
+              <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', color:'var(--kt-muted)', margin:'3px 0 0' }}>Editor de Temarios con Inteligencia Artificial</p>
+            </div>
+            
+            <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'12px' }}>
+              {/* notifications */}
+              <div style={{ position:'relative' }}>
+                <button onClick={() => setNotifOpen(!notifOpen)} aria-label="Notificaciones" style={{ position:'relative', width:'42px', height:'42px', display:'grid', placeItems:'center', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'11px', color:'var(--kt-muted)', cursor:'pointer' }}>
+                  <Bell size={19} />
+                  {unreadCount > 0 && (
+                    <span style={{ position:'absolute', top:'-2px', right:'-2px', minWidth:'18px', height:'18px', padding:'0 4px', borderRadius:'9px', background:'#F43F5E', color:'#fff', fontFamily:"'Manrope'", fontWeight:800, fontSize:'10px', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 0 2px var(--kt-panel-bg)' }}>{unreadCount}</span>
+                  )}
+                </button>
+                <div data-notif-catcher onClick={() => setNotifOpen(false)} style={{ position:'fixed', inset:0, zIndex:65 }}></div>
+                <div data-notif-panel style={{ position:'absolute', top:'52px', right:0, width:'320px', maxHeight:'400px', overflow:'auto', background:'var(--kt-modal-bg1)', border:'1px solid var(--kt-modal-border)', borderRadius:'14px', boxShadow:'var(--kt-shadow-modal)', zIndex:70 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'14px 16px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+                    <span style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'14px', color:'var(--kt-heading)' }}>Notificaciones</span>
+                    {unreadCount > 0 && (
+                      <span onClick={() => setNotifications([])} style={{ marginLeft:'auto', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#10B981', cursor:'pointer' }}>Marcar leídas</span>
+                    )}
+                  </div>
+                  {notifications.length > 0 ? notifications.map(n => (
+                    <div key={n.id} style={{ display:'flex', gap:'10px', padding:'12px 16px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+                      <span data-notif-icon data-kind={n.kind} style={{ flex:'none', width:'30px', height:'30px', borderRadius:'9px', display:'grid', placeItems:'center', background: n.kind === 'success' ? 'rgba(16,185,129,.16)' : n.kind === 'error' ? 'rgba(244,63,94,.16)' : 'rgba(245,158,11,.16)', color: n.kind === 'success' ? '#10B981' : n.kind === 'error' ? '#F43F5E' : '#F59E0B' }}>
+                        {n.kind === 'success' && <CheckCircle2 size={15} />}
+                        {n.kind === 'error' && <AlertCircle size={15} />}
+                        {n.kind === 'warn' && <AlertCircle size={15} />}
+                      </span>
+                      <div style={{ minWidth:0 }}>
+                        <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', color:'var(--kt-heading)' }}>{n.title}</div>
+                        <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', marginTop:'1px' }}>{n.msg}</div>
+                        <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'10px', color:'var(--kt-faint)', marginTop:'4px' }}>{timeAgo(n.ts)}</div>
+                      </div>
+                    </div>
+                  )) : (
+                    <div style={{ padding:'36px 16px', textAlign:'center', fontFamily:"'Manrope'", fontWeight:600, fontSize:'12.5px', color:'var(--kt-faint)' }}>Sin notificaciones por ahora.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div className="kt-main-pad" style={{ flex:1, overflow:'hidden', padding:'24px', display:'flex', gap:'24px' }}>
+            
+            {/* LEFT CONFIGURATION PANEL */}
+            <section style={{ width:'360px', flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-panel-bg)', backdropFilter:'blur(12px)', border:'1px solid var(--kt-panel-border)', borderRadius:'18px', overflow:'hidden', boxShadow:'var(--kt-shadow-panel)' }}>
+              <div style={{ padding:'20px 22px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+                <h2 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'17px', letterSpacing:'-.5px', color:'var(--kt-heading)', margin:0, display:'flex', alignItems:'center', gap:'8px' }}>
+                  <Settings size={18} style={{ color:'var(--kt-muted)' }}/> Configuración
+                </h2>
+                <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'12.5px', color:'var(--kt-muted)', marginTop:'6px' }}>Selecciona tu temario y qué material generar</p>
+              </div>
+
+              <div style={{ flex:1, overflowY:'auto', padding:'22px', display:'flex', flexDirection:'column', gap:'22px' }}>
+
+                {/* 1. Temario selector */}
+                <div>
+                  <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
+                    <BookOpen size={13} style={{ color:'var(--kt-muted)' }} /> Temario
+                  </label>
+                  <select
+                    value={temarioId}
+                    onChange={e => setTemarioId(e.target.value)}
+                    style={{ width:'100%', height:'42px', padding:'0 12px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color: temarioId ? 'var(--kt-heading)' : 'var(--kt-muted)', fontWeight:500, fontSize:'13.5px', cursor:'pointer', appearance:'auto' }}
+                  >
+                    <option value="">— Selecciona un temario —</option>
+                    {courses.map(c => (
+                      <option key={c.id} value={c.id}>{c.titulo} · {c.asignatura}</option>
+                    ))}
+                  </select>
+                  {temarioSeleccionado && (
+                    <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', margin:'7px 2px 0' }}>
+                      {temarioSeleccionado.gradoAcademico || 'Sin grado'} · {loadingContenido ? 'Consultando material...' : (contenidoExistente ? 'Ya tiene material generado' : 'Sin material generado aún')}
+                    </p>
+                  )}
+                  {courses.length === 0 && (
+                    <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', margin:'7px 2px 0' }}>
+                      No tienes temarios. <Link to="/dashboard" style={{ color:'#10B981', fontWeight:700 }}>Crea uno primero</Link>.
+                    </p>
+                  )}
+                </div>
+
+                {/* 2. Piece checkboxes */}
+                <div>
+                  <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'9px' }}>
+                    <CheckSquare size={13} style={{ color:'var(--kt-muted)' }} /> Material a generar
+                  </label>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                    {PIEZAS.map(pieza => {
+                      const selected = piezas.includes(pieza.id);
+                      const exists = piezaYaGenerada(pieza.id);
+                      const willRegen = regenerarPiezas.includes(pieza.id);
+                      return (
+                        <div key={pieza.id} style={{ border:`1.5px solid ${selected ? 'rgba(16,185,129,.45)' : 'var(--kt-input-border)'}`, background: selected ? 'rgba(16,185,129,.07)' : 'var(--kt-input-bg)', borderRadius:'12px', padding:'11px 13px', transition:'all .2s' }}>
+                          <label style={{ display:'flex', alignItems:'center', gap:'10px', cursor: temarioId ? 'pointer' : 'not-allowed', opacity: temarioId ? 1 : 0.55 }}>
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              disabled={!temarioId}
+                              onChange={() => togglePieza(pieza.id)}
+                              style={{ width:'16px', height:'16px', accentColor:'#10B981', cursor:'inherit' }}
+                            />
+                            <span style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)' }}>{pieza.label}</span>
+                            {exists && (
+                              <span style={{ marginLeft:'auto', display:'inline-flex', alignItems:'center', gap:'4px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', color:'#059669', background:'rgba(16,185,129,.14)', border:'1px solid rgba(16,185,129,.3)', padding:'3px 8px', borderRadius:'8px', whiteSpace:'nowrap' }}>
+                                <CheckCircle2 size={11} /> Ya generada
+                              </span>
+                            )}
+                          </label>
+                          {exists && selected && (
+                            <label style={{ display:'flex', alignItems:'center', gap:'8px', marginTop:'9px', paddingTop:'9px', borderTop:'1px dashed var(--kt-border)', cursor:'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={willRegen}
+                                onChange={() => toggleRegenerar(pieza.id)}
+                                style={{ width:'14px', height:'14px', accentColor:'#F59E0B', cursor:'pointer' }}
+                              />
+                              <RefreshCw size={12} style={{ color:'#F59E0B' }} />
+                              <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-muted)' }}>
+                                Regenerar (consume créditos)
+                              </span>
+                            </label>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Model tier selector */}
+                <div>
+                  <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'9px' }}>
+                    <Cpu size={13} style={{ color:'var(--kt-muted)' }} /> Modelo de IA
+                  </label>
+                  <div style={{ display:'flex', gap:'8px' }}>
+                    {MODELOS.map(m => {
+                      const active = modelo === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => setModelo(m.id)}
+                          style={{ flex:1, padding:'11px 10px', borderRadius:'12px', cursor:'pointer', textAlign:'left', border:`1.5px solid ${active ? 'rgba(16,185,129,.5)' : 'var(--kt-input-border)'}`, background: active ? 'linear-gradient(150deg,rgba(16,185,129,.16),rgba(16,185,129,.05))' : 'var(--kt-input-bg)', transition:'all .2s' }}
+                        >
+                          <span style={{ display:'block', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color: active ? '#059669' : 'var(--kt-heading)' }}>{m.label}</span>
+                          <span style={{ display:'block', fontFamily:"'Manrope'", fontWeight:500, fontSize:'10.5px', color:'var(--kt-muted)', marginTop:'3px', lineHeight:1.35 }}>{m.hint}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {piezasOmitidas.length > 0 && (
+                  <div style={{ display:'flex', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(245,158,11,.1)', border:'1px solid rgba(245,158,11,.25)' }}>
+                    <AlertCircle size={16} style={{ color:'#F59E0B', flex:'none', marginTop:'1px' }} />
+                    <p style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-text)', margin:0, lineHeight:1.5 }}>
+                      Se omitió: <strong>{piezasOmitidas.join(', ')}</strong> — ya existía y no se marcó "Regenerar" (créditos protegidos).
+                    </p>
+                  </div>
+                )}
+
+                {genError && (
+                  <div style={{ display:'flex', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(244,63,94,.1)', border:'1px solid rgba(244,63,94,.25)' }}>
+                    <AlertCircle size={16} style={{ color:'#F43F5E', flex:'none', marginTop:'1px' }} />
+                    <p style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-text)', margin:0, lineHeight:1.5 }}>{genError}</p>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ padding:'22px', borderTop:'1px solid var(--kt-border-soft)', background:'var(--kt-chip-bg)' }}>
+                <button
+                  className="kt-primary"
+                  onClick={() => {
+                    handleGenerate();
+                    notify('success', 'Generación Iniciada', 'La IA está creando el contenido...');
+                  }}
+                  disabled={!canGenerate}
+                  style={{ width:'100%', height:'46px', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', border:'none', borderRadius:'11px', background: !canGenerate ? 'var(--kt-chip-border)' : 'linear-gradient(150deg,#10B981,#059669)', color: !canGenerate ? 'var(--kt-muted)' : '#fff', cursor: !canGenerate ? 'not-allowed' : 'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow: !canGenerate ? 'none' : '0 12px 26px -12px rgba(16,185,129,.7)', transition:'all .2s' }}
+                >
+                  {isGenerating ? <div style={{width:'18px',height:'18px',border:'2px solid rgba(255,255,255,.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 1s linear infinite'}} /> : <Wand2 size={18} />}
+                  {isGenerating ? 'Procesando...' : `Generar ${piezas.length > 0 ? `(${piezas.length} pieza${piezas.length > 1 ? 's' : ''})` : 'Material'}`}
+                </button>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              </div>
+            </section>
+
+            {/* RIGHT PREVIEW PANEL */}
+            <section style={{ flex:1, minWidth:0, display:'flex', flexDirection:'column', background:'var(--kt-panel-bg)', backdropFilter:'blur(12px)', border:'1px solid var(--kt-panel-border)', borderRadius:'18px', overflow:'hidden', boxShadow:'var(--kt-shadow-panel)' }}>
               
+              {/* Tabs header */}
+              <div style={{ display:'flex', overflowX:'auto', borderBottom:'1px solid var(--kt-border-soft)' }}>
+                {[
+                  { id: 'teoria', label: 'Teoría Docente', icon: <FileText size={16}/> },
+                  { id: 'ejercicios', label: 'Ejercicios Prácticos', icon: <CheckSquare size={16}/> },
+                  { id: 'evaluacion', label: 'Evaluación', icon: <FileQuestion size={16}/> },
+                  { id: 'diapositivas', label: 'Diapositivas', icon: <MonitorPlay size={16}/> }
+                ].map((tab) => {
+                  const enabled = pieceHasContent(tab.id);
+                  return (
+                    <button
+                      key={tab.id}
+                      disabled={!enabled}
+                      onClick={() => setActiveTab(tab.id)}
+                      style={{
+                        flex:1, height:'58px', minWidth:'140px', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
+                        background:'transparent', border:'none', borderBottom: activeTab === tab.id && enabled ? '2px solid #10B981' : '2px solid transparent',
+                        color: activeTab === tab.id && enabled ? '#10B981' : (enabled ? 'var(--kt-muted)' : 'var(--kt-faint)'),
+                        fontFamily:"'Inter'", fontWeight:600, fontSize:'13.5px',
+                        cursor: enabled ? 'pointer' : 'not-allowed',
+                        transition:'all .2s'
+                      }}
+                    >
+                      {tab.icon} {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Content Viewer Area */}
+              <div style={{ flex:1, overflowY:'auto', padding:'32px' }}>
+                
                 {isGenerating && (
-                  <div className="min-h-[500px] flex flex-col items-center justify-center gap-8 text-center py-20 bg-canvas border border-hairline rounded-[32px] shadow-sm px-8">
-                    <div className="w-12 h-12 rounded-full border-[3px] border-surface-3 border-t-brand-primary animate-spin"></div>
-                    <div className="flex flex-col gap-3 max-w-lg">
-                      <p className="text-xl font-bold text-ink tracking-tight">El motor de IA está cocinando tu contenido...</p>
-                      <p className="text-xs text-brand-primary font-bold uppercase tracking-widest animate-pulse bg-brand-primary/10 px-4 py-2 rounded-xl w-max mx-auto border border-brand-primary/20">{generationStep}</p>
+                  <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'20px', textAlign:'center' }}>
+                    <div style={{ width:'56px', height:'56px', borderRadius:'50%', border:'3px solid var(--kt-border-soft)', borderTopColor:'#10B981', animation:'spin 1s linear infinite' }}></div>
+                    <div>
+                      <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'20px', color:'var(--kt-heading)', margin:0 }}>Creando contenido con IA...</h4>
+                      <p style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12px', color:'#10B981', background:'rgba(16,185,129,.1)', padding:'6px 16px', borderRadius:'20px', display:'inline-block', marginTop:'12px', textTransform:'uppercase', letterSpacing:'1px' }}>{generationStep}</p>
                     </div>
                   </div>
                 )}
 
-                {!isGenerating && !generatedData && (
-                  <div className="min-h-[500px] flex flex-col items-center justify-center gap-8 text-center py-20 px-10 bg-canvas/50 border-2 border-dashed border-hairline-strong rounded-[32px]">
-                    <div className="w-16 h-16 rounded-[20px] bg-canvas border border-hairline flex items-center justify-center shadow-sm">
-                      <svg className="w-8 h-8 text-brand-primary opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                      </svg>
+                {!isGenerating && !displayData && (
+                  <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', textAlign:'center', opacity:0.6 }}>
+                    <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', display:'grid', placeItems:'center', color:'var(--kt-muted)' }}>
+                      <Wand2 size={32} />
                     </div>
-                    <div className="flex flex-col gap-3 max-w-md">
-                      <h4 className="text-xl font-bold text-ink">Material Académico Vacío</h4>
-                      <p className="text-sm text-ink-subtle leading-relaxed font-medium">
-                        Usa el panel de configuración a la izquierda para ingresar el nombre de la asignatura y el temario.
+                    <div>
+                      <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'18px', color:'var(--kt-heading)', margin:0 }}>Área de Trabajo Vacía</h4>
+                      <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-muted)', maxWidth:'320px', margin:'8px auto 0' }}>
+                        {temarioId ? 'Este temario aún no tiene material. Elige qué piezas generar en el panel izquierdo.' : 'Selecciona un temario en el panel de la izquierda para comenzar.'}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {!isGenerating && generatedData && (
-                  <div className="flex flex-col gap-8 sm:gap-10 animate-fade-in pb-24">
+                {!isGenerating && displayData && !pieceHasContent(activeTab) && (
+                  <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', textAlign:'center', opacity:0.6 }}>
+                    <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', display:'grid', placeItems:'center', color:'var(--kt-muted)' }}>
+                      <FileQuestion size={32} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'18px', color:'var(--kt-heading)', margin:0 }}>Pieza no generada</h4>
+                      <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-muted)', maxWidth:'320px', margin:'8px auto 0' }}>Márcala en el panel izquierdo y genera para verla aquí.</p>
+                    </div>
+                  </div>
+                )}
+
+                {!isGenerating && displayData && pieceHasContent(activeTab) && (
+                  <div style={{ animation:'ktToastIn .5s cubic-bezier(.34,1.56,.64,1)' }}>
                     
-                    {/* 1. Teoría Docente */}
+                    {/* 1. Teoría */}
                     {activeTab === 'teoria' && (
-                      <div className="flex flex-col gap-6 w-full">
-                        <div className="flex justify-end sticky top-[80px] z-10 pt-2 pb-2">
-                          <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-canvas border border-hairline hover:bg-surface-3 shadow-sm transition-all cursor-pointer text-ink">
-                            <IconPDF />
-                            <span>Exportar PDF</span>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+                        <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                          <button onClick={() => notify('success','Exportado','Teoría exportada en PDF.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer', transition:'background .2s' }}>
+                            <IconPDF /> Exportar PDF
                           </button>
                         </div>
-
-                        <div className="p-8 sm:p-12 bg-canvas border border-hairline rounded-[24px] shadow-illustrative flex flex-col">
-                          <div className="mb-8 border-b border-hairline pb-6">
-                            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-2">{tema || 'Módulo Teórico'}</h1>
-                            <p className="text-sm font-bold text-brand-primary">{materia || 'Material Académico'}</p>
-                          </div>
-                          
-                          <div className="text-sm sm:text-base text-ink-muted leading-relaxed font-medium whitespace-pre-line">
-                            {generatedData.teoria}
+                        <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'40px', boxShadow:'var(--kt-shadow-panel)' }}>
+                          <h1 style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'28px', color:'var(--kt-heading)', margin:'0 0 8px' }}>{temarioSeleccionado?.titulo || 'Módulo Teórico'}</h1>
+                          <p style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'14px', color:'#10B981', margin:'0 0 30px' }}>{temarioSeleccionado?.asignatura || 'Material Académico'}</p>
+                          <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'15px', color:'var(--kt-text)', lineHeight:'1.7', whiteSpace:'pre-line' }}>
+                            {displayData.teoria}
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* 2. Ejercicios Prácticos */}
+                    {/* 2. Ejercicios */}
                     {activeTab === 'ejercicios' && (
-                      <div className="flex flex-col gap-8 w-full">
-                        
-                        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 bg-canvas p-6 rounded-[24px] border border-hairline shadow-sm select-none">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center shrink-0 border border-brand-primary/20">
-                              <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </div>
-                            <div className="flex flex-col">
-                              <h3 className="text-lg font-bold text-ink">Hoja de Ejercicios</h3>
-                              <span className="text-xs font-medium text-ink-subtle">Problemas resueltos y casos prácticos.</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span className="text-[10px] uppercase tracking-widest text-ink-subtle font-bold mr-2 hidden sm:block">Extraer a:</span>
-                            <button onClick={() => alert('Exportar a Google Forms')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#7248B9]/20 bg-[#7248B9]/5 hover:bg-[#7248B9]/10 text-[#7248B9] transition-all cursor-pointer">
-                              <IconGoogleForms /> <span className="mt-0.5">Forms</span>
-                            </button>
-                            <button onClick={() => alert('Exportar a MS Forms')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#00828A]/20 bg-[#00828A]/5 hover:bg-[#00828A]/10 text-[#00828A] transition-all cursor-pointer">
-                              <IconMSForms /> <span className="mt-0.5">MS Forms</span>
-                            </button>
-                            <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#E11D48]/20 bg-[#E11D48]/5 hover:bg-[#E11D48]/10 text-[#E11D48] transition-all cursor-pointer">
-                              <IconPDF /> <span className="mt-0.5">PDF</span>
-                            </button>
-                          </div>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+                        <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px' }}>
+                           <button onClick={() => notify('success','Exportado','Exportado a Google Forms.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(114,72,185,.2)', background:'rgba(114,72,185,.05)', color:'#7248B9', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
+                             <IconGoogleForms /> Forms
+                           </button>
+                           <button onClick={() => notify('success','Exportado','Exportado a PDF.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(225,29,72,.2)', background:'rgba(225,29,72,.05)', color:'#E11D48', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
+                             <IconPDF /> PDF
+                           </button>
                         </div>
-
-                        <div className="p-8 sm:p-12 bg-canvas border border-hairline rounded-[24px] shadow-illustrative flex flex-col text-sm sm:text-base text-ink-muted leading-relaxed font-medium whitespace-pre-line">
-                          {generatedData.ejercicios}
+                        <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'40px', boxShadow:'var(--kt-shadow-panel)' }}>
+                          <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'15px', color:'var(--kt-text)', lineHeight:'1.7', whiteSpace:'pre-line' }}>
+                            {displayData.ejercicios}
+                          </div>
                         </div>
                       </div>
                     )}
 
-                    {/* 3. Evaluacion Tab View */}
+                    {/* 3. Evaluacion */}
                     {activeTab === 'evaluacion' && (
-                      <div className="flex flex-col gap-8 w-full">
-                        
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5 border border-hairline bg-canvas p-6 rounded-[24px] shadow-sm select-none">
-                          <div className="flex flex-col gap-1">
-                            <h3 className="text-lg font-bold text-ink">Banco de Preguntas</h3>
-                            <p className="text-xs font-medium text-ink-subtle">Cuestionario interactivo autogenerado.</p>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <button onClick={() => alert('Exportar a Google Forms')} className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#7248B9]/20 bg-[#7248B9]/5 hover:bg-[#7248B9]/10 text-[#7248B9] transition-all cursor-pointer group">
-                              <IconGoogleForms />
-                            </button>
-                            <button onClick={() => alert('Exportar a MS Forms')} className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#00828a]/20 bg-[#00828a]/5 hover:bg-[#00828a]/10 text-[#00828a] transition-all cursor-pointer group">
-                              <IconMSForms />
-                            </button>
-                          </div>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
+                         <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px' }}>
+                           <button onClick={() => notify('success','Exportado','Cuestionario exportado a MS Forms.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(0,130,138,.2)', background:'rgba(0,130,138,.05)', color:'#00828A', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
+                             <IconMSForms /> MS Forms
+                           </button>
                         </div>
-
-                        <div className="flex flex-col gap-8">
-                          {generatedData.evaluacion.map((q, qIndex) => {
+                        
+                        <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+                          {displayData.evaluacion.map((q, qIndex) => {
                             const isCorrect = checkedAnswers[qIndex] === q.opcionCorrectaIndex;
                             const isAnswered = checkedAnswers[qIndex] !== undefined;
 
                             return (
-                              <div key={qIndex} className="flex flex-col gap-6 p-6 sm:p-8 shadow-soft border border-hairline bg-canvas rounded-[24px] relative">
-                                <span className="text-[10px] text-brand-primary font-bold uppercase tracking-widest bg-brand-primary/10 px-3 py-1.5 rounded-lg w-max select-none">Pregunta #{qIndex + 1}</span>
+                              <div key={qIndex} style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'28px', boxShadow:'var(--kt-shadow-panel)', position:'relative' }}>
+                                <span style={{ fontFamily:"'Manrope'", fontWeight:800, fontSize:'10px', letterSpacing:'1px', textTransform:'uppercase', color:'#10B981', background:'rgba(16,185,129,.1)', padding:'4px 10px', borderRadius:'8px' }}>Pregunta #{qIndex + 1}</span>
+                                <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'17px', color:'var(--kt-heading)', margin:'14px 0 20px', lineHeight:'1.4' }}>{q.pregunta}</h4>
                                 
-                                <h4 className="text-base sm:text-lg font-bold text-ink leading-relaxed mt-1">{q.pregunta}</h4>
-                                
-                                <div className="flex flex-col gap-3">
+                                <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                                   {q.opciones.map((opt, optIndex) => {
                                     const isSelected = checkedAnswers[qIndex] === optIndex;
                                     return (
@@ -323,43 +682,32 @@ export default function Generator() {
                                         key={optIndex}
                                         onClick={() => setCheckedAnswers({...checkedAnswers, [qIndex]: optIndex})}
                                         disabled={isAnswered}
-                                        className={`w-full text-left p-4 rounded-xl text-sm font-semibold transition-all border-2 flex justify-between items-center ${
-                                          isSelected 
-                                            ? 'bg-brand-primary/10 border-brand-primary text-brand-primary' 
-                                            : isAnswered
-                                              ? 'bg-surface-2 border-transparent text-ink-muted opacity-60 cursor-not-allowed'
-                                              : 'bg-canvas border-hairline hover:border-ink-subtle text-ink cursor-pointer hover:bg-surface-1'
-                                        }`}
+                                        style={{
+                                          width:'100%', textAlign:'left', padding:'16px 20px', borderRadius:'12px', cursor: isAnswered ? 'not-allowed' : 'pointer',
+                                          background: isSelected ? 'rgba(16,185,129,.1)' : (isAnswered ? 'var(--kt-chip-bg)' : 'var(--kt-bg2)'),
+                                          border: isSelected ? '2px solid #10B981' : '2px solid transparent',
+                                          color: isSelected ? '#10B981' : (isAnswered ? 'var(--kt-muted)' : 'var(--kt-text)'),
+                                          fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px', transition:'all .2s',
+                                          display:'flex', alignItems:'center', gap:'14px'
+                                        }}
                                       >
-                                        <span className="flex items-center gap-3">
-                                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 ${isSelected ? 'border-brand-primary bg-brand-primary text-white' : 'border-hairline-strong text-ink-subtle'}`}>
-                                            {String.fromCharCode(65 + optIndex)}
-                                          </span>
-                                          {opt}
+                                        <span style={{ width:'26px', height:'26px', borderRadius:'50%', display:'grid', placeItems:'center', fontSize:'12px', fontWeight:800, border: isSelected ? 'none' : '2px solid var(--kt-chip-border)', background: isSelected ? '#10B981' : 'transparent', color: isSelected ? '#fff' : 'inherit' }}>
+                                          {String.fromCharCode(65 + optIndex)}
                                         </span>
+                                        {opt}
                                       </button>
                                     );
                                   })}
                                 </div>
 
                                 {isAnswered && (
-                                  <div className={`mt-2 p-5 rounded-xl border flex gap-4 animate-fade-in ${
-                                    isCorrect 
-                                      ? 'bg-semantic-success/10 border-semantic-success/20 text-semantic-success' 
-                                      : 'bg-red-500/10 border-red-500/20 text-red-500'
-                                  }`}>
-                                    <div className="shrink-0 mt-0.5">
-                                      {isCorrect ? (
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                      ) : (
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                                      )}
-                                    </div>
-                                    <div className="flex flex-col">
-                                      <h5 className="text-sm font-bold uppercase tracking-widest mb-1">
-                                        {isCorrect ? 'Correcto' : 'Incorrecto'}
-                                      </h5>
-                                      <p className="text-ink text-xs font-medium leading-relaxed">{q.explicacion}</p>
+                                  <div style={{ marginTop:'20px', padding:'20px', borderRadius:'14px', background: isCorrect ? 'rgba(16,185,129,.1)' : 'rgba(244,63,94,.1)', border: isCorrect ? '1px solid rgba(16,185,129,.2)' : '1px solid rgba(244,63,94,.2)', display:'flex', gap:'14px' }}>
+                                    <span style={{ color: isCorrect ? '#10B981' : '#F43F5E', flex:'none', marginTop:'2px' }}>
+                                      {isCorrect ? <CheckCircle2 size={22} /> : <AlertCircle size={22} />}
+                                    </span>
+                                    <div>
+                                      <h5 style={{ fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', textTransform:'uppercase', letterSpacing:'1px', color: isCorrect ? '#10B981' : '#F43F5E', margin:'0 0 6px' }}>{isCorrect ? 'Correcto' : 'Incorrecto'}</h5>
+                                      <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', color:'var(--kt-text)', margin:0, lineHeight:'1.5' }}>{q.explicacion}</p>
                                     </div>
                                   </div>
                                 )}
@@ -370,100 +718,80 @@ export default function Generator() {
                       </div>
                     )}
 
-                    {/* 4. Diapositivas Tab View */}
-                    {activeTab === 'diapositivas' && (
-                      <div className="flex flex-col gap-8 w-full">
-                        
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-canvas p-6 rounded-[24px] border border-hairline shadow-sm select-none">
-                          <div className="flex flex-col gap-1">
-                            <h3 className="text-lg font-bold text-ink">Presentación Visual</h3>
-                            <p className="text-xs font-medium text-ink-subtle">Visor de láminas autogeneradas (16:9).</p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button onClick={() => alert('Generando PPTX...')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#EA580C]/20 bg-[#EA580C]/5 hover:bg-[#EA580C]/10 text-[#EA580C] transition-all cursor-pointer">
-                              <IconPPTX /> <span className="mt-0.5">PPTX</span>
-                            </button>
-                            <button onClick={() => alert('Generando PDF...')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-[#E11D48]/20 bg-[#E11D48]/5 hover:bg-[#E11D48]/10 text-[#E11D48] transition-all cursor-pointer">
-                              <IconPDF /> <span className="mt-0.5">PDF</span>
-                            </button>
-                          </div>
+                    {/* 4. Diapositivas */}
+                    {activeTab === 'diapositivas' && (() => {
+                      const slides = displayData.diapositivas;
+                      const slideIdx = Math.min(currentSlideIndex, slides.length - 1);
+                      const slide = slides[slideIdx];
+                      return (
+                      <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
+                         <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px' }}>
+                           <button onClick={() => notify('success','Exportado','Diapositivas exportadas a PPTX.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(234,88,12,.2)', background:'rgba(234,88,12,.05)', color:'#EA580C', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
+                             <IconPPTX /> PPTX
+                           </button>
                         </div>
 
-                        {/* Presentation Simulator */}
-                        <div className="flex flex-col items-center bg-surface-2 p-6 sm:p-10 rounded-[32px] border border-hairline shadow-inner">
-                          
-                          <div className="w-full max-w-4xl aspect-video bg-white dark:bg-[#0B0F19] text-gray-900 dark:text-gray-100 rounded-[16px] shadow-illustrative overflow-hidden flex flex-col p-10 sm:p-16 transition-all duration-300 relative border border-hairline-strong">
-                            
-                            <div className="absolute top-0 left-0 w-full h-2 bg-brand-primary"></div>
-                            
-                            <div className="flex-1 flex flex-col justify-center">
-                              <h2 className="text-2xl sm:text-4xl font-extrabold mb-8 leading-tight tracking-tight text-[#0F172A] dark:text-white">
-                                {generatedData.diapositivas[currentSlideIndex].titulo}
-                              </h2>
-                              <ul className="flex flex-col gap-5 text-sm sm:text-xl text-slate-600 dark:text-slate-300 font-medium">
-                                {generatedData.diapositivas[currentSlideIndex].puntos.map((pt, pIndex) => (
-                                  <li key={pIndex} className="flex items-start gap-4">
-                                    <span className="text-brand-primary mt-1.5 shrink-0 text-xl font-bold">✓</span>
-                                    <span className="leading-relaxed opacity-90">{pt}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                            
-                            <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-200 dark:border-slate-800 select-none">
-                              <div className="flex items-center gap-3">
-                                <div className="w-6 h-6 bg-brand-primary rounded-md flex items-center justify-center">
-                                  <span className="text-white text-[10px] font-black">K</span>
-                                </div>
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{materia || 'Material AI'}</span>
-                              </div>
-                              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 font-mono tracking-widest">
-                                {String(currentSlideIndex + 1).padStart(2, '0')} / {String(generatedData.diapositivas.length).padStart(2, '0')}
-                              </span>
-                            </div>
+                        <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'32px', boxShadow:'var(--kt-shadow-panel)', display:'flex', flexDirection:'column', alignItems:'center' }}>
+                          {/* 16:9 Canvas */}
+                          <div style={{ width:'100%', maxWidth:'800px', aspectRatio:'16/9', background:'var(--kt-card-bg)', border:'1px solid var(--kt-panel-border)', borderRadius:'12px', boxShadow:'0 20px 50px -20px rgba(0,0,0,.3)', position:'relative', overflow:'hidden', padding:'8% 10%', display:'flex', flexDirection:'column' }}>
+                             <div style={{ position:'absolute', top:0, left:0, right:0, height:'6px', background:'linear-gradient(90deg,#0284C7,#38BDF8)' }}></div>
+                             <div style={{ fontFamily:"'Manrope'", fontWeight:800, fontSize:'11px', letterSpacing:'2px', color:'#38BDF8', textTransform:'uppercase', marginBottom:'auto' }}>{String(slideIdx + 1).padStart(2, '0')} · {temarioSeleccionado?.asignatura || 'Asignatura'}</div>
+
+                             <h3 style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'32px', letterSpacing:'-1px', color:'var(--kt-heading)', margin:'0 0 24px', lineHeight:'1.2' }}>{slide.titulo}</h3>
+
+                             <div style={{ display:'flex', flexDirection:'column', gap:'14px', marginBottom:'auto' }}>
+                               {slide.puntos.map((pt, pIndex) => (
+                                 <div key={pIndex} style={{ display:'flex', alignItems:'flex-start', gap:'12px', fontFamily:"'Manrope'", fontWeight:600, fontSize:'16px', color:'var(--kt-text)', lineHeight:'1.5' }}>
+                                   <span style={{ color:'#38BDF8', marginTop:'3px' }}><CheckCircle2 size={18} /></span>{pt}
+                                 </div>
+                               ))}
+                             </div>
+
+                             <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                               <span style={{ width:'24px', height:'24px', borderRadius:'6px', background:'#10B981', display:'grid', placeItems:'center', fontFamily:"'Inter'", fontWeight:700, fontSize:'13px', color:'#fff' }}>K</span>
+                               <span style={{ fontFamily:"'Manrope'", fontWeight:800, fontSize:'11px', letterSpacing:'1.5px', color:'var(--kt-muted)', textTransform:'uppercase' }}>Katedra</span>
+                             </div>
                           </div>
 
-                          <div className="flex items-center justify-center gap-6 mt-10 select-none">
-                            <button 
-                              onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
-                              disabled={currentSlideIndex === 0}
-                              className="w-10 h-10 rounded-full flex items-center justify-center bg-canvas border border-hairline text-ink hover:bg-surface-3 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-                            </button>
-                            
-                            <div className="flex gap-2">
-                              {generatedData.diapositivas.map((_, idx) => (
-                                <button
-                                  key={idx}
-                                  onClick={() => setCurrentSlideIndex(idx)}
-                                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${currentSlideIndex === idx ? 'w-6 bg-brand-primary' : 'w-2 bg-ink-tertiary hover:bg-ink-muted'}`}
-                                />
-                              ))}
-                            </div>
-
-                            <button 
-                              onClick={() => setCurrentSlideIndex(Math.min(generatedData.diapositivas.length - 1, currentSlideIndex + 1))}
-                              disabled={currentSlideIndex === generatedData.diapositivas.length - 1}
-                              className="w-10 h-10 rounded-full flex items-center justify-center bg-canvas border border-hairline text-ink hover:bg-surface-3 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-                            </button>
+                          {/* Controls */}
+                          <div style={{ display:'flex', alignItems:'center', gap:'20px', marginTop:'28px' }}>
+                             <button
+                               onClick={() => setCurrentSlideIndex(Math.max(0, slideIdx - 1))}
+                               disabled={slideIdx === 0}
+                               style={{ width:'40px', height:'40px', borderRadius:'50%', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', color:'var(--kt-text)', display:'grid', placeItems:'center', cursor: slideIdx === 0 ? 'not-allowed' : 'pointer', opacity: slideIdx === 0 ? 0.4 : 1, transition:'all .2s' }}
+                             >
+                               <ChevronLeft size={20} />
+                             </button>
+                             <div style={{ display:'flex', gap:'6px' }}>
+                               {slides.map((_, idx) => (
+                                 <button
+                                   key={idx}
+                                   onClick={() => setCurrentSlideIndex(idx)}
+                                   style={{ height:'6px', borderRadius:'10px', border:'none', background: slideIdx === idx ? '#10B981' : 'var(--kt-chip-border)', width: slideIdx === idx ? '24px' : '6px', transition:'all .3s', cursor:'pointer', padding:0 }}
+                                 ></button>
+                               ))}
+                             </div>
+                             <button
+                               onClick={() => setCurrentSlideIndex(Math.min(slides.length - 1, slideIdx + 1))}
+                               disabled={slideIdx === slides.length - 1}
+                               style={{ width:'40px', height:'40px', borderRadius:'50%', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', color:'var(--kt-text)', display:'grid', placeItems:'center', cursor: slideIdx === slides.length - 1 ? 'not-allowed' : 'pointer', opacity: slideIdx === slides.length - 1 ? 0.4 : 1, transition:'all .2s' }}
+                             >
+                               <ChevronLeft size={20} style={{ transform:'rotate(180deg)' }} />
+                             </button>
                           </div>
-
                         </div>
                       </div>
-                    )}
-                    
+                      );
+                    })()}
+
                   </div>
                 )}
-
               </div>
-            </div>
-          </section>
 
-        </div>
-      </main>
-    </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </>
   );
 }

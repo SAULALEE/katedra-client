@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getContenidoTemario, generarMaterialParaTemario } from '../services/temarioService';
+import { getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAuth } from '../hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
@@ -42,8 +42,6 @@ export default function ContentViewer() {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [contentNotFound, setContentNotFound] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [genError, setGenError] = useState('');
   const [activeTab, setActiveTab] = useState('teoria');
   
   const [tView, setTView] = useState('render'); 
@@ -88,23 +86,6 @@ export default function ContentViewer() {
     };
     fetchContent();
   }, [id]);
-
-  const handleGenerarMaterial = async () => {
-    setIsGenerating(true);
-    setGenError('');
-    try {
-      const data = await generarMaterialParaTemario(id);
-      setContent(data);
-      setContentNotFound(false);
-      notify('success', 'Material Generado', 'La IA ha generado tu contenido.');
-    } catch (err) {
-      console.error("Error generando el material", err);
-      setGenError('No se pudo generar el material. Intenta de nuevo.');
-      notify('error', 'Error', 'No se pudo generar el material.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const getInitial = (name) => {
     if (!name) return 'U';
@@ -459,14 +440,6 @@ export default function ContentViewer() {
                 <div style={{width:'48px',height:'48px',borderRadius:'50%',border:'3px solid var(--kt-border)',borderTopColor:'#10B981',animation:'ktPulse 1s infinite linear'}}></div>
                 <p style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px',color:'var(--kt-muted)',textTransform:'uppercase',letterSpacing:'1px',animation:'ktBlink 1.5s infinite'}}>Cargando Material...</p>
               </div>
-            ) : isGenerating ? (
-              <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'24px',textAlign:'center',padding:'32px'}}>
-                <div style={{width:'48px',height:'48px',borderRadius:'50%',border:'3px solid var(--kt-border)',borderTopColor:'#10B981',animation:'ktPulse 1s infinite linear'}}></div>
-                <div style={{display:'flex',flexDirection:'column',gap:'12px',maxWidth:'400px'}}>
-                  <p style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'20px',color:'var(--kt-heading)',margin:0}}>El motor de IA está generando tu contenido...</p>
-                  <p style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'11px',color:'#10B981',textTransform:'uppercase',letterSpacing:'1.5px',background:'rgba(16,185,129,.1)',padding:'8px 16px',borderRadius:'12px',width:'max-content',margin:'0 auto',border:'1px solid rgba(16,185,129,.2)',animation:'ktBlink 2s infinite'}}>Esto puede tardar unos segundos</p>
-                </div>
-              </div>
             ) : contentNotFound ? (
               <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'20px',textAlign:'center',padding:'32px'}}>
                 <div style={{width:'64px',height:'64px',borderRadius:'20px',background:'rgba(16,185,129,.1)',color:'#10B981',display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid rgba(16,185,129,.2)'}}>
@@ -474,15 +447,10 @@ export default function ContentViewer() {
                 </div>
                 <div style={{display:'flex',flexDirection:'column',gap:'8px',maxWidth:'420px'}}>
                   <p style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'20px',color:'var(--kt-heading)',margin:0}}>Material Aún No Generado</p>
-                  <p style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'14px',color:'var(--kt-muted)',margin:0,lineHeight:1.6}}>Este temario todavía no tiene contenido estructurado. Haz clic abajo para generar la teoría, ejercicios, evaluación y diapositivas con IA.</p>
+                  <p style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'14px',color:'var(--kt-muted)',margin:0,lineHeight:1.6}}>Este temario todavía no tiene contenido estructurado. Ve al Generador para elegir qué piezas crear (teoría, ejercicios, examen o diapositivas) y con qué modelo de IA.</p>
                 </div>
-                {genError && (
-                  <div style={{padding:'12px 16px',borderRadius:'12px',background:'rgba(244,63,94,.1)',border:'1px solid rgba(244,63,94,.2)',color:'#F43F5E',fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',maxWidth:'420px'}}>
-                    {genError}
-                  </div>
-                )}
-                <button onClick={handleGenerarMaterial} style={{padding:'0 24px',height:'48px',borderRadius:'12px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',border:'none',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'14px',boxShadow:'0 12px 24px -10px rgba(16,185,129,.6)',marginTop:'10px',transition:'transform .2s, box-shadow .2s'}} className="kt-primary">
-                  Generar Material con IA
+                <button onClick={() => navigate(`/generador?temarioId=${id}`)} style={{padding:'0 24px',height:'48px',borderRadius:'12px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',border:'none',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'14px',boxShadow:'0 12px 24px -10px rgba(16,185,129,.6)',marginTop:'10px',transition:'transform .2s, box-shadow .2s'}} className="kt-primary">
+                  Ir al Generador de Material
                 </button>
               </div>
             ) : !content ? (

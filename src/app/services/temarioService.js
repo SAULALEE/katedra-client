@@ -29,24 +29,21 @@ export const crearTemarioRequest = async (temarioData) => {
   }
 };
 
-export const generarMaterialAI = async (materia, tema, unidades) => {
-  try {
-    const response = await api.post('/temarios/generar-material', { materia, tema, unidades });
-    return response.data;
-  } catch (error) {
-    throw new Error('Error al generar material con IA', { cause: error });
-  }
-};
-
 /**
- * Triggers AI generation of material for an existing temario.
- * Takes 10-30 seconds (real AI generation, not instant).
+ * Selectively generates material pieces for an existing temario.
+ * Takes 10-30 seconds per piece (real AI generation, not instant).
+ * Pieces that already exist are skipped by the backend unless listed
+ * in regenerarPiezas (credit-safe), and reported in piezasOmitidas.
  *
  * @param {string} id - the temario UUID
+ * @param {object} options
+ * @param {string[]} options.piezas - subset of ['teoria','ejercicios','evaluacion','diapositivas']
+ * @param {string} options.modelo - 'gpt-4o-mini' (Sencillo) | 'gpt-4o' (Avanzado)
+ * @param {string[]} [options.regenerarPiezas] - pieces allowed to overwrite existing content
  */
-export const generarMaterialParaTemario = async (id) => {
+export const generarMaterialParaTemario = async (id, { piezas, modelo, regenerarPiezas = [] }) => {
   try {
-    const response = await api.post(`/temarios/${id}/generar-material`);
+    const response = await api.post(`/temarios/${id}/generar-material`, { piezas, modelo, regenerarPiezas });
     return response.data;
   } catch (error) {
     throw new Error('Error al generar material con IA', { cause: error });

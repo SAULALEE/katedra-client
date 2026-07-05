@@ -1,35 +1,108 @@
-import { useState } from 'react';
-import { generarMaterialAI } from '../services/temarioService';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { generarMaterialParaTemario, getContenidoTemario } from '../services/temarioService';
+import { useTemarios } from './useTemarios';
+
+export const PIEZAS = [
+  { id: 'teoria', label: 'Teoría Docente' },
+  { id: 'ejercicios', label: 'Ejercicios Prácticos' },
+  { id: 'evaluacion', label: 'Examen / Evaluación' },
+  { id: 'diapositivas', label: 'Diapositivas' }
+];
+
+export const MODELOS = [
+  { id: 'gpt-4o-mini', label: 'Sencillo', hint: 'Rápido y económico (gpt-4o-mini)' },
+  { id: 'gpt-4o', label: 'Avanzado', hint: 'Mayor calidad, más costoso (gpt-4o)' }
+];
+
+/** True when the piece has real content in a ContenidoTemarioResponseDTO. */
+const pieceExists = (contenido, piezaId) => {
+  if (!contenido) return false;
+  const value = contenido[piezaId];
+  if (value == null) return false;
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  return false;
+};
 
 export const useGenerator = () => {
-  const [tema, setTema] = useState('Estructuras de Datos Lineales');
-  const [materia, setMateria] = useState('Programación I');
-  const [unidades, setUnidades] = useState('Unidad 1: Pilas y Listas Enlazadas');
-  
+  const [searchParams] = useSearchParams();
+  const { courses } = useTemarios();
+
+  const initialTemarioId = searchParams.get('temarioId') || '';
+  const [temarioId, setTemarioIdState] = useState(initialTemarioId);
+  const [piezas, setPiezas] = useState([]);
+  const [modelo, setModelo] = useState('gpt-4o-mini');
+  const [regenerarPiezas, setRegenerarPiezas] = useState([]);
+
+  // Existing material of the selected temario (null = nothing generated yet)
+  const [contenidoExistente, setContenidoExistente] = useState(null);
+  const [loadingContenido, setLoadingContenido] = useState(!!initialTemarioId);
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
   const [generatedData, setGeneratedData] = useState(null);
-  
+  const [genError, setGenError] = useState('');
+  const [piezasOmitidas, setPiezasOmitidas] = useState([]);
+
   const [activeTab, setActiveTab] = useState('teoria');
   const [checkedAnswers, setCheckedAnswers] = useState({});
 
-  const handleGenerate = async () => {
-    setIsGenerating(true);
+  // When the temario changes, fetch its existing material (404 => none yet).
+  // loadingContenido is set by selectTemario / initial state, cleared here async.
+  useEffect(() => {
+    if (!temarioId) return undefined;
+    let cancelled = false;
+    getContenidoTemario(temarioId)
+      .then(data => { if (!cancelled) setContenidoExistente(data); })
+      .catch(() => { if (!cancelled) setContenidoExistente(null); })
+      .finally(() => { if (!cancelled) setLoadingContenido(false); });
+    return () => { cancelled = true; };
+  }, [temarioId]);
+
+  // Event-driven selection: resets generation state alongside the new temario
+  const selectTemario = useCallback((id) => {
+    setTemarioIdState(id);
+    setLoadingContenido(!!id);
     setGeneratedData(null);
+    setContenidoExistente(null);
+    setPiezas([]);
+    setRegenerarPiezas([]);
+    setPiezasOmitidas([]);
+    setGenError('');
     setCheckedAnswers({});
-    
+  }, []);
+
+  const temarioSeleccionado = courses.find(c => c.id === temarioId) || null;
+
+  const togglePieza = useCallback((piezaId) => {
+    setPiezas(prev => prev.includes(piezaId) ? prev.filter(p => p !== piezaId) : [...prev, piezaId]);
+  }, []);
+
+  const toggleRegenerar = useCallback((piezaId) => {
+    setRegenerarPiezas(prev => prev.includes(piezaId) ? prev.filter(p => p !== piezaId) : [...prev, piezaId]);
+  }, []);
+
+  const piezaYaGenerada = useCallback(
+    (piezaId) => pieceExists(generatedData || contenidoExistente, piezaId),
+    [generatedData, contenidoExistente]
+  );
+
+  const handleGenerate = async () => {
+    if (!temarioId || piezas.length === 0) return;
+    setIsGenerating(true);
+    setGenError('');
+    setPiezasOmitidas([]);
+    setCheckedAnswers({});
+
     const steps = [
-      'Analizando sílabo académico...',
-      'Generando explicaciones de teoría con Anthropic API...',
-      'Estructurando problemas prácticos y soluciones...',
-      'Creando banco de preguntas tipo test de opción múltiple...',
-      'Compilando esquema para diapositivas de clase...',
+      'Analizando el temario seleccionado...',
+      'Generando contenido con OpenAI API...',
+      'Estructurando el material académico...',
       'Validando esquemas de datos finales...'
     ];
-
     let currentStepIndex = 0;
     setGenerationStep(steps[currentStepIndex]);
-
     const stepInterval = setInterval(() => {
       currentStepIndex++;
       if (currentStepIndex < steps.length) {
@@ -37,13 +110,24 @@ export const useGenerator = () => {
       } else {
         clearInterval(stepInterval);
       }
-    }, 900);
+    }, 1600);
 
     try {
-      const data = await generarMaterialAI(materia, tema, unidades);
+      const data = await generarMaterialParaTemario(temarioId, {
+        piezas,
+        modelo,
+        // only send regenerate flags for pieces actually selected
+        regenerarPiezas: regenerarPiezas.filter(p => piezas.includes(p))
+      });
       setGeneratedData(data);
+      setContenidoExistente(data);
+      setPiezasOmitidas(data.piezasOmitidas || []);
+      setRegenerarPiezas([]);
+      const firstGenerated = PIEZAS.find(p => piezas.includes(p.id) && !(data.piezasOmitidas || []).includes(p.id));
+      setActiveTab((firstGenerated || PIEZAS.find(p => pieceExists(data, p.id)) || PIEZAS[0]).id);
     } catch (error) {
-      console.error("AI Generation failed:", error);
+      console.error('AI Generation failed:', error);
+      setGenError('No se pudo generar el material. Intenta de nuevo.');
     } finally {
       setIsGenerating(false);
       clearInterval(stepInterval);
@@ -51,12 +135,20 @@ export const useGenerator = () => {
   };
 
   return {
-    tema, setTema,
-    materia, setMateria,
-    unidades, setUnidades,
+    courses,
+    temarioId, setTemarioId: selectTemario,
+    temarioSeleccionado,
+    piezas, togglePieza,
+    modelo, setModelo,
+    regenerarPiezas, toggleRegenerar,
+    piezaYaGenerada,
+    contenidoExistente,
+    loadingContenido,
     isGenerating,
     generationStep,
     generatedData,
+    genError,
+    piezasOmitidas,
     activeTab, setActiveTab,
     checkedAnswers, setCheckedAnswers,
     handleGenerate
