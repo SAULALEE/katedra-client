@@ -11,6 +11,7 @@ export const useUsers = () => {
     loading,
     error,
     fetchUsers,
+    createUser,
     updateUser,
     deleteUser
   } = useUserStore();
@@ -27,6 +28,7 @@ export const useUsers = () => {
     loading,
     error,
     refetchUsers: fetchUsers,
+    createUser,
     updateUser,
     deleteUser
   };
