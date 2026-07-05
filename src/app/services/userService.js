@@ -23,6 +23,21 @@ export const getUsersRequest = async () => {
 };
 
 /**
+ * Creates a new user in the backend API.
+ *
+ * @param {object} userData User data to create
+ * @returns {Promise<object>} Created user
+ */
+export const createUserRequest = async (userData) => {
+  try {
+    const response = await api.post('/usuarios', userData);
+    return normalizeUser(response.data);
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Error al crear usuario');
+  }
+};
+
+/**
  * Updates an existing user in the backend API.
  *
  * @param {string} id User UUID

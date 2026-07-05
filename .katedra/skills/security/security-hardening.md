@@ -51,12 +51,13 @@ Never construct HTML strings with user input. Use templating engines with auto-e
 
 ## SQL Injection Prevention
 
-```python
-# NEVER do this
-cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+```java
+// NEVER do this (Spring Boot backend)
+String sql = "SELECT * FROM usuarios WHERE id = " + userId;
 
-# Always use parameterized queries
-cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+// Always use parameterized queries via Spring Data JPA
+@Query("SELECT u FROM Usuario u WHERE u.id = :id")
+Optional<Usuario> findById(@Param("id") String id);
 ```
 
 ```typescript
@@ -67,7 +68,7 @@ db.query(`SELECT * FROM users WHERE email = '${email}'`);
 db.query("SELECT * FROM users WHERE email = $1", [email]);
 ```
 
-Use an ORM or query builder. If writing raw SQL, always parameterize.
+Use an ORM or query builder. Backend uses Spring Data JPA; never build raw SQL with string concatenation.
 
 ## CSRF Protection
 
@@ -175,16 +176,12 @@ gitleaks protect --staged
 ## Dependency Auditing
 
 ```bash
-# Node.js
+# Node.js (frontend)
 npm audit --production
 npx better-npm-audit audit --level=high
 
-# Python
-pip-audit
-safety check
-
-# Go
-govulncheck ./...
+# Spring Boot backend (Maven)
+mvn org.owasp:dependency-check-maven:check
 ```
 
 Run dependency audits in CI on every PR. Block merges on critical/high vulnerabilities. Pin dependency versions. Update dependencies weekly with automated PRs (Dependabot, Renovate).

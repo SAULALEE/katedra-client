@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { useUsers } from '../hooks/useUsers';
 import { 
   Users as UsersIcon, 
@@ -33,6 +35,9 @@ const ESTADO_OPTIONS = [
 
 export default function Users() {
   const { users, loading, error, createUser, updateUser, deleteUser } = useUsers();
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [theme, setTheme] = useState('dark');
   const [collapsed, setCollapsed] = useState(false);
@@ -44,6 +49,7 @@ export default function Users() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsUser, setDetailsUser] = useState(null);
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -71,8 +77,10 @@ export default function Users() {
   );
 
   const getRoleShort = (longRole) => {
-    if (longRole === 'Administrador') return 'Admin';
-    if (longRole === 'Docente Premium') return 'Premium';
+    if (!longRole) return 'Libre';
+    const r = longRole.toUpperCase();
+    if (r === 'ADMINISTRADOR' || r === 'ROLE_ADMIN' || r === 'ADMIN') return 'Admin';
+    if (r === 'DOCENTE PREMIUM' || r === 'ROLE_PROFESOR' || r === 'ROLE_PREMIUM' || r === 'PREMIUM') return 'Premium';
     return 'Libre';
   };
 
@@ -131,13 +139,17 @@ export default function Users() {
     setDetailsOpen(true);
   };
 
-  const handleDelete = async (id, name) => {
-    if (window.confirm('¿Estás seguro de eliminar a este usuario?')) {
-      if (deleteUser) {
-        await deleteUser(id);
-        notify('error', 'Docente eliminado', name + ' fue removido.');
-      }
+  const handleDeleteClick = (u) => {
+    setDeleteConfirmUser(u);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmUser) return;
+    if (deleteUser) {
+      await deleteUser(deleteConfirmUser.id);
+      notify('error', 'Docente eliminado', deleteConfirmUser.nombre + ' fue removido.');
     }
+    setDeleteConfirmUser(null);
   };
 
   const handleSubmit = async (e) => {
@@ -234,13 +246,18 @@ export default function Users() {
   .kt-primary:hover{transform:translateY(-2px);box-shadow:0 16px 34px -12px rgba(16,185,129,.7)}
   .kt-primary:active{transform:translateY(0)}
 
-  /* sidebar collapse (manual, works at any width) */
-  .kt-sidebar{width:256px}
+  /* sidebar collapse */
+  .kt-sidebar{width:256px; transition: width .32s cubic-bezier(.4,0,.2,1) !important;}
   [data-root][data-kt-collapsed="true"] .kt-sidebar{width:76px}
-  [data-root][data-kt-collapsed="true"] .kt-sidelabel{display:none}
-  [data-root][data-kt-collapsed="true"] .kt-menutitle{opacity:0}
-  [data-root][data-kt-collapsed="true"] .kt-navrow{justify-content:center}
+  .kt-sidelabel{transition: opacity .25s ease, max-width .25s ease, margin .25s ease; opacity:1; max-width: 180px; min-width: 0; overflow: hidden; white-space: nowrap; display: inline-block;}
+  [data-root][data-kt-collapsed="true"] .kt-sidelabel{display: none !important;}
+  .kt-menutitle{transition: opacity .25s ease, max-height .25s ease; opacity: 1; max-height: 20px; overflow: hidden; white-space: nowrap;}
+  [data-root][data-kt-collapsed="true"] .kt-menutitle{display: none !important;}
   [data-root][data-kt-collapsed="true"] .kt-collapse-icon{transform:rotate(180deg)}
+  .kt-navrow{transition: background .18s ease, padding .32s cubic-bezier(.4,0,.2,1), gap .32s cubic-bezier(.4,0,.2,1) !important;}
+  .kt-brand-header{transition: padding .32s cubic-bezier(.4,0,.2,1), gap .32s cubic-bezier(.4,0,.2,1) !important;}
+  [data-root][data-kt-collapsed="true"] .kt-navrow{justify-content:center !important; gap:0 !important; padding-left:0 !important; padding-right:0 !important;}
+  [data-root][data-kt-collapsed="true"] .kt-brand-header{justify-content:center !important; gap:0 !important; padding-left:0 !important; padding-right:0 !important;}
 
   /* theme switch */
   .kt-theme-icon-sun{display:none}
@@ -283,24 +300,24 @@ export default function Users() {
   [data-rolepill]{background:var(--kt-chip-bg);color:var(--kt-muted);border:1px solid var(--kt-chip-border)}
   [data-statuspill]{background:var(--kt-chip-bg);color:var(--kt-muted);border:1px solid var(--kt-chip-border)}
   [data-statusdot]{background:var(--kt-muted)}
-  .kt-row[data-role="Admin"] [data-rolepill], [data-details-drawer][data-role="Admin"] [data-rolepill]{background:rgba(56,189,248,.16);color:#0369A1;border-color:rgba(56,189,248,.35)}
-  .kt-row[data-role="Premium"] [data-rolepill], [data-details-drawer][data-role="Premium"] [data-rolepill]{background:rgba(245,158,11,.16);color:#B45309;border-color:rgba(245,158,11,.35)}
-  .kt-row[data-role="Libre"] [data-rolepill], [data-details-drawer][data-role="Libre"] [data-rolepill]{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
-  [data-root][data-kt-theme="dark"] .kt-row[data-role="Admin"] [data-rolepill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-role="Admin"] [data-rolepill]{color:#7DD3FC}
-  [data-root][data-kt-theme="dark"] .kt-row[data-role="Premium"] [data-rolepill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-role="Premium"] [data-rolepill]{color:#FBBF24}
-  [data-root][data-kt-theme="dark"] .kt-row[data-role="Libre"] [data-rolepill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-role="Libre"] [data-rolepill]{color:#CBD5E1}
-  .kt-row[data-status="Activo"] [data-statuspill], [data-details-drawer][data-status="Activo"] [data-statuspill]{background:rgba(16,185,129,.16);color:#047857;border-color:rgba(16,185,129,.35)}
-  .kt-row[data-status="Inactivo"] [data-statuspill], [data-details-drawer][data-status="Inactivo"] [data-statuspill]{background:rgba(244,63,94,.16);color:#BE123C;border-color:rgba(244,63,94,.35)}
-  [data-root][data-kt-theme="dark"] .kt-row[data-status="Activo"] [data-statuspill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-status="Activo"] [data-statuspill]{color:#34D399}
-  [data-root][data-kt-theme="dark"] .kt-row[data-status="Inactivo"] [data-statuspill], [data-root][data-kt-theme="dark"] [data-details-drawer][data-status="Inactivo"] [data-statuspill]{color:#FB7185}
-  .kt-row[data-status="Activo"] [data-statusdot], [data-details-drawer][data-status="Activo"] [data-statusdot]{background:#10B981;box-shadow:0 0 8px #10B981}
-  .kt-row[data-status="Inactivo"] [data-statusdot], [data-details-drawer][data-status="Inactivo"] [data-statusdot]{background:#F43F5E;box-shadow:0 0 8px #F43F5E}
+  .kt-row[data-role="Admin"] [data-rolepill], .kt-details-wrapper[data-role="Admin"] [data-rolepill]{background:rgba(56,189,248,.16);color:#0369A1;border-color:rgba(56,189,248,.35)}
+  .kt-row[data-role="Premium"] [data-rolepill], .kt-details-wrapper[data-role="Premium"] [data-rolepill]{background:rgba(245,158,11,.16);color:#B45309;border-color:rgba(245,158,11,.35)}
+  .kt-row[data-role="Libre"] [data-rolepill], .kt-details-wrapper[data-role="Libre"] [data-rolepill]{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
+  [data-root][data-kt-theme="dark"] .kt-row[data-role="Admin"] [data-rolepill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-role="Admin"] [data-rolepill]{color:#7DD3FC}
+  [data-root][data-kt-theme="dark"] .kt-row[data-role="Premium"] [data-rolepill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-role="Premium"] [data-rolepill]{color:#FBBF24}
+  [data-root][data-kt-theme="dark"] .kt-row[data-role="Libre"] [data-rolepill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-role="Libre"] [data-rolepill]{color:#CBD5E1}
+  .kt-row[data-status="Activo"] [data-statuspill], .kt-details-wrapper[data-status="Activo"] [data-statuspill]{background:rgba(16,185,129,.16);color:#047857;border-color:rgba(16,185,129,.35)}
+  .kt-row[data-status="Inactivo"] [data-statuspill], .kt-details-wrapper[data-status="Inactivo"] [data-statuspill]{background:rgba(244,63,94,.16);color:#BE123C;border-color:rgba(244,63,94,.35)}
+  [data-root][data-kt-theme="dark"] .kt-row[data-status="Activo"] [data-statuspill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-status="Activo"] [data-statuspill]{color:#34D399}
+  [data-root][data-kt-theme="dark"] .kt-row[data-status="Inactivo"] [data-statuspill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-status="Inactivo"] [data-statuspill]{color:#FB7185}
+  .kt-row[data-status="Activo"] [data-statusdot], .kt-details-wrapper[data-status="Activo"] [data-statusdot]{background:#10B981;box-shadow:0 0 8px #10B981}
+  .kt-row[data-status="Inactivo"] [data-statusdot], .kt-details-wrapper[data-status="Inactivo"] [data-statusdot]{background:#F43F5E;box-shadow:0 0 8px #F43F5E}
   .kt-row[data-role="Admin"] [data-avatar]{background:linear-gradient(150deg,#38BDF8,#2563EB)}
   .kt-row[data-role="Premium"] [data-avatar]{background:linear-gradient(150deg,#FBBF24,#D97706)}
   .kt-row[data-role="Libre"] [data-avatar]{background:linear-gradient(150deg,#34D399,#059669)}
-  [data-details-drawer][data-role="Admin"] [data-avatar-lg]{background:linear-gradient(150deg,#38BDF8,#2563EB)}
-  [data-details-drawer][data-role="Premium"] [data-avatar-lg]{background:linear-gradient(150deg,#FBBF24,#D97706)}
-  [data-details-drawer][data-role="Libre"] [data-avatar-lg]{background:linear-gradient(150deg,#34D399,#059669)}
+  .kt-details-wrapper[data-role="Admin"] [data-avatar-lg]{background:linear-gradient(150deg,#38BDF8,#2563EB)}
+  .kt-details-wrapper[data-role="Premium"] [data-avatar-lg]{background:linear-gradient(150deg,#FBBF24,#D97706)}
+  .kt-details-wrapper[data-role="Libre"] [data-avatar-lg]{background:linear-gradient(150deg,#34D399,#059669)}
 
   /* notifications dropdown */
   [data-notif-panel]{opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
@@ -311,11 +328,9 @@ export default function Users() {
   [data-notif-icon][data-kind="error"]{background:rgba(244,63,94,.16);color:#F43F5E}
   [data-notif-icon][data-kind="warn"]{background:rgba(245,158,11,.16);color:#F59E0B}
 
-  /* details drawer */
-  [data-details-backdrop]{opacity:0;pointer-events:none;transition:opacity .25s ease}
-  [data-root][data-kt-details="true"] [data-details-backdrop]{opacity:1;pointer-events:auto}
-  [data-details-drawer]{transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
-  [data-root][data-kt-details="true"] [data-details-drawer]{transform:translateX(0)}
+  /* details drawer side panel */
+  .kt-details-wrapper { width: 0; transition: width .32s cubic-bezier(.4,0,.2,1); overflow: hidden; flex: none; background: var(--kt-modal-bg1); border-left: 1px solid transparent; zIndex: 10; position: relative; }
+  [data-root][data-kt-details="true"] .kt-details-wrapper { width: 256px; border-color: var(--kt-border); }
 
   @media(max-width:1024px){
     .kt-sidebar{width:74px !important}
@@ -334,10 +349,7 @@ export default function Users() {
     .kt-sidebar{position:absolute !important;z-index:40;height:100%;box-shadow:0 0 60px rgba(0,0,0,.6)}
   }
 
-  [data-root][data-kt-collapsed="true"] .kt-brand-logo { display: none !important; }
-  [data-root][data-kt-collapsed="true"] .kt-brand-header { padding-left: 0 !important; padding-right: 0 !important; justify-content: center !important; }
-  [data-root][data-kt-collapsed="true"] .kt-collapsebtn { margin-left: 0 !important; }
-`}</style>
+ `}</style>
       <div 
         data-root 
         data-kt-theme={theme} 
@@ -363,37 +375,37 @@ export default function Users() {
         </div>
 
         {/* SIDEBAR */}
-        <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .28s cubic-bezier(.4,0,.2,1)' }}>
-          <div className="kt-brand-header" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'22px 20px 20px', position: 'relative', transition: 'padding 0.2s' }}>
+        <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .32s cubic-bezier(.4,0,.2,1)', overflow:'visible' }}>
+          <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{ position:'absolute', right:'-14px', top:'26px', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'1px solid var(--kt-border)', background:'var(--kt-panel-bg)', borderRadius:'50%', color:'var(--kt-muted)', cursor:'pointer', zIndex:50, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' }}>
+            <ChevronLeft className="kt-collapse-icon" size={16} style={{ transition:'transform .3s' }} />
+          </button>
+          
+          <div className="kt-brand-header" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'22px 20px 20px', position: 'relative', overflow: 'hidden' }}>
             <div className="kt-brand-logo" style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', display:'grid', placeItems:'center', boxShadow:'0 6px 16px -5px rgba(16,185,129,.6)' }}>
               <span style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'19px', color:'#fff', letterSpacing:'-1px' }}>K</span>
             </div>
             <span className="kt-sidelabel" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.8px', color:'var(--kt-heading)' }}>Katedra</span>
-            
-            <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{ marginLeft: 'auto', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'8px', color:'var(--kt-muted)', cursor:'pointer' }}>
-              <ChevronLeft className="kt-collapse-icon" size={16} style={{ transition:'transform .25s' }} />
-            </button>
           </div>
 
-          <div className="kt-menutitle" style={{ padding:'6px 22px 10px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1.4px', textTransform:'uppercase', color:'var(--kt-label)', transition:'opacity .2s' }}>Menú Principal</div>
+          <div className="kt-menutitle" style={{ padding:'6px 22px 10px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1.4px', textTransform:'uppercase', color:'var(--kt-label)', overflow:'hidden' }}>Menú Principal</div>
 
           <nav style={{ display:'flex', flexDirection:'column', gap:'4px', padding:'0 12px' }}>
-            <a href="#" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background:'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))', border:'1px solid rgba(16,185,129,.28)', color:'var(--kt-heading)' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color:'#10B981' }}><UsersIcon size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'14px' }}>Usuarios</span>
-            </a>
-            <a href="#" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', color:'var(--kt-muted)', border:'1px solid transparent' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><FolderDot size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px' }}>Mis Temarios</span>
-            </a>
-            <a href="#" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', color:'var(--kt-muted)', border:'1px solid transparent' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><Sparkles size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px' }}>Contenidos Generados</span>
-            </a>
-            <a href="#" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', color:'var(--kt-muted)', border:'1px solid transparent' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><Wand2 size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px' }}>Generador</span>
-            </a>
+            <Link to="/usuarios" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/usuarios' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/usuarios' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/usuarios' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/usuarios' ? '#10B981' : 'inherit' }}><UsersIcon size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/usuarios' ? 700 : 600, fontSize:'14px' }}>Usuarios</span>
+            </Link>
+            <Link to="/dashboard" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/dashboard' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/dashboard' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/dashboard' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/dashboard' ? '#10B981' : 'inherit' }}><FolderDot size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/dashboard' ? 700 : 600, fontSize:'14px' }}>Mis Temarios</span>
+            </Link>
+            <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/contenidos' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/contenidos' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/contenidos' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/contenidos' ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
+            </Link>
+            <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
+            </Link>
           </nav>
 
           <div style={{ marginTop:'auto', padding:'16px 14px 18px', display:'flex', flexDirection:'column', gap:'12px' }}>
@@ -404,14 +416,20 @@ export default function Users() {
                 <span style={{ position:'absolute', top:'2px', left:'2px', width:'18px', height:'18px', borderRadius:'50%', background:'#fff', transition:'transform .25s', transform: theme === 'dark' ? 'translateX(16px)' : 'translateX(0)' }}></span>
               </span>
             </button>
-            <div className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'6px 8px' }}>
-              <div style={{ width:'38px', height:'38px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,#38BDF8,#2563EB)', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>SM</div>
+            <div className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'6px 8px', overflow:'hidden' }}>
+              <div style={{ width:'38px', height:'38px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,#38BDF8,#2563EB)', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>
+                {getInitial(user?.nombre || user?.email || 'Docente')}
+              </div>
               <div className="kt-sidelabel" style={{ minWidth:0 }}>
-                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>Saul Martinez</div>
-                <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)' }}>Usuario Normal</div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {user?.nombre || user?.email || 'Saul Martinez'}
+                </div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {user?.rol === 'ROLE_ADMIN' ? 'Administrador' : 'Docente'}
+                </div>
               </div>
             </div>
-            <button className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'11px 12px', borderRadius:'11px', border:'1px solid rgba(244,63,94,.22)', background:'rgba(244,63,94,.08)', color:'#FB7185', cursor:'pointer' }}>
+            <button onClick={async () => { await logout(); navigate('/login'); }} className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'11px 12px', borderRadius:'11px', border:'1px solid rgba(244,63,94,.22)', background:'rgba(244,63,94,.08)', color:'#FB7185', cursor:'pointer' }}>
               <span style={{ flex:'none' }}><LogOut size={18} /></span>
               <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', letterSpacing:'.3px' }}>CERRAR SESIÓN</span>
             </button>
@@ -496,18 +514,26 @@ export default function Users() {
 
                     <div data-tbody>
                       {filteredUsers.length > 0 ? filteredUsers.map(u => (
-                        <div key={u.id} className="kt-row" data-uid={u.id} data-role={u.rol} data-status={u.estado} style={{ display:'grid', gridTemplateColumns:'2fr 2.2fr 1.6fr 1.1fr 1.2fr', gap:'12px', alignItems:'center', padding:'14px 24px', borderBottom:'1px solid var(--kt-border-soft)', overflow:'hidden' }}>
+                        <div 
+                          key={u.id} 
+                          className="kt-row" 
+                          data-uid={u.id} 
+                          data-role={getRoleShort(u.rol)} 
+                          data-status={u.estado || 'Activo'} 
+                          onClick={() => handleViewDetails(u)}
+                          style={{ display:'grid', gridTemplateColumns:'2fr 2.2fr 1.6fr 1.1fr 1.2fr', gap:'12px', alignItems:'center', padding:'14px 24px', borderBottom:'1px solid var(--kt-border-soft)', overflow:'hidden', cursor:'pointer' }}
+                        >
                           <div style={{ display:'flex', alignItems:'center', gap:'12px', minWidth:0 }}>
-                            <div data-avatar style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>{getInitial(u.nombre)}</div>
+                            <div data-avatar style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff', transition:'opacity .2s' }}>{getInitial(u.nombre)}</div>
                             <span style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.nombre}</span>
                           </div>
                           <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.email}</div>
                           <div><span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'5px 11px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleShort(u.rol)}</span></div>
-                          <div><span data-statuspill style={{ display:'inline-flex', alignItems:'center', gap:'7px', padding:'5px 11px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.5px', textTransform:'uppercase' }}><span data-statusdot style={{ width:'6px', height:'6px', borderRadius:'50%', animation:'ktPulse 2s ease-in-out infinite' }}></span>{u.estado}</span></div>
-                          <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:'6px' }}>
+                          <div><span data-statuspill style={{ display:'inline-flex', alignItems:'center', gap:'7px', padding:'5px 11px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.5px', textTransform:'uppercase' }}><span data-statusdot style={{ width:'6px', height:'6px', borderRadius:'50%', animation:'ktPulse 2s ease-in-out infinite' }}></span>{u.estado || 'Activo'}</span></div>
+                          <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:'6px' }} onClick={(e) => e.stopPropagation()}>
                             <button className="kt-actbtn" onClick={() => handleViewDetails(u)} aria-label="Ver" style={{ width:'32px', height:'32px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer', transition:'background .18s,color .18s' }}><Eye size={16} /></button>
                             <button className="kt-actbtn" onClick={() => handleEditClick(u)} aria-label="Editar" style={{ width:'32px', height:'32px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer', transition:'background .18s,color .18s' }}><Edit2 size={15} /></button>
-                            <button className="kt-actbtn del" onClick={() => handleDelete(u.id, u.nombre)} aria-label="Eliminar" style={{ width:'32px', height:'32px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer', transition:'background .18s,color .18s' }}><Trash2 size={15} /></button>
+                            <button className="kt-actbtn del" onClick={() => handleDeleteClick(u)} aria-label="Eliminar" style={{ width:'32px', height:'32px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer', transition:'background .18s,color .18s' }}><Trash2 size={15} /></button>
                           </div>
                         </div>
                       )) : (
@@ -522,36 +548,39 @@ export default function Users() {
         </main>
 
         {/* DETAILS DRAWER */}
-        <div data-details-backdrop onClick={() => setDetailsOpen(false)} style={{ position:'absolute', inset:0, zIndex:60, background:'var(--kt-modal-backdrop)', backdropFilter:'blur(6px)', WebkitBackdropFilter:'blur(6px)' }}></div>
-        {detailsUser && (
-          <div data-details-drawer data-role={detailsUser.rol} data-status={detailsUser.estado} style={{ position:'absolute', top:0, right:0, zIndex:65, height:'100%', width:'380px', maxWidth:'90vw', background:'var(--kt-modal-bg1)', borderLeft:'1px solid var(--kt-modal-border)', boxShadow:'var(--kt-shadow-modal)', display:'flex', flexDirection:'column' }}>
-            <div style={{ display:'flex', alignItems:'center', padding:'20px 22px', borderBottom:'1px solid var(--kt-border-soft)' }}>
-              <span style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'15px', letterSpacing:'-.3px', color:'var(--kt-heading)' }}>Detalle del Docente</span>
-              <button onClick={() => setDetailsOpen(false)} aria-label="Cerrar" style={{ marginLeft:'auto', width:'30px', height:'30px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer' }}><X size={16} /></button>
-            </div>
-            <div style={{ flex:1, overflow:'auto', padding:'28px 24px' }}>
-              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center', paddingBottom:'22px', borderBottom:'1px solid var(--kt-border-soft)', marginBottom:'22px' }}>
-                <div data-avatar-lg style={{ width:'72px', height:'72px', borderRadius:'18px', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'26px', color:'#fff', marginBottom:'14px' }}>{getInitial(detailsUser.nombre)}</div>
-                <div style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'18px', letterSpacing:'-.4px', color:'var(--kt-heading)' }}>{detailsUser.nombre}</div>
-                <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', marginTop:'3px' }}>{detailsUser.email}</div>
-                <div style={{ display:'flex', gap:'8px', marginTop:'14px' }}>
-                  <span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'6px 12px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleShort(detailsUser.rol)}</span>
-                  <span data-statuspill style={{ display:'inline-flex', alignItems:'center', gap:'7px', padding:'6px 12px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.5px', textTransform:'uppercase' }}><span data-statusdot style={{ width:'6px', height:'6px', borderRadius:'50%' }}></span>{detailsUser.estado}</span>
+        <aside className="kt-details-wrapper" data-role={detailsUser ? getRoleShort(detailsUser.rol) : ''} data-status={detailsUser ? (detailsUser.estado || 'Activo') : ''}>
+          <div style={{ width: '256px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {detailsUser && (
+              <>
+                <div style={{ display:'flex', alignItems:'center', padding:'26px 22px 20px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+                  <span style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'16px', letterSpacing:'-.3px', color:'var(--kt-heading)' }}>Detalle del Docente</span>
+                  <button onClick={() => setDetailsOpen(false)} aria-label="Cerrar" style={{ marginLeft:'auto', width:'30px', height:'30px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer' }}><X size={16} /></button>
                 </div>
-              </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
-                <div>
-                  <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'5px' }}>CORREO ELECTRÓNICO</div>
-                  <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13.5px', color:'var(--kt-text)' }}>{detailsUser.email}</div>
+                <div style={{ flex:1, overflow:'auto', padding:'28px 24px' }}>
+                  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center', paddingBottom:'22px', borderBottom:'1px solid var(--kt-border-soft)', marginBottom:'22px' }}>
+                    <div data-avatar-lg style={{ width:'72px', height:'72px', borderRadius:'18px', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'26px', color:'#fff', marginBottom:'14px' }}>{getInitial(detailsUser.nombre)}</div>
+                    <div style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'18px', letterSpacing:'-.4px', color:'var(--kt-heading)' }}>{detailsUser.nombre}</div>
+                    <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', marginTop:'3px' }}>{detailsUser.email}</div>
+                    <div style={{ display:'flex', gap:'8px', marginTop:'14px' }}>
+                      <span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'6px 12px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleShort(detailsUser.rol)}</span>
+                      <span data-statuspill style={{ display:'inline-flex', alignItems:'center', gap:'7px', padding:'6px 12px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.5px', textTransform:'uppercase' }}><span data-statusdot style={{ width:'6px', height:'6px', borderRadius:'50%' }}></span>{detailsUser.estado || 'Activo'}</span>
+                    </div>
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                    <div>
+                      <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'5px' }}>CORREO ELECTRÓNICO</div>
+                      <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13.5px', color:'var(--kt-text)' }}>{detailsUser.email}</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div style={{ display:'flex', gap:'12px', padding:'18px 24px', borderTop:'1px solid var(--kt-border-soft)' }}>
-              <button onClick={() => setDetailsOpen(false)} style={{ flex:1, height:'42px', border:'1px solid var(--kt-input-border)', background:'none', color:'var(--kt-muted)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', borderRadius:'10px' }}>Cerrar</button>
-              <button className="kt-primary" onClick={() => { setDetailsOpen(false); handleEditClick(detailsUser); }} style={{ flex:1, height:'42px', border:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13.5px' }}>Editar</button>
-            </div>
+                <div style={{ display:'flex', gap:'12px', padding:'18px 24px', borderTop:'1px solid var(--kt-border-soft)' }}>
+                  <button onClick={() => setDetailsOpen(false)} style={{ flex:1, height:'42px', border:'1px solid var(--kt-input-border)', background:'none', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', borderRadius:'10px' }}>Cerrar</button>
+                  <button className="kt-primary" onClick={() => { setDetailsOpen(false); handleEditClick(detailsUser); }} style={{ flex:1, height:'42px', border:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13.5px' }}>Editar</button>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </aside>
 
         {/* MODAL */}
         <div data-modal style={{ position:'absolute', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
@@ -605,6 +634,29 @@ export default function Users() {
               <button className="kt-primary" onClick={handleSubmit} style={{ height:'44px', padding:'0 22px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow:'0 12px 26px -12px rgba(16,185,129,.7)', transition:'transform .18s,box-shadow .25s' }}>
                 <span className="kt-only-create">{isSubmitting ? 'Guardando...' : (editId ? 'Guardar Cambios' : 'Registrar Docente')}</span>
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* DELETE CONFIRMATION MODAL */}
+        <div style={{ position:'absolute', inset:0, zIndex:80, display:'flex', alignItems:'center', justifyContent:'center', padding:'24px', opacity: deleteConfirmUser ? 1 : 0, pointerEvents: deleteConfirmUser ? 'auto' : 'none', transition:'opacity .22s ease' }}>
+          <div onClick={() => setDeleteConfirmUser(null)} style={{ position:'absolute', inset:0, background:'var(--kt-modal-backdrop)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}></div>
+          <div style={{ position:'relative', width:'100%', maxWidth:'400px', background:'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2))', border:'1px solid var(--kt-modal-border)', borderRadius:'20px', boxShadow:'var(--kt-shadow-modal)', padding:'28px', transform: deleteConfirmUser ? 'scale(1) translateY(0)' : 'scale(.94) translateY(10px)', transition:'transform .3s cubic-bezier(.34,1.56,.64,1)' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', gap:'13px', marginBottom:'22px' }}>
+              <div style={{ width:'40px', height:'40px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,rgba(244,63,94,.2),rgba(244,63,94,.08))', border:'1px solid rgba(244,63,94,.3)', display:'grid', placeItems:'center', color:'#F43F5E' }}><AlertCircle size={20} /></div>
+              <div>
+                <h3 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.6px', color:'var(--kt-heading)', margin:0 }}>Eliminar Docente</h3>
+                <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', margin:'2px 0 0' }}>¿Estás seguro de que deseas continuar?</p>
+              </div>
+            </div>
+            
+            <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-text)', marginBottom:'24px', lineHeight:1.5 }}>
+              Estás a punto de eliminar a <strong style={{ color:'var(--kt-heading)' }}>{deleteConfirmUser?.nombre}</strong>. Esta acción no se puede deshacer y el usuario perderá su acceso al sistema.
+            </p>
+
+            <div style={{ display:'flex', gap:'12px' }}>
+              <button onClick={() => setDeleteConfirmUser(null)} style={{ flex:1, height:'44px', border:'1px solid var(--kt-input-border)', background:'none', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', borderRadius:'11px' }}>Cancelar</button>
+              <button onClick={confirmDelete} style={{ flex:1, height:'44px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#F43F5E,#BE123C)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13.5px', boxShadow:'0 12px 26px -12px rgba(244,63,94,.7)' }}>Sí, Eliminar</button>
             </div>
           </div>
         </div>

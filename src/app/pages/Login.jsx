@@ -297,7 +297,7 @@ export default function Login() {
               {/* floating doodle bits */}
               <svg className="kt-float" style={{ position: 'absolute', top: '8%', left: '6%', width: '44px', height: '44px', animationDuration: '5s' }} viewBox="0 0 44 44" fill="none"><rect x="7" y="10" width="30" height="26" rx="3" stroke="#0F172A" strokeWidth="2.4"></rect><path d="M13 18h18M13 24h18M13 30h11" stroke="#10B981" strokeWidth="2.4" strokeLinecap="round"></path></svg>
               <svg className="kt-float" style={{ position: 'absolute', top: '2%', right: '8%', width: '40px', height: '40px', animationDuration: '6.5s' }} viewBox="0 0 40 40" fill="none"><path d="M20 6a10 10 0 0 0-6 18c1 .8 1.5 1.6 1.6 2.8h8.8c.1-1.2.6-2 1.6-2.8A10 10 0 0 0 20 6Z" stroke="#0F172A" strokeWidth="2.4"></path><path d="M16.5 32h7M17.5 36h5" stroke="#F59E0B" strokeWidth="2.4" strokeLinecap="round"></path></svg>
-              <svg className="kt-float" style={{ position: 'absolute', bottom: '20%', right: '2%', width: '38px', height: '38px', animationDuration: '7s' }} viewBox="0 0 38 38" fill="none"><path d="M6 12c5-3 9-3 13 0 4-3 8-3 13 0v18c-5-3-9-3-13 0-4-3-8-3-13 0V12Z" stroke="#0F172A" strokeWidth="2.4" strokeLinejoin="round"></path><path d="M19 12v18" stroke="#0F172A" stroke-width="2.4"></path></svg>
+              <svg className="kt-float" style={{ position: 'absolute', bottom: '20%', right: '2%', width: '38px', height: '38px', animationDuration: '7s' }} viewBox="0 0 38 38" fill="none"><path d="M6 12c5-3 9-3 13 0 4-3 8-3 13 0v18c-5-3-9-3-13 0-4-3-8-3-13 0V12Z" stroke="#0F172A" strokeWidth="2.4" strokeLinejoin="round"></path><path d="M19 12v18" stroke="#0F172A" strokeWidth="2.4"></path></svg>
 
               {/* teacher */}
               <svg className="kt-char" width="230" height="300" viewBox="0 0 260 360" fill="none" style={{ overflow: 'visible' }}>
@@ -372,7 +372,7 @@ export default function Login() {
                 Google
               </button>
               <button type="button" className="kt-oauth-btn">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="#0F172A" style={{ marginRight: '2px' }}><path d="M13.4 9.6c-.02-1.9 1.55-2.8 1.62-2.85-.88-1.3-2.26-1.47-2.75-1.49-1.17-.12-2.28.69-2.87.69-.59 0-1.5-.67-2.47-.66-1.27.02-2.44.74-3.1 1.87-1.32 2.3-.34 5.7.95 7.56.63.91 1.38 1.93(1-opacity-opacity) 2.37 1.9.95-.04 1.31-.61 2.46-.61 1.15 0 1.47.61 2.47.59 1.02-.02 1.66-.93 2.29-1.85.72-1.06 1.02-2.08 1.03-2.13-.02-.01-1.97-.76-2-3.01ZM11.5 4.13c.52-.64.88-1.51.78-2.4-.75.03-1.68.5-2.22 1.13-.48.56-.91 1.46-.8 2.32.84.06 1.7-.42 2.24-1.05Z"></path></svg>
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="#0F172A" style={{ marginRight: '2px' }}><path d="M13.4 9.6c-.02-1.9 1.55-2.8 1.62-2.85-.88-1.3-2.26-1.47-2.75-1.49-1.17-.12-2.28.69-2.87.69-.59 0-1.5-.67-2.47-.66-1.27.02-2.44.74-3.1 1.87-1.32 2.3-.34 5.7.95 7.56.63.91 1.38 1.93 2.37 1.9.95-.04 1.31-.61 2.46-.61 1.15 0 1.47.61 2.47.59 1.02-.02 1.66-.93 2.29-1.85.72-1.06 1.02-2.08 1.03-2.13-.02-.01-1.97-.76-2-3.01ZM11.5 4.13c.52-.64.88-1.51.78-2.4-.75.03-1.68.5-2.22 1.13-.48.56-.91 1.46-.8 2.32.84.06 1.7-.42 2.24-1.05Z"></path></svg>
                 Apple
               </button>
             </div>
