@@ -22,7 +22,10 @@ import {
   FileQuestion,
   RefreshCw,
   BookOpen,
-  Cpu
+  Cpu,
+  MessageSquare,
+  Send,
+  X
 } from 'lucide-react';
 
 // Reusable SVG Icons for exports
@@ -65,6 +68,10 @@ export default function Generator() {
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLog, setChatLog] = useState([{ role: 'ai', text: '¡Hola! Soy tu asistente de contenido. Puedo reescribir, resumir o ampliar cualquier sección del temario. ¿Qué te gustaría ajustar?' }]);
+  const [configCollapsed, setConfigCollapsed] = useState(false);
   
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
@@ -376,6 +383,14 @@ export default function Generator() {
             </div>
             
             <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'12px' }}>
+              <button 
+                onClick={() => setAssistantOpen(!assistantOpen)}
+                className="kt-ghostbtn"
+                style={{ display:'flex', alignItems:'center', gap:'8px', height:'42px', padding:'0 15px', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'11px', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', transition:'all .2s' }}
+              >
+                <MessageSquare size={17} style={{ color: assistantOpen ? '#10B981' : 'currentColor' }} />
+                Asistente IA
+              </button>
               {/* notifications */}
               <div style={{ position:'relative' }}>
                 <button onClick={() => setNotifOpen(!notifOpen)} aria-label="Notificaciones" style={{ position:'relative', width:'42px', height:'42px', display:'grid', placeItems:'center', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'11px', color:'var(--kt-muted)', cursor:'pointer' }}>
@@ -413,34 +428,82 @@ export default function Generator() {
             </div>
           </header>
 
-          <div className="kt-main-pad" style={{ flex:1, overflow:'hidden', padding:'24px', display:'flex', gap:'24px' }}>
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+            <div className="kt-main-pad" style={{ flex:1, overflow:'hidden', padding:'24px', display:'flex', flexDirection:'column', gap:'24px' }}>
             
             {/* LEFT CONFIGURATION PANEL */}
-            <section style={{ width:'360px', flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-panel-bg)', backdropFilter:'blur(12px)', border:'1px solid var(--kt-panel-border)', borderRadius:'18px', overflow:'hidden', boxShadow:'var(--kt-shadow-panel)' }}>
-              <div style={{ padding:'20px 22px', borderBottom:'1px solid var(--kt-border-soft)' }}>
-                <h2 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'17px', letterSpacing:'-.5px', color:'var(--kt-heading)', margin:0, display:'flex', alignItems:'center', gap:'8px' }}>
-                  <Settings size={18} style={{ color:'var(--kt-muted)' }}/> Configuración
-                </h2>
-                <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'12.5px', color:'var(--kt-muted)', marginTop:'6px' }}>Selecciona tu temario y qué material generar</p>
+            <section style={{ width:'100%', flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-panel-bg)', backdropFilter:'blur(12px)', border:'1px solid var(--kt-panel-border)', borderRadius:'18px', overflow:'hidden', boxShadow:'var(--kt-shadow-panel)', transition:'all .3s ease' }}>
+              <div style={{ padding:'12px 18px', borderBottom: configCollapsed ? 'none' : '1px solid var(--kt-border-soft)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                  <button onClick={() => setConfigCollapsed(!configCollapsed)} aria-label="Colapsar panel" style={{ background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', borderRadius:'8px', width:'32px', height:'32px', cursor:'pointer', color:'var(--kt-muted)', display:'grid', placeItems:'center' }}>
+                    <ChevronLeft size={18} style={{ transform: configCollapsed ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.3s ease' }} />
+                  </button>
+                  <h2 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'16px', letterSpacing:'-.5px', color:'var(--kt-heading)', margin:0, display:'flex', alignItems:'center', gap:'8px' }}>
+                    <Settings size={18} style={{ color:'var(--kt-muted)' }}/> Configuración
+                  </h2>
+                </div>
+                <button
+                  className="kt-primary"
+                  onClick={() => {
+                    handleGenerate();
+                    notify('success', 'Generación Iniciada', 'La IA está creando el contenido...');
+                  }}
+                  disabled={!canGenerate}
+                  style={{ height:'36px', padding:'0 18px', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', border:'none', borderRadius:'9px', background: !canGenerate ? 'var(--kt-chip-border)' : 'linear-gradient(150deg,#10B981,#059669)', color: !canGenerate ? 'var(--kt-muted)' : '#fff', cursor: !canGenerate ? 'not-allowed' : 'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', boxShadow: !canGenerate ? 'none' : '0 6px 16px -6px rgba(16,185,129,.7)', transition:'all .2s' }}
+                >
+                  {isGenerating ? <div style={{width:'14px',height:'14px',border:'2px solid rgba(255,255,255,.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 1s linear infinite'}} /> : <Wand2 size={15} />}
+                  {isGenerating ? 'Procesando...' : `Generar ${piezas.length > 0 ? `(${piezas.length})` : ''}`}
+                </button>
               </div>
 
-              <div style={{ flex:1, overflowY:'auto', padding:'22px', display:'flex', flexDirection:'column', gap:'22px' }}>
+              {!configCollapsed && (
+              <div style={{ padding:'16px 18px', display:'grid', gridTemplateColumns:'1fr 1.5fr 1fr', gap:'20px' }}>
 
                 {/* 1. Temario selector */}
                 <div>
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
                     <BookOpen size={13} style={{ color:'var(--kt-muted)' }} /> Temario
                   </label>
-                  <select
-                    value={temarioId}
-                    onChange={e => setTemarioId(e.target.value)}
-                    style={{ width:'100%', height:'42px', padding:'0 12px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color: temarioId ? 'var(--kt-heading)' : 'var(--kt-muted)', fontWeight:500, fontSize:'13.5px', cursor:'pointer', appearance:'auto' }}
-                  >
-                    <option value="">— Selecciona un temario —</option>
-                    {courses.map(c => (
-                      <option key={c.id} value={c.id}>{c.titulo} · {c.asignatura}</option>
-                    ))}
-                  </select>
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      value={temarioId}
+                      onChange={e => setTemarioId(e.target.value)}
+                      style={{ 
+                        width:'100%', 
+                        height:'46px', 
+                        padding:'9px 36px 9px 15px', 
+                        border:'1px solid var(--kt-input-border)', 
+                        borderRadius:'11px', 
+                        background:'var(--kt-input-bg)', 
+                        backdropFilter:'blur(16px)', 
+                        color: temarioId ? 'var(--kt-heading)' : 'var(--kt-muted)', 
+                        fontFamily:"'Inter', sans-serif", 
+                        fontWeight:600, 
+                        fontSize:'13.5px', 
+                        cursor:'pointer', 
+                        appearance:'none', 
+                        outline: 'none',
+                        boxShadow: '0 4px 6px rgba(15, 23, 42, 0.05)',
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#10B981';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.2)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'var(--kt-input-border)';
+                        e.target.style.boxShadow = '0 4px 6px rgba(15, 23, 42, 0.05)';
+                      }}
+                    >
+                      <option value="" style={{ color: 'var(--kt-muted)' }}>— Selecciona un temario —</option>
+                      {courses.map(c => (
+                        <option key={c.id} value={c.id} style={{ color: 'var(--kt-text)' }}>{c.titulo} · {c.asignatura}</option>
+                      ))}
+                    </select>
+                    <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--kt-muted)' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                  </div>
                   {temarioSeleccionado && (
                     <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', margin:'7px 2px 0' }}>
                       {temarioSeleccionado.gradoAcademico || 'Sin grado'} · {loadingContenido ? 'Consultando material...' : (contenidoExistente ? 'Ya tiene material generado' : 'Sin material generado aún')}
@@ -458,41 +521,66 @@ export default function Generator() {
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'9px' }}>
                     <CheckSquare size={13} style={{ color:'var(--kt-muted)' }} /> Material a generar
                   </label>
-                  <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
                     {PIEZAS.map(pieza => {
                       const selected = piezas.includes(pieza.id);
                       const exists = piezaYaGenerada(pieza.id);
                       const willRegen = regenerarPiezas.includes(pieza.id);
                       return (
-                        <div key={pieza.id} style={{ border:`1.5px solid ${selected ? 'rgba(16,185,129,.45)' : 'var(--kt-input-border)'}`, background: selected ? 'rgba(16,185,129,.07)' : 'var(--kt-input-bg)', borderRadius:'12px', padding:'11px 13px', transition:'all .2s' }}>
-                          <label style={{ display:'flex', alignItems:'center', gap:'10px', cursor: temarioId ? 'pointer' : 'not-allowed', opacity: temarioId ? 1 : 0.55 }}>
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              disabled={!temarioId}
-                              onChange={() => togglePieza(pieza.id)}
-                              style={{ width:'16px', height:'16px', accentColor:'#10B981', cursor:'inherit' }}
-                            />
-                            <span style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)' }}>{pieza.label}</span>
+                        <div 
+                          key={pieza.id} 
+                          onClick={() => { if(temarioId) togglePieza(pieza.id); }}
+                          style={{ 
+                            border:`1px solid ${selected ? '#10B981' : 'var(--kt-input-border)'}`, 
+                            background: selected ? 'rgba(16,185,129,0.05)' : 'var(--kt-input-bg)', 
+                            borderRadius:'9px', 
+                            padding:'10px 12px', 
+                            cursor: temarioId ? 'pointer' : 'not-allowed', 
+                            opacity: temarioId ? 1 : 0.55,
+                            transition:'all .2s ease'
+                          }}
+                        >
+                          <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                            <div style={{
+                              width:'18px', height:'18px', borderRadius:'4px', 
+                              border: `1.5px solid ${selected ? '#10B981' : 'var(--kt-muted)'}`,
+                              background: selected ? '#10B981' : 'transparent',
+                              display:'flex', alignItems:'center', justifyContent:'center',
+                              transition: 'all 0.2s ease', flexShrink: 0
+                            }}>
+                              {selected && <CheckSquare size={12} color="#ffffff" style={{ strokeWidth: 3 }} />}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px', color: selected ? 'var(--kt-heading)' : 'var(--kt-text)', transition: 'color 0.2s ease' }}>{pieza.label}</div>
+                            </div>
                             {exists && (
-                              <span style={{ marginLeft:'auto', display:'inline-flex', alignItems:'center', gap:'4px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', color:'#059669', background:'rgba(16,185,129,.14)', border:'1px solid rgba(16,185,129,.3)', padding:'3px 8px', borderRadius:'8px', whiteSpace:'nowrap' }}>
-                                <CheckCircle2 size={11} /> Ya generada
+                              <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', color:'#059669', background:'rgba(16,185,129,.14)', border:'1px solid rgba(16,185,129,.3)', padding:'4px 10px', borderRadius:'9999px', whiteSpace:'nowrap' }}>
+                                <CheckCircle2 size={12} /> Completado
                               </span>
                             )}
-                          </label>
+                          </div>
                           {exists && selected && (
-                            <label style={{ display:'flex', alignItems:'center', gap:'8px', marginTop:'9px', paddingTop:'9px', borderTop:'1px dashed var(--kt-border)', cursor:'pointer' }}>
-                              <input
-                                type="checkbox"
-                                checked={willRegen}
-                                onChange={() => toggleRegenerar(pieza.id)}
-                                style={{ width:'14px', height:'14px', accentColor:'#F59E0B', cursor:'pointer' }}
-                              />
-                              <RefreshCw size={12} style={{ color:'#F59E0B' }} />
-                              <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-muted)' }}>
-                                Regenerar (consume créditos)
+                            <div 
+                              onClick={(e) => { e.stopPropagation(); toggleRegenerar(pieza.id); }}
+                              style={{ 
+                                display:'flex', alignItems:'center', gap:'8px', marginTop:'12px', paddingTop:'12px', 
+                                borderTop:`1px dashed ${willRegen ? 'rgba(245,158,11,.4)' : 'var(--kt-border)'}`, 
+                                cursor:'pointer' 
+                              }}
+                            >
+                              <div style={{
+                                width:'18px', height:'18px', borderRadius:'4px', 
+                                border: `1px solid ${willRegen ? '#F59E0B' : 'var(--kt-muted)'}`,
+                                background: willRegen ? '#F59E0B' : 'transparent',
+                                display:'flex', alignItems:'center', justifyContent:'center',
+                                transition: 'all 0.2s ease', flexShrink: 0
+                              }}>
+                                {willRegen && <RefreshCw size={10} color="#ffffff" style={{ strokeWidth: 3 }} />}
+                              </div>
+                              <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color: willRegen ? '#D97706' : 'var(--kt-muted)' }}>
+                                Regenerar (consumirá créditos)
                               </span>
-                            </label>
+                            </div>
                           )}
                         </div>
                       );
@@ -505,18 +593,23 @@ export default function Generator() {
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'9px' }}>
                     <Cpu size={13} style={{ color:'var(--kt-muted)' }} /> Modelo de IA
                   </label>
-                  <div style={{ display:'flex', gap:'8px' }}>
+                  <div style={{ display:'grid', gridTemplateColumns: '1fr 1fr', gap:'12px' }}>
                     {MODELOS.map(m => {
                       const active = modelo === m.id;
                       return (
-                        <button
+                        <div
                           key={m.id}
                           onClick={() => setModelo(m.id)}
-                          style={{ flex:1, padding:'11px 10px', borderRadius:'12px', cursor:'pointer', textAlign:'left', border:`1.5px solid ${active ? 'rgba(16,185,129,.5)' : 'var(--kt-input-border)'}`, background: active ? 'linear-gradient(150deg,rgba(16,185,129,.16),rgba(16,185,129,.05))' : 'var(--kt-input-bg)', transition:'all .2s' }}
+                          style={{
+                            padding:'10px 12px', borderRadius:'9px', cursor:'pointer', textAlign:'left', 
+                            border:`1px solid ${active ? '#38BDF8' : 'var(--kt-input-border)'}`, 
+                            background: active ? 'rgba(56,189,248,.05)' : 'var(--kt-input-bg)',
+                            transition:'all .2s ease'
+                          }}
                         >
-                          <span style={{ display:'block', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color: active ? '#059669' : 'var(--kt-heading)' }}>{m.label}</span>
-                          <span style={{ display:'block', fontFamily:"'Manrope'", fontWeight:500, fontSize:'10.5px', color:'var(--kt-muted)', marginTop:'3px', lineHeight:1.35 }}>{m.hint}</span>
-                        </button>
+                          <span style={{ display:'block', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color: active ? '#0284C7' : 'var(--kt-heading)' }}>{m.label}</span>
+                          <span style={{ display:'block', fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', marginTop:'2px', lineHeight:1.4 }}>{m.hint}</span>
+                        </div>
                       );
                     })}
                   </div>
@@ -538,20 +631,9 @@ export default function Generator() {
                   </div>
                 )}
               </div>
+              )}
 
-              <div style={{ padding:'22px', borderTop:'1px solid var(--kt-border-soft)', background:'var(--kt-chip-bg)' }}>
-                <button
-                  className="kt-primary"
-                  onClick={() => {
-                    handleGenerate();
-                    notify('success', 'Generación Iniciada', 'La IA está creando el contenido...');
-                  }}
-                  disabled={!canGenerate}
-                  style={{ width:'100%', height:'46px', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', border:'none', borderRadius:'11px', background: !canGenerate ? 'var(--kt-chip-border)' : 'linear-gradient(150deg,#10B981,#059669)', color: !canGenerate ? 'var(--kt-muted)' : '#fff', cursor: !canGenerate ? 'not-allowed' : 'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow: !canGenerate ? 'none' : '0 12px 26px -12px rgba(16,185,129,.7)', transition:'all .2s' }}
-                >
-                  {isGenerating ? <div style={{width:'18px',height:'18px',border:'2px solid rgba(255,255,255,.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 1s linear infinite'}} /> : <Wand2 size={18} />}
-                  {isGenerating ? 'Procesando...' : `Generar ${piezas.length > 0 ? `(${piezas.length} pieza${piezas.length > 1 ? 's' : ''})` : 'Material'}`}
-                </button>
+              <div style={{ display: 'none' }}>
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               </div>
             </section>
@@ -602,15 +684,33 @@ export default function Generator() {
                 )}
 
                 {!isGenerating && !displayData && (
-                  <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', textAlign:'center', opacity:0.6 }}>
-                    <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', display:'grid', placeItems:'center', color:'var(--kt-muted)' }}>
-                      <Wand2 size={32} />
+                  <div style={{ position: 'relative', height:'100%', display:'flex', flexDirection:'column', gap:'20px', pointerEvents:'none' }}>
+                    <div style={{ opacity: 0.35, padding: '24px', background: 'var(--kt-input-bg)', borderRadius: '16px', border: '1px solid var(--kt-border-soft)' }}>
+                       <div style={{ width: '40%', height: '24px', background: 'var(--kt-chip-bg)', borderRadius: '6px', marginBottom: '16px' }} />
+                       <div style={{ width: '20%', height: '12px', background: 'var(--kt-chip-bg)', borderRadius: '4px', marginBottom: '24px' }} />
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div style={{ width: '100%', height: '10px', background: 'var(--kt-chip-bg)', borderRadius: '4px' }} />
+                          <div style={{ width: '92%', height: '10px', background: 'var(--kt-chip-bg)', borderRadius: '4px' }} />
+                          <div style={{ width: '96%', height: '10px', background: 'var(--kt-chip-bg)', borderRadius: '4px' }} />
+                       </div>
                     </div>
-                    <div>
-                      <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'18px', color:'var(--kt-heading)', margin:0 }}>Área de Trabajo Vacía</h4>
-                      <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-muted)', maxWidth:'320px', margin:'8px auto 0' }}>
-                        {temarioId ? 'Este temario aún no tiene material. Elige qué piezas generar en el panel izquierdo.' : 'Selecciona un temario en el panel de la izquierda para comenzar.'}
-                      </p>
+                    <div style={{ opacity: 0.15, padding: '24px', background: 'var(--kt-input-bg)', borderRadius: '16px', border: '1px solid var(--kt-border-soft)' }}>
+                       <div style={{ width: '30%', height: '20px', background: 'var(--kt-chip-bg)', borderRadius: '6px', marginBottom: '16px' }} />
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div style={{ width: '100%', height: '10px', background: 'var(--kt-chip-bg)', borderRadius: '4px' }} />
+                          <div style={{ width: '85%', height: '10px', background: 'var(--kt-chip-bg)', borderRadius: '4px' }} />
+                       </div>
+                    </div>
+                    
+                    {/* Empty State Overlay */}
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                       <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', display:'grid', placeItems:'center', color:'var(--kt-muted)', opacity: 0.8, boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
+                         <Wand2 size={32} />
+                       </div>
+                       <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'18px', color:'var(--kt-heading)', margin:'16px 0 0', opacity: 0.9 }}>Vista previa de contenido</h4>
+                       <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-muted)', maxWidth:'320px', margin:'8px auto 0', textAlign: 'center', opacity: 0.85 }}>
+                         {temarioId ? 'Configura las opciones arriba y presiona Generar para comenzar.' : 'Selecciona un temario para comenzar.'}
+                       </p>
                     </div>
                   </div>
                 )}
@@ -803,8 +903,86 @@ export default function Generator() {
                   </div>
                 )}
               </div>
-
             </section>
+            </div>
+
+            {/* AI ASSISTANT SIDEBAR */}
+            <aside 
+              style={{
+                width: '352px', flex: 'none', display: 'flex', flexDirection: 'column', 
+                background: 'var(--kt-panel-bg)', backdropFilter: 'blur(14px)', borderLeft: '1px solid var(--kt-border)',
+                transform: assistantOpen ? 'translateX(0)' : 'translateX(100%)',
+                transition: 'transform .34s cubic-bezier(.4,0,.2,1)',
+                position: 'absolute', right: 0, top: 0, bottom: 0, zIndex: 60,
+                boxShadow: assistantOpen ? '-20px 0 60px rgba(0,0,0,.08)' : 'none'
+              }}
+            >
+              <div style={{ display:'flex', alignItems:'center', gap:'11px', padding:'18px 18px 16px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+                <span style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', display:'grid', placeItems:'center', color:'#fff', boxShadow:'0 6px 16px -6px rgba(16,185,129,.6)' }}>
+                  <Sparkles size={18} />
+                </span>
+                <div style={{ minWidth:0, marginRight:'auto' }}>
+                  <div style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'15px', letterSpacing:'-.3px', color:'var(--kt-heading)' }}>Asistente IA</div>
+                  <div style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Manrope'", fontWeight:600, fontSize:'11px', color:'var(--kt-muted)' }}>
+                    <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#10B981', boxShadow:'0 0 8px #10B981' }}></span>En línea · edita tu contenido
+                  </div>
+                </div>
+                <button onClick={() => setAssistantOpen(false)} aria-label="Cerrar" style={{ flex:'none', width:'30px', height:'30px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer' }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div style={{ flex:1, overflow:'auto', padding:'18px 16px', display:'flex', flexDirection:'column', gap:'14px' }}>
+                {chatLog.map((msg, i) => (
+                  <div key={i} style={{ display:'flex', gap:'10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+                    {msg.role === 'ai' && (
+                      <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'rgba(16,185,129,.14)', color:'#10B981', display:'grid', placeItems:'center', flex:'none' }}>
+                        <Sparkles size={14} />
+                      </div>
+                    )}
+                    <div style={{ 
+                      background: msg.role === 'user' ? 'var(--kt-chip-bg)' : 'rgba(16,185,129,.06)', 
+                      border: `1px solid ${msg.role === 'user' ? 'var(--kt-chip-border)' : 'rgba(16,185,129,.15)'}`,
+                      padding: '12px 14px', borderRadius: '12px',
+                      fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', lineHeight:1.5, color: 'var(--kt-text)',
+                      borderTopRightRadius: msg.role === 'user' ? '4px' : '12px',
+                      borderTopLeftRadius: msg.role === 'ai' ? '4px' : '12px',
+                      maxWidth: '85%'
+                    }}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ padding:'0 16px 8px' }}>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'9.5px', letterSpacing:'1px', textTransform:'uppercase', color:'var(--kt-label)', marginBottom:'8px' }}>Sugerencias rápidas</div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:'7px' }}>
+                  {['✨ Más didáctico', '➕ Añadir ejemplos', '📝 2 ejercicios más', '📉 Resumir teoría'].map(sug => (
+                    <button key={sug} onClick={() => { setChatInput(sug); }} style={{ padding:'7px 12px', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'20px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', color:'var(--kt-text)', transition:'all .18s' }}>
+                      {sug}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ padding:'12px 16px 18px', borderTop:'1px solid var(--kt-border-soft)' }}>
+                <div style={{ display:'flex', alignItems:'flex-end', gap:'9px', padding:'8px 8px 8px 14px', border:'1.5px solid var(--kt-input-border)', background:'var(--kt-input-bg)', borderRadius:'14px' }}>
+                  <textarea rows={1} value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Pide un cambio a la IA…" style={{ flex:1, border:'none', background:'none', resize:'none', color:'var(--kt-heading)', fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', lineHeight:1.5, maxHeight:'100px', padding:'6px 0', outline:'none' }} />
+                  <button 
+                    onClick={() => {
+                      if (!chatInput.trim()) return;
+                      setChatLog([...chatLog, { role: 'user', text: chatInput }]);
+                      setChatInput('');
+                      setTimeout(() => setChatLog(p => [...p, { role: 'ai', text: 'Entendido, estoy ajustando el contenido según tu solicitud...' }]), 600);
+                    }}
+                    style={{ flex:'none', width:'38px', height:'38px', display:'grid', placeItems:'center', border:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', boxShadow:'0 8px 18px -8px rgba(16,185,129,.7)' }}
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
+              </div>
+            </aside>
           </div>
         </main>
       </div>
