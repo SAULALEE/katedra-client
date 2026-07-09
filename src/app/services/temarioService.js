@@ -19,6 +19,7 @@ export const getTemarios = async () => {
  * Fully prepared for backend ingestion.
  * 
  * @param {object} temarioData { titulo, asignatura, gradoAcademico, descripcion, temas, origen, detalleOrigen }
+ *   gradoAcademico is required: 'primaria' | 'secundaria' | 'bachillerato' | 'universitario' | 'posgrado'
  */
 export const crearTemarioRequest = async (temarioData) => {
   try {
@@ -38,7 +39,7 @@ export const crearTemarioRequest = async (temarioData) => {
  * @param {string} id - the temario UUID
  * @param {object} options
  * @param {string[]} options.piezas - subset of ['teoria','ejercicios','evaluacion','diapositivas']
- * @param {string} options.modelo - 'gpt-4o-mini' (Sencillo) | 'gpt-4o' (Avanzado)
+ * @param {string} options.modelo - 'flash' (Tutor) | 'pro' (Maestro) | 'max' (Catedrático)
  * @param {string[]} [options.regenerarPiezas] - pieces allowed to overwrite existing content
  */
 export const generarMaterialParaTemario = async (id, { piezas, modelo, regenerarPiezas = [] }) => {

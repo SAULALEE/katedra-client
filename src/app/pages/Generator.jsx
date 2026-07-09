@@ -506,7 +506,7 @@ export default function Generator() {
                   </div>
                   {temarioSeleccionado && (
                     <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', margin:'7px 2px 0' }}>
-                      {temarioSeleccionado.gradoAcademico || 'Sin grado'} · {loadingContenido ? 'Consultando material...' : (contenidoExistente ? 'Ya tiene material generado' : 'Sin material generado aún')}
+                      {temarioSeleccionado.gradoAcademico ? temarioSeleccionado.gradoAcademico.charAt(0).toUpperCase() + temarioSeleccionado.gradoAcademico.slice(1) : 'Sin grado'} · {loadingContenido ? 'Consultando material...' : (contenidoExistente ? 'Ya tiene material generado' : 'Sin material generado aún')}
                     </p>
                   )}
                   {courses.length === 0 && (
@@ -593,7 +593,7 @@ export default function Generator() {
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'9px' }}>
                     <Cpu size={13} style={{ color:'var(--kt-muted)' }} /> Modelo de IA
                   </label>
-                  <div style={{ display:'grid', gridTemplateColumns: '1fr 1fr', gap:'12px' }}>
+                  <div style={{ display:'grid', gridTemplateColumns: '1fr', gap:'10px' }}>
                     {MODELOS.map(m => {
                       const active = modelo === m.id;
                       return (

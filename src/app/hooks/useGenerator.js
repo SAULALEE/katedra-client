@@ -11,9 +11,13 @@ export const PIEZAS = [
 ];
 
 export const MODELOS = [
-  { id: 'gpt-4o-mini', label: 'Sencillo', hint: 'Rápido y económico (gpt-4o-mini)' },
-  { id: 'gpt-4o', label: 'Avanzado', hint: 'Mayor calidad, más costoso (gpt-4o)' }
+  { id: 'flash', label: 'Tutor', hint: 'Rápido y económico, teoría breve (4–5 párrafos)' },
+  { id: 'pro', label: 'Maestro', hint: 'Profundidad equilibrada (6–8 párrafos)' },
+  { id: 'max', label: 'Catedrático', hint: 'Máximo rigor con modelo de razonamiento (8–10 párrafos), más costoso' }
 ];
+
+/** Maps a response tier key to its display name. */
+export const MODELO_LABELS = Object.fromEntries(MODELOS.map(m => [m.id, m.label]));
 
 /** True when the piece has real content in a ContenidoTemarioResponseDTO. */
 const pieceExists = (contenido, piezaId) => {
@@ -32,7 +36,7 @@ export const useGenerator = () => {
   const initialTemarioId = searchParams.get('temarioId') || '';
   const [temarioId, setTemarioIdState] = useState(initialTemarioId);
   const [piezas, setPiezas] = useState([]);
-  const [modelo, setModelo] = useState('gpt-4o-mini');
+  const [modelo, setModelo] = useState('flash');
   const [regenerarPiezas, setRegenerarPiezas] = useState([]);
 
   // Existing material of the selected temario (null = nothing generated yet)
