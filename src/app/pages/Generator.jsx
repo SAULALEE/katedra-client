@@ -81,7 +81,6 @@ export default function Generator() {
     temarioSeleccionado,
     piezas, togglePieza,
     modelo, setModelo,
-    regenerarPiezas, toggleRegenerar,
     piezaYaGenerada,
     contenidoExistente,
     loadingContenido,
@@ -89,7 +88,7 @@ export default function Generator() {
     generationStep,
     generatedData,
     genError,
-    piezasOmitidas,
+    piezasFallidas,
     activeTab, setActiveTab,
     checkedAnswers, setCheckedAnswers,
     handleGenerate
@@ -525,7 +524,6 @@ export default function Generator() {
                     {PIEZAS.map(pieza => {
                       const selected = piezas.includes(pieza.id);
                       const exists = piezaYaGenerada(pieza.id);
-                      const willRegen = regenerarPiezas.includes(pieza.id);
                       return (
                         <div 
                           key={pieza.id} 
@@ -560,25 +558,13 @@ export default function Generator() {
                             )}
                           </div>
                           {exists && selected && (
-                            <div 
-                              onClick={(e) => { e.stopPropagation(); toggleRegenerar(pieza.id); }}
-                              style={{ 
-                                display:'flex', alignItems:'center', gap:'8px', marginTop:'12px', paddingTop:'12px', 
-                                borderTop:`1px dashed ${willRegen ? 'rgba(245,158,11,.4)' : 'var(--kt-border)'}`, 
-                                cursor:'pointer' 
-                              }}
-                            >
-                              <div style={{
-                                width:'18px', height:'18px', borderRadius:'4px', 
-                                border: `1px solid ${willRegen ? '#F59E0B' : 'var(--kt-muted)'}`,
-                                background: willRegen ? '#F59E0B' : 'transparent',
-                                display:'flex', alignItems:'center', justifyContent:'center',
-                                transition: 'all 0.2s ease', flexShrink: 0
-                              }}>
-                                {willRegen && <RefreshCw size={10} color="#ffffff" style={{ strokeWidth: 3 }} />}
-                              </div>
-                              <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color: willRegen ? '#D97706' : 'var(--kt-muted)' }}>
-                                Regenerar (consumirá créditos)
+                            <div style={{
+                              display:'flex', alignItems:'center', gap:'8px', marginTop:'12px', paddingTop:'12px',
+                              borderTop:'1px dashed var(--kt-border)'
+                            }}>
+                              <RefreshCw size={12} style={{ color:'#D97706', flexShrink: 0 }} />
+                              <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'#D97706' }}>
+                                Se regenerará y reemplazará el contenido actual (consume créditos)
                               </span>
                             </div>
                           )}
@@ -615,12 +601,15 @@ export default function Generator() {
                   </div>
                 </div>
 
-                {piezasOmitidas.length > 0 && (
-                  <div style={{ display:'flex', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(245,158,11,.1)', border:'1px solid rgba(245,158,11,.25)' }}>
-                    <AlertCircle size={16} style={{ color:'#F59E0B', flex:'none', marginTop:'1px' }} />
-                    <p style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-text)', margin:0, lineHeight:1.5 }}>
-                      Se omitió: <strong>{piezasOmitidas.join(', ')}</strong> — ya existía y no se marcó "Regenerar" (créditos protegidos).
-                    </p>
+                {Object.keys(piezasFallidas).length > 0 && (
+                  <div style={{ display:'flex', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(244,63,94,.1)', border:'1px solid rgba(244,63,94,.25)' }}>
+                    <AlertCircle size={16} style={{ color:'#F43F5E', flex:'none', marginTop:'1px' }} />
+                    <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-text)', lineHeight:1.5 }}>
+                      <p style={{ margin:0 }}>
+                        No se pudo generar <strong>{Object.keys(piezasFallidas).map(id => PIEZAS.find(p => p.id === id)?.label || id).join(', ')}</strong> con el modelo seleccionado.
+                        Se conservó el contenido anterior — intenta de nuevo o prueba con otro modelo de IA.
+                      </p>
+                    </div>
                   </div>
                 )}
 
