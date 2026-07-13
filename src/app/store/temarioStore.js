@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import { getTemarios, crearTemarioRequest } from '../services/temarioService';
+import {
+  getTemarios,
+  crearTemarioRequest,
+  cargarTemarioArchivoRequest,
+  cargarTemarioUrlRequest,
+  cargarTemarioDriveRequest
+} from '../services/temarioService';
 
 export const useTemarioStore = create((set, get) => ({
   courses: [],
@@ -34,6 +40,30 @@ export const useTemarioStore = create((set, get) => ({
       return true;
     } catch (err) {
       set({ error: err.message || 'Error al crear temario', loading: false });
+      return false;
+    }
+  },
+
+  cargarTemario: async (tipo, temarioData) => {
+    set({ loading: true, error: null });
+    try {
+      const requestMap = {
+        archivo: cargarTemarioArchivoRequest,
+        url: cargarTemarioUrlRequest,
+        drive: cargarTemarioDriveRequest
+      };
+      const request = requestMap[tipo];
+      if (!request) throw new Error('Tipo de carga no soportado');
+
+      const nuevoTemario = await request(temarioData);
+      set((state) => ({
+        courses: [...state.courses, nuevoTemario],
+        loading: false,
+        error: null
+      }));
+      return true;
+    } catch (err) {
+      set({ error: err.message || 'Error al cargar temario', loading: false });
       return false;
     }
   }

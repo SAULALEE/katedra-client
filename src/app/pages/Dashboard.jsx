@@ -20,7 +20,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { courses, loading, error, crearTemario, updateTemario, deleteTemario } = useTemarios();
+  const { courses, loading, error, crearTemario, cargarTemario, updateTemario, deleteTemario } = useTemarios();
 
   const [theme, setTheme] = useState('dark');
   const [collapsed, setCollapsed] = useState(false);
@@ -36,14 +36,43 @@ export default function Dashboard() {
   // Form fields
   const [titulo, setTitulo] = useState('');
   const [asignatura, setAsignatura] = useState('');
-  const [grado, setGrado] = useState('');
+  const [gradosSeleccionados, setGradosSeleccionados] = useState([]);
+  const [gradoOtro, setGradoOtro] = useState('');
   const [desc, setDesc] = useState('');
   const [subtemas, setSubtemas] = useState('6');
   const [url, setUrl] = useState('');
   const [fileName, setFileName] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const gradoOptions = ['Primaria', 'Secundaria', 'Preparatoria', 'Universidad', 'Posgrado'];
+  const gradoOtroKey = 'Otro';
+
+  const parseGrados = (gradoAcademico = '') => {
+    const grados = String(gradoAcademico).split(',').map(item => item.trim()).filter(Boolean);
+    const conocidos = grados.filter(item => gradoOptions.includes(item));
+    const personalizados = grados.filter(item => !gradoOptions.includes(item));
+    return {
+      selected: personalizados.length > 0 ? [...conocidos, gradoOtroKey] : conocidos,
+      other: personalizados.join(', ')
+    };
+  };
+
+  const buildGradoAcademico = () => {
+    const grados = gradosSeleccionados
+      .filter(item => item !== gradoOtroKey)
+      .map(item => item.trim())
+      .filter(Boolean);
+    const otro = gradoOtro.trim();
+    return (gradosSeleccionados.includes(gradoOtroKey) && otro ? [...grados, otro] : grados).join(', ');
+  };
+
+  const toggleGrado = (grado) => {
+    setGradosSeleccionados(prev => (
+      prev.includes(grado) ? prev.filter(item => item !== grado) : [...prev, grado]
+    ));
+  };
 
   useEffect(() => {
     const linkId = 'katedra-fonts';
@@ -104,6 +133,7 @@ export default function Dashboard() {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
+      setSelectedFile(file);
       setFileName(file.name);
       const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
       if (!titulo) setTitulo(`Temario: ${cleanName}`);
@@ -115,6 +145,7 @@ export default function Dashboard() {
   const handleFileSelect = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setSelectedFile(file);
       setFileName(file.name);
       const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
       if (!titulo) setTitulo(`Temario: ${cleanName}`);
@@ -123,8 +154,9 @@ export default function Dashboard() {
     }
   };
 
-  const handleSelectDriveFile = (name, folder) => {
+  const handleSelectDriveFile = (name, folder, driveUrl) => {
     setFileName(name);
+    setUrl(driveUrl);
     setTitulo(name.replace(/\.[^/.]+$/, ""));
     setAsignatura(folder);
     notify('success', 'Archivo seleccionado', name);
@@ -135,11 +167,13 @@ export default function Dashboard() {
     setTab('file');
     setTitulo('');
     setAsignatura('');
-    setGrado('');
+    setGradosSeleccionados([]);
+    setGradoOtro('');
     setDesc('');
     setSubtemas('6');
     setUrl('');
     setFileName('');
+    setSelectedFile(null);
     setModalOpen(true);
   };
 
@@ -148,7 +182,9 @@ export default function Dashboard() {
     setTab('manual');
     setTitulo(c.titulo || c.nombre || '');
     setAsignatura(c.asignatura || c.curso || '');
-    setGrado(c.gradoAcademico || '');
+    const parsedGrados = parseGrados(c.gradoAcademico || '');
+    setGradosSeleccionados(parsedGrados.selected);
+    setGradoOtro(parsedGrados.other);
     setDesc(c.descripcion || '');
     setSubtemas(String(c.temas || 6));
     setModalOpen(true);
@@ -168,11 +204,20 @@ export default function Dashboard() {
       return;
     }
 
+    if (tab === 'file' && !editId && !selectedFile) {
+      notify('error', 'Falta el archivo', 'Selecciona un archivo para cargar el temario.');
+      return;
+    }
+    if ((tab === 'web' || tab === 'drive') && !editId && !url.trim()) {
+      notify('error', 'Falta la URL', 'Ingresa una URL para cargar el temario.');
+      return;
+    }
+
     setIsProcessing(true);
 
     if (editId) {
       if (updateTemario) {
-        await updateTemario(editId, { titulo, asignatura, temas: parseInt(subtemas) });
+        await updateTemario(editId, { titulo, asignatura, gradoAcademico: buildGradoAcademico(), temas: parseInt(subtemas) });
       }
       setIsProcessing(false);
       setModalOpen(false);
@@ -184,25 +229,37 @@ export default function Dashboard() {
     setModalOpen(false);
     setGenerating(true);
 
+    const gradoAcademico = buildGradoAcademico();
     const origenMap = { file: 'PDF', web: 'Enlace Web', drive: 'Google Drive', manual: 'Manual' };
     const payload = {
       titulo,
       asignatura,
-      gradoAcademico: grado,
+      gradoAcademico,
       descripcion: desc,
       temas: parseInt(subtemas) || 6,
       origen: origenMap[tab],
       detalleOrigen: tab === 'file' || tab === 'drive' ? fileName : tab === 'web' ? url : ''
     };
 
-    if (crearTemario) {
-      await crearTemario(payload);
+    let saved = false;
+    if (tab === 'file' && cargarTemario) {
+      saved = await cargarTemario('archivo', { file: selectedFile, titulo, asignatura, gradoAcademico });
+    } else if (tab === 'web' && cargarTemario) {
+      saved = await cargarTemario('url', { url, titulo, asignatura, gradoAcademico });
+    } else if (tab === 'drive' && cargarTemario) {
+      saved = await cargarTemario('drive', { url, titulo, asignatura, gradoAcademico });
+    } else if (crearTemario) {
+      saved = await crearTemario(payload);
     }
     
     // Simulate generation time if needed, but crearTemario should await
     setGenerating(false);
     setIsProcessing(false);
-    notify('success', 'Temario generado', `${titulo} se estructuró con IA (${subtemas} módulos).`);
+    if (saved) {
+      notify('success', 'Temario generado', `${titulo} se estructuró con IA (${subtemas} módulos).`);
+    } else {
+      notify('error', 'No se pudo crear', 'Revisa los datos e intenta nuevamente.');
+    }
   };
 
   const calculatePct = (done, total) => {
@@ -663,7 +720,7 @@ export default function Dashboard() {
             {/* tab: file */}
             {tab === 'file' && !editId && (
               <label onDragEnter={handleDrag} onDragOver={handleDrag} onDragLeave={handleDrag} onDrop={handleDrop} style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'8px', padding:'38px 20px', border:`2px dashed ${dragActive ? 'rgba(16,185,129,.5)' : 'var(--kt-input-border)'}`, borderRadius:'14px', cursor:'pointer', textAlign:'center', transition:'border-color .2s,background .2s', background: dragActive ? 'rgba(16,185,129,.04)' : 'transparent' }}>
-                <input type="file" onChange={handleFileSelect} className="hidden" style={{ display: 'none' }} />
+                <input type="file" accept=".pdf,.doc,.docx,.md" onChange={handleFileSelect} className="hidden" style={{ display: 'none' }} />
                 <div style={{ width:'56px', height:'56px', borderRadius:'15px', background: dragActive ? 'rgba(16,185,129,.14)' : 'var(--kt-chip-bg)', color: dragActive ? '#10B981' : 'var(--kt-muted)', display:'grid', placeItems:'center', marginBottom:'4px' }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"></path><path d="M12 12v9M8 16l4-4 4 4"></path></svg></div>
                 {fileName ? (
                   <>
@@ -674,7 +731,7 @@ export default function Dashboard() {
                 ) : (
                   <>
                     <div style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'15px', color:'var(--kt-heading)' }}>Arrastra tu documento educativo aquí</div>
-                    <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'12.5px', color:'var(--kt-muted)' }}>Soporta PDF, DOCX o TXT (Máx 20MB)</div>
+                    <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'12.5px', color:'var(--kt-muted)' }}>Soporta PDF, DOC, DOCX o MD (Máx 20MB)</div>
                     <span style={{ marginTop:'6px', display:'inline-flex', padding:'9px 16px', borderRadius:'9px', background:'var(--kt-heading)', color:'var(--kt-bg1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px' }}>Explorar Archivos</span>
                   </>
                 )}
@@ -692,14 +749,16 @@ export default function Dashboard() {
             {/* tab: drive */}
             {tab === 'drive' && !editId && (
               <div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>URL DE GOOGLE DRIVE</div>
+                <input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://drive.google.com/file/d/..." style={{ width:'100%', height:'48px', padding:'0 15px', border:'1.5px solid var(--kt-input-border)', borderRadius:'12px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', marginBottom:'10px' }} />
                 <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'10px' }}>ARCHIVOS DE GOOGLE DRIVE</div>
                 <div style={{ display:'flex', flexDirection:'column', border:'1px solid var(--kt-input-border)', borderRadius:'12px', overflow:'hidden' }}>
-                  <button onClick={() => handleSelectDriveFile("Syllabus_Algoritmos_2026.pdf", "ESTRUCTURAS DE DATOS")} style={{ display:'flex', alignItems:'center', gap:'11px', padding:'14px 15px', border:'none', borderBottom:'1px solid var(--kt-border-soft)', background: fileName === 'Syllabus_Algoritmos_2026.pdf' ? 'var(--kt-chip-bg)' : 'none', cursor:'pointer', textAlign:'left' }}>
+                  <button onClick={() => handleSelectDriveFile("Syllabus_Algoritmos_2026.pdf", "ESTRUCTURAS DE DATOS", "https://drive.google.com/file/d/syllabus-algoritmos-2026/view")} style={{ display:'flex', alignItems:'center', gap:'11px', padding:'14px 15px', border:'none', borderBottom:'1px solid var(--kt-border-soft)', background: fileName === 'Syllabus_Algoritmos_2026.pdf' ? 'var(--kt-chip-bg)' : 'none', cursor:'pointer', textAlign:'left' }}>
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
                     <span style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)' }}>Syllabus_Algoritmos_2026.pdf</span>
                     <span style={{ marginLeft:'auto', fontFamily:"'Manrope'", fontWeight:700, fontSize:'9.5px', letterSpacing:'.6px', color:'var(--kt-faint)' }}>ESTRUCTURAS DE DATOS</span>
                   </button>
-                  <button onClick={() => handleSelectDriveFile("Plan_Fisica_Termodinamica.pdf", "FÍSICA AVANZADA")} style={{ display:'flex', alignItems:'center', gap:'11px', padding:'14px 15px', border:'none', background: fileName === 'Plan_Fisica_Termodinamica.pdf' ? 'var(--kt-chip-bg)' : 'none', cursor:'pointer', textAlign:'left' }}>
+                  <button onClick={() => handleSelectDriveFile("Plan_Fisica_Termodinamica.pdf", "FÍSICA AVANZADA", "https://drive.google.com/file/d/plan-fisica-termodinamica/view")} style={{ display:'flex', alignItems:'center', gap:'11px', padding:'14px 15px', border:'none', background: fileName === 'Plan_Fisica_Termodinamica.pdf' ? 'var(--kt-chip-bg)' : 'none', cursor:'pointer', textAlign:'left' }}>
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
                     <span style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)' }}>Plan_Fisica_Termodinamica.pdf</span>
                     <span style={{ marginLeft:'auto', fontFamily:"'Manrope'", fontWeight:700, fontSize:'9.5px', letterSpacing:'.6px', color:'var(--kt-faint)' }}>FÍSICA AVANZADA</span>
@@ -727,14 +786,33 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {(tab === 'manual' || editId) && (
-              <div style={{ marginTop:'16px' }}>
+            <div style={{ marginTop:'16px' }}>
                 <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>GRADO ACADÉMICO</div>
-                <input value={grado} onChange={e => setGrado(e.target.value)} placeholder="Ej. Universidad, Secundaria…" style={{ width:'100%', height:'46px', padding:'0 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', marginBottom:'16px' }} />
-                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>DESCRIPCIÓN (OPCIONAL)</div>
-                <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3} placeholder="Objetivo general del temario…" style={{ width:'100%', padding:'12px 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', resize:'vertical' }}></textarea>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', marginBottom: gradosSeleccionados.includes(gradoOtroKey) ? '10px' : '16px' }}>
+                  {[...gradoOptions, gradoOtroKey].map(option => {
+                    const selected = gradosSeleccionados.includes(option);
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => toggleGrado(option)}
+                        style={{ height:'36px', padding:'0 13px', border:`1.5px solid ${selected ? 'rgba(16,185,129,.55)' : 'var(--kt-input-border)'}`, borderRadius:'999px', background:selected ? 'rgba(16,185,129,.14)' : 'var(--kt-input-bg)', color:selected ? '#10B981' : 'var(--kt-heading)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'12.5px', transition:'background .18s,border-color .18s,color .18s' }}
+                      >
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+                {gradosSeleccionados.includes(gradoOtroKey) && (
+                  <input value={gradoOtro} onChange={e => setGradoOtro(e.target.value)} placeholder="Ej. Diplomado de programación" style={{ width:'100%', height:'46px', padding:'0 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', marginBottom:'16px' }} />
+                )}
+              {(tab === 'manual' || editId) && (
+                <>
+                  <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>DESCRIPCIÓN (OPCIONAL)</div>
+                  <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3} placeholder="Objetivo general del temario…" style={{ width:'100%', padding:'12px 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', resize:'vertical' }}></textarea>
+                </>
+              )}
               </div>
-            )}
 
             <div style={{ marginTop:'16px' }}>
               <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>SUBTEMAS A GENERAR</div>

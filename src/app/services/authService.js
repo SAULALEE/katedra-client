@@ -12,16 +12,25 @@ const getAvatarInitials = (nombre) => {
     .toUpperCase();
 };
 
-const normalizeAuthResponse = ({ token, id, email, usuario }) => ({
-  user: {
-    id,
-    email,
-    nombre: usuario?.nombre || 'Usuario Katedra',
-    rol: usuario?.rol || 'ROLE_USER',
-    avatarInitials: getAvatarInitials(usuario?.nombre || 'Usuario Katedra')
-  },
-  token
-});
+const normalizeAuthResponse = (data = {}) => {
+  const token = data.token || data.accessToken || data.jwt;
+  const usuario = data.usuario || data.user || {};
+  const nombre = usuario.nombre || usuario.name || data.nombre || 'Usuario Katedra';
+  const email = usuario.email || data.email || '';
+  const id = usuario.id || data.id || email || `auth-${Date.now()}`;
+  const rol = usuario.rol || usuario.role || data.rol || data.role || 'ROLE_USER';
+
+  return {
+    user: {
+      id,
+      email,
+      nombre,
+      rol,
+      avatarInitials: getAvatarInitials(nombre)
+    },
+    token
+  };
+};
 
 const decodeJwtPayload = (token) => {
   try {
@@ -102,8 +111,7 @@ export const startMicrosoftLogin = () => {
 export const loginRequest = async (email, password) => {
   try {
     const response = await api.post('/auth/login', { email, password });
-    const { token, id, email: responseEmail, usuario } = response.data;
-    return normalizeAuthResponse({ token, id, email: responseEmail, usuario });
+    return normalizeAuthResponse(response.data);
   } catch (error) {
     const errorMessage = error.response?.data?.message 
       || error.response?.data?.error 
@@ -122,9 +130,10 @@ export const loginRequest = async (email, password) => {
  */
 export const registerRequest = async (email, password, nombre) => {
   try {
-    const response = await api.post('/auth/register', { email, password, nombre });
-    const { token, id, email: responseEmail, usuario } = response.data;
-    return normalizeAuthResponse({ token, id, email: responseEmail, usuario });
+    const url = '/auth/register';
+    const payload = { email, password, nombre };
+    const response = await api.post(url, payload);
+    return normalizeAuthResponse(response.data);
   } catch (error) {
     const errorMessage = error.response?.data?.message 
       || error.response?.data?.error 

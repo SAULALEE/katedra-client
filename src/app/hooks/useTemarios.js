@@ -11,7 +11,8 @@ export const useTemarios = () => {
     loading,
     error,
     fetchCourses,
-    crearTemario
+    crearTemario,
+    cargarTemario
   } = useTemarioStore();
 
   // Load courses on component mount if empty
@@ -26,6 +27,7 @@ export const useTemarios = () => {
     loading,
     error,
     refetchCourses: fetchCourses,
-    crearTemario
+    crearTemario,
+    cargarTemario
   };
 };
