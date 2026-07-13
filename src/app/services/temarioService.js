@@ -19,6 +19,7 @@ export const getTemarios = async () => {
  * Fully prepared for backend ingestion.
  * 
  * @param {object} temarioData { titulo, asignatura, gradoAcademico, descripcion, temas, origen, detalleOrigen }
+ *   gradoAcademico is required: 'primaria' | 'secundaria' | 'bachillerato' | 'universitario' | 'posgrado'
  */
 export const crearTemarioRequest = async (temarioData) => {
   try {
@@ -30,26 +31,38 @@ export const crearTemarioRequest = async (temarioData) => {
 };
 
 /**
- * Selectively generates material pieces for an existing temario.
- * Takes 10-30 seconds per piece (real AI generation, not instant).
- * Pieces that already exist are skipped by the backend unless listed
- * in regenerarPiezas (credit-safe), and reported in piezasOmitidas.
+ * Generates material pieces for an existing temario, always overwriting any
+ * previous content for the requested pieces. Takes 10-30 seconds per piece
+ * (real AI generation, not instant).
+ *
+ * A 200 response can still carry partial failures: check `piezasFallidas`
+ * (a { [piezaId]: mensaje } map) for pieces whose generation failed — those
+ * keep their previous content rather than being overwritten with an error.
  *
  * @param {string} id - the temario UUID
  * @param {object} options
- * @param {string[]} options.piezas - subset of ['teoria','ejercicios','evaluacion','diapositivas']
- * @param {string} options.modelo - 'gpt-4o-mini' (Sencillo) | 'gpt-4o' (Avanzado)
- * @param {string[]} [options.regenerarPiezas] - pieces allowed to overwrite existing content
+ * @param {string[]} options.piezas - subset of ['teoria','evaluacion','diapositivas']
+ * @param {string} options.modelo - 'flash' (Tutor) | 'pro' (Maestro) | 'max' (Catedrático)
  */
-export const generarMaterialParaTemario = async (id, { piezas, modelo, regenerarPiezas = [] }) => {
+export const generarMaterialParaTemario = async (id, { piezas, modelo }) => {
   try {
-    const response = await api.post(`/temarios/${id}/generar-material`, { piezas, modelo, regenerarPiezas });
+    const response = await api.post(`/temarios/${id}/generar-material`, { piezas, modelo });
     return response.data;
   } catch (error) {
     throw new Error('Error al generar material con IA', { cause: error });
   }
 };
 
+/**
+ * @typedef {Object} ContenidoTemarioResponseDTO
+ * @property {string} [teoria]
+ * @property {object[]} [evaluacion]
+ * @property {object[]} [diapositivas]
+ */
+
+/**
+ * @returns {Promise<ContenidoTemarioResponseDTO>}
+ */
 export const getContenidoTemario = async (id) => {
   try {
     const response = await api.get(`/temarios/${id}/contenido`);

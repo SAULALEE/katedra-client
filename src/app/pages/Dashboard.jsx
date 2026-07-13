@@ -16,6 +16,15 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+// Fixed backend enum for gradoAcademico (required on create)
+const GRADOS_ACADEMICOS = [
+  { value: 'primaria', label: 'Primaria' },
+  { value: 'secundaria', label: 'Secundaria' },
+  { value: 'bachillerato', label: 'Bachillerato' },
+  { value: 'universitario', label: 'Universitario' },
+  { value: 'posgrado', label: 'Posgrado' }
+];
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -165,6 +174,11 @@ export default function Dashboard() {
   const handleAnalyze = async () => {
     if (!titulo.trim()) {
       notify('error', 'Falta el título', 'Escribe un título para el temario.');
+      return;
+    }
+
+    if (!editId && !grado) {
+      notify('error', 'Falta el grado académico', 'Selecciona un grado académico.');
       return;
     }
 
@@ -727,10 +741,16 @@ export default function Dashboard() {
               </div>
             </div>
 
+            <div style={{ marginTop:'16px' }}>
+              <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>GRADO ACADÉMICO *</div>
+              <select value={grado} onChange={e => setGrado(e.target.value)} required style={{ width:'100%', height:'46px', padding:'0 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', cursor:'pointer' }}>
+                <option value="" disabled>Selecciona un grado…</option>
+                {GRADOS_ACADEMICOS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+              </select>
+            </div>
+
             {(tab === 'manual' || editId) && (
               <div style={{ marginTop:'16px' }}>
-                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>GRADO ACADÉMICO</div>
-                <input value={grado} onChange={e => setGrado(e.target.value)} placeholder="Ej. Universidad, Secundaria…" style={{ width:'100%', height:'46px', padding:'0 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', marginBottom:'16px' }} />
                 <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>DESCRIPCIÓN (OPCIONAL)</div>
                 <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3} placeholder="Objetivo general del temario…" style={{ width:'100%', padding:'12px 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', resize:'vertical' }}></textarea>
               </div>

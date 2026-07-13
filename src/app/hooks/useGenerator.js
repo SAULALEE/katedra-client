@@ -5,15 +5,18 @@ import { useTemarios } from './useTemarios';
 
 export const PIEZAS = [
   { id: 'teoria', label: 'Teoría Docente' },
-  { id: 'ejercicios', label: 'Ejercicios Prácticos' },
   { id: 'evaluacion', label: 'Examen / Evaluación' },
   { id: 'diapositivas', label: 'Diapositivas' }
 ];
 
 export const MODELOS = [
-  { id: 'gpt-4o-mini', label: 'Sencillo', hint: 'Rápido y económico (gpt-4o-mini)' },
-  { id: 'gpt-4o', label: 'Avanzado', hint: 'Mayor calidad, más costoso (gpt-4o)' }
+  { id: 'flash', label: 'Tutor', hint: 'Rápido y económico, teoría breve (3–5 párrafos), 8 diapositivas' },
+  { id: 'pro', label: 'Maestro', hint: 'Profundidad equilibrada (5–8 párrafos), 15 diapositivas' },
+  { id: 'max', label: 'Catedrático', hint: 'Máximo rigor con modelo de razonamiento (8–12 párrafos), 20 diapositivas, más costoso' }
 ];
+
+/** Maps a response tier key to its display name. */
+export const MODELO_LABELS = Object.fromEntries(MODELOS.map(m => [m.id, m.label]));
 
 /** True when the piece has real content in a ContenidoTemarioResponseDTO. */
 const pieceExists = (contenido, piezaId) => {
@@ -32,8 +35,7 @@ export const useGenerator = () => {
   const initialTemarioId = searchParams.get('temarioId') || '';
   const [temarioId, setTemarioIdState] = useState(initialTemarioId);
   const [piezas, setPiezas] = useState([]);
-  const [modelo, setModelo] = useState('gpt-4o-mini');
-  const [regenerarPiezas, setRegenerarPiezas] = useState([]);
+  const [modelo, setModelo] = useState('flash');
 
   // Existing material of the selected temario (null = nothing generated yet)
   const [contenidoExistente, setContenidoExistente] = useState(null);
@@ -43,7 +45,9 @@ export const useGenerator = () => {
   const [generationStep, setGenerationStep] = useState('');
   const [generatedData, setGeneratedData] = useState(null);
   const [genError, setGenError] = useState('');
-  const [piezasOmitidas, setPiezasOmitidas] = useState([]);
+  // { [piezaId]: mensaje } for pieces whose generation failed server-side;
+  // their previous content is preserved rather than overwritten.
+  const [piezasFallidas, setPiezasFallidas] = useState({});
 
   const [activeTab, setActiveTab] = useState('teoria');
   const [checkedAnswers, setCheckedAnswers] = useState({});
@@ -67,8 +71,7 @@ export const useGenerator = () => {
     setGeneratedData(null);
     setContenidoExistente(null);
     setPiezas([]);
-    setRegenerarPiezas([]);
-    setPiezasOmitidas([]);
+    setPiezasFallidas({});
     setGenError('');
     setCheckedAnswers({});
   }, []);
@@ -77,10 +80,6 @@ export const useGenerator = () => {
 
   const togglePieza = useCallback((piezaId) => {
     setPiezas(prev => prev.includes(piezaId) ? prev.filter(p => p !== piezaId) : [...prev, piezaId]);
-  }, []);
-
-  const toggleRegenerar = useCallback((piezaId) => {
-    setRegenerarPiezas(prev => prev.includes(piezaId) ? prev.filter(p => p !== piezaId) : [...prev, piezaId]);
   }, []);
 
   const piezaYaGenerada = useCallback(
@@ -92,7 +91,7 @@ export const useGenerator = () => {
     if (!temarioId || piezas.length === 0) return;
     setIsGenerating(true);
     setGenError('');
-    setPiezasOmitidas([]);
+    setPiezasFallidas({});
     setCheckedAnswers({});
 
     const steps = [
@@ -113,17 +112,16 @@ export const useGenerator = () => {
     }, 1600);
 
     try {
-      const data = await generarMaterialParaTemario(temarioId, {
-        piezas,
-        modelo,
-        // only send regenerate flags for pieces actually selected
-        regenerarPiezas: regenerarPiezas.filter(p => piezas.includes(p))
-      });
+      const data = await generarMaterialParaTemario(temarioId, { piezas, modelo });
       setGeneratedData(data);
       setContenidoExistente(data);
-      setPiezasOmitidas(data.piezasOmitidas || []);
-      setRegenerarPiezas([]);
-      const firstGenerated = PIEZAS.find(p => piezas.includes(p.id) && !(data.piezasOmitidas || []).includes(p.id));
+      const fallidas = data.piezasFallidas || {};
+      if (Object.keys(fallidas).length > 0) {
+        // Raw provider/exception detail is developer information, not user-facing text.
+        console.error('Fallos de generación IA:', fallidas);
+      }
+      setPiezasFallidas(fallidas);
+      const firstGenerated = PIEZAS.find(p => piezas.includes(p.id) && !fallidas[p.id]);
       setActiveTab((firstGenerated || PIEZAS.find(p => pieceExists(data, p.id)) || PIEZAS[0]).id);
     } catch (error) {
       console.error('AI Generation failed:', error);
@@ -140,7 +138,6 @@ export const useGenerator = () => {
     temarioSeleccionado,
     piezas, togglePieza,
     modelo, setModelo,
-    regenerarPiezas, toggleRegenerar,
     piezaYaGenerada,
     contenidoExistente,
     loadingContenido,
@@ -148,7 +145,7 @@ export const useGenerator = () => {
     generationStep,
     generatedData,
     genError,
-    piezasOmitidas,
+    piezasFallidas,
     activeTab, setActiveTab,
     checkedAnswers, setCheckedAnswers,
     handleGenerate
