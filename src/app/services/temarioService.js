@@ -71,3 +71,22 @@ export const getContenidoTemario = async (id) => {
     throw new Error('Error al obtener el contenido del temario', { cause: error });
   }
 };
+
+/**
+ * Sends a message to the AI assistant with an optional quick action and model selection.
+ *
+ * @param {object} params
+ * @param {string} params.temarioId - the selected temario UUID
+ * @param {string} params.action - AssistantQuickAction enum: 'GENERATE_THEORY' | 'GENERATE_EXERCISES' | 'GENERATE_QUIZ' | 'EXPLAIN_CONCEPT' | 'SUMMARIZE_TOPIC' | 'FREE_CHAT'
+ * @param {string} params.message - user text prompt
+ * @param {string} params.modelo - ModeloIA enum: 'FLASH' | 'PRO' | 'MAX'
+ */
+export const enviarMensajeAsistente = async ({ temarioId, action, message, modelo }) => {
+  try {
+    const response = await api.post('/assistant/chat', { temarioId, action, message, modelo });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error al hablar con el asistente', { cause: error });
+  }
+};
+

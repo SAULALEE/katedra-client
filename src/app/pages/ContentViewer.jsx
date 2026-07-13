@@ -327,13 +327,13 @@ export default function ContentViewer() {
               <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><FolderDot size={19} /></span>
               <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Mis Temarios</span>
             </Link>
-            <Link to="/contenidos" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',background:'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))',border:'1px solid rgba(16,185,129,.28)',color:'var(--kt-heading)'}}>
-              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center',color:'#10B981'}}><Sparkles size={19} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px'}}>Contenidos Generados</span>
-            </Link>
             <Link to="/generador" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
               <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><Wand2 size={19} /></span>
               <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Generador</span>
+            </Link>
+            <Link to="/contenidos" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',background:'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))',border:'1px solid rgba(16,185,129,.28)',color:'var(--kt-heading)'}}>
+              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center',color:'#10B981'}}><Sparkles size={19} /></span>
+              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px'}}>Contenidos Generados</span>
             </Link>
           </nav>
           <div style={{marginTop:'auto',padding:'16px 14px 18px',display:'flex',flexDirection:'column',gap:'12px'}}>
