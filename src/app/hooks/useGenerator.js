@@ -5,15 +5,14 @@ import { useTemarios } from './useTemarios';
 
 export const PIEZAS = [
   { id: 'teoria', label: 'Teoría Docente' },
-  { id: 'ejercicios', label: 'Ejercicios Prácticos' },
   { id: 'evaluacion', label: 'Examen / Evaluación' },
   { id: 'diapositivas', label: 'Diapositivas' }
 ];
 
 export const MODELOS = [
-  { id: 'flash', label: 'Tutor', hint: 'Rápido y económico, teoría breve (4–5 párrafos)' },
-  { id: 'pro', label: 'Maestro', hint: 'Profundidad equilibrada (6–8 párrafos)' },
-  { id: 'max', label: 'Catedrático', hint: 'Máximo rigor con modelo de razonamiento (8–10 párrafos), más costoso' }
+  { id: 'flash', label: 'Tutor', hint: 'Rápido y económico, teoría breve (3–5 párrafos), 8 diapositivas' },
+  { id: 'pro', label: 'Maestro', hint: 'Profundidad equilibrada (5–8 párrafos), 15 diapositivas' },
+  { id: 'max', label: 'Catedrático', hint: 'Máximo rigor con modelo de razonamiento (8–12 párrafos), 20 diapositivas, más costoso' }
 ];
 
 /** Maps a response tier key to its display name. */

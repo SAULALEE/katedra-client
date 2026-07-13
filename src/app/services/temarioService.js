@@ -41,7 +41,7 @@ export const crearTemarioRequest = async (temarioData) => {
  *
  * @param {string} id - the temario UUID
  * @param {object} options
- * @param {string[]} options.piezas - subset of ['teoria','ejercicios','evaluacion','diapositivas']
+ * @param {string[]} options.piezas - subset of ['teoria','evaluacion','diapositivas']
  * @param {string} options.modelo - 'flash' (Tutor) | 'pro' (Maestro) | 'max' (Catedrático)
  */
 export const generarMaterialParaTemario = async (id, { piezas, modelo }) => {
@@ -53,6 +53,16 @@ export const generarMaterialParaTemario = async (id, { piezas, modelo }) => {
   }
 };
 
+/**
+ * @typedef {Object} ContenidoTemarioResponseDTO
+ * @property {string} [teoria]
+ * @property {object[]} [evaluacion]
+ * @property {object[]} [diapositivas]
+ */
+
+/**
+ * @returns {Promise<ContenidoTemarioResponseDTO>}
+ */
 export const getContenidoTemario = async (id) => {
   try {
     const response = await api.get(`/temarios/${id}/contenido`);

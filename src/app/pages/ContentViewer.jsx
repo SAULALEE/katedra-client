@@ -19,7 +19,6 @@ import {
   AlertCircle,
   FileText,
   FileBox,
-  FileSearch,
   MonitorPlay,
   Copy,
   Download
@@ -44,15 +43,12 @@ export default function ContentViewer() {
   const [contentNotFound, setContentNotFound] = useState(false);
   const [activeTab, setActiveTab] = useState('teoria');
   
-  const [tView, setTView] = useState('render'); 
-  const [eView, setEView] = useState('render'); 
-  const [evalView, setEvalView] = useState('render'); 
+  const [tView, setTView] = useState('render');
+  const [evalView, setEvalView] = useState('render');
 
   const [checkedAnswers, setCheckedAnswers] = useState({});
   const [examChecked, setExamChecked] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [codeContent, setCodeContent] = useState('function reverseList(head) {\n  let prev = null;\n  let current = head;\n  while (current != null) {\n    let next = current.next;\n    current.next = prev;\n    prev = current;\n    current = next;\n  }\n  return prev;\n}');
-  const [consoleOutput, setConsoleOutput] = useState('// Pulsa "Ejecutar" para correr el código…');
 
   const course = courses.find(c => c.id === id) || { titulo: 'Temario Generado', asignatura: 'Cargando...' };
 
@@ -139,14 +135,6 @@ export default function ContentViewer() {
     return acc;
   }, 0) : 0;
   const scoreTotal = content && content.evaluacion ? content.evaluacion.length : 0;
-
-  const handleRunCode = () => {
-    setConsoleOutput('Ejecutando...');
-    setTimeout(() => {
-      setConsoleOutput('> success: head is inverted.\n> O(N) Time Complexity \n> O(1) Space Complexity.');
-      notify('success', 'Código ejecutado', 'Las pruebas pasaron correctamente.');
-    }, 800);
-  };
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -248,12 +236,10 @@ export default function ContentViewer() {
   [data-tabbtn]{color:var(--kt-muted);border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
   [data-tabbtn]:hover{color:var(--kt-heading)}
   [data-root][data-kt-tab="teoria"] [data-tabbtn="teoria"],
-  [data-root][data-kt-tab="ejercicios"] [data-tabbtn="ejercicios"],
   [data-root][data-kt-tab="evaluacion"] [data-tabbtn="evaluacion"],
   [data-root][data-kt-tab="slides"] [data-tabbtn="slides"]{color:var(--kt-heading);border-bottom-color:#10B981}
   [data-tabpanel]{display:none;animation:ktFadeUp .32s ease both}
   [data-root][data-kt-tab="teoria"] [data-tabpanel="teoria"],
-  [data-root][data-kt-tab="ejercicios"] [data-tabpanel="ejercicios"],
   [data-root][data-kt-tab="evaluacion"] [data-tabpanel="evaluacion"],
   [data-root][data-kt-tab="slides"] [data-tabpanel="slides"]{display:block}
 
@@ -261,8 +247,6 @@ export default function ContentViewer() {
   [data-seg]{color:var(--kt-muted);background:transparent;transition:all .2s}
   [data-root][data-kt-tview="render"] [data-seg="tv-render"],
   [data-root][data-kt-tview="md"] [data-seg="tv-md"],
-  [data-root][data-kt-eview="render"] [data-seg="ev-render"],
-  [data-root][data-kt-eview="md"] [data-seg="ev-md"],
   [data-root][data-kt-evalview="render"] [data-seg="evalv-render"],
   [data-root][data-kt-evalview="md"] [data-seg="evalv-md"]{background:var(--kt-card-bg);color:var(--kt-heading);box-shadow:0 2px 6px -2px rgba(15,23,42,.2)}
 
@@ -270,9 +254,6 @@ export default function ContentViewer() {
   .tview-md{display:none}
   [data-root][data-kt-tview="md"] .tview-md{display:block}
   [data-root][data-kt-tview="md"] .tview-render{display:none}
-  .eview-md{display:none}
-  [data-root][data-kt-eview="md"] .eview-md{display:block}
-  [data-root][data-kt-eview="md"] .eview-render{display:none}
 
   /* export dropdown */
   [data-export-menu]{opacity:0;pointer-events:none;transform:translateY(-8px) scale(.98);transition:opacity .16s ease,transform .16s ease}
@@ -312,7 +293,7 @@ export default function ContentViewer() {
   }
   `}</style>
       
-      <div data-root data-kt-theme={theme} data-kt-collapsed={collapsed ? "true" : "false"} data-kt-tab={activeTab} data-kt-tview={tView} data-kt-eview={eView} data-kt-evalview={evalView} data-kt-export={exportOpen ? "true" : "false"} data-kt-notif={notifOpen ? "true" : "false"} data-kt-examchecked={examChecked ? "true" : "false"} style={{position:'fixed',inset:0,display:'flex',overflow:'hidden',fontFamily:"'Manrope',sans-serif",background:'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)',color:'var(--kt-text)'}}>
+      <div data-root data-kt-theme={theme} data-kt-collapsed={collapsed ? "true" : "false"} data-kt-tab={activeTab} data-kt-tview={tView} data-kt-evalview={evalView} data-kt-export={exportOpen ? "true" : "false"} data-kt-notif={notifOpen ? "true" : "false"} data-kt-examchecked={examChecked ? "true" : "false"} style={{position:'fixed',inset:0,display:'flex',overflow:'hidden',fontFamily:"'Manrope',sans-serif",background:'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)',color:'var(--kt-text)'}}>
         
         {/* ambient */}
         <div style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:0}}>
@@ -447,7 +428,7 @@ export default function ContentViewer() {
                 </div>
                 <div style={{display:'flex',flexDirection:'column',gap:'8px',maxWidth:'420px'}}>
                   <p style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'20px',color:'var(--kt-heading)',margin:0}}>Material Aún No Generado</p>
-                  <p style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'14px',color:'var(--kt-muted)',margin:0,lineHeight:1.6}}>Este temario todavía no tiene contenido estructurado. Ve al Generador para elegir qué piezas crear (teoría, ejercicios, examen o diapositivas) y con qué modelo de IA.</p>
+                  <p style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'14px',color:'var(--kt-muted)',margin:0,lineHeight:1.6}}>Este temario todavía no tiene contenido estructurado. Ve al Generador para elegir qué piezas crear (teoría, examen o diapositivas) y con qué modelo de IA.</p>
                 </div>
                 <button onClick={() => navigate(`/generador?temarioId=${id}`)} style={{padding:'0 24px',height:'48px',borderRadius:'12px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',border:'none',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'14px',boxShadow:'0 12px 24px -10px rgba(16,185,129,.6)',marginTop:'10px',transition:'transform .2s, box-shadow .2s'}} className="kt-primary">
                   Ir al Generador de Material
@@ -466,7 +447,6 @@ export default function ContentViewer() {
                 <div className="kt-tabscroll kt-main-pad" style={{display:'flex',gap:'26px',padding:'18px 32px 0',borderBottom:'1px solid var(--kt-border-soft)'}}>
                   {[
                     { id: 'teoria', label: 'Teoría Docente', icon: <FileText size={16} /> },
-                    { id: 'ejercicios', label: 'Ejercicios Prácticos', icon: <FileSearch size={16} /> },
                     { id: 'evaluacion', label: 'Evaluación', icon: <CheckCircle2 size={16} /> },
                     { id: 'slides', label: 'Diapositivas', icon: <MonitorPlay size={16} /> }
                   ].map(tab => (
@@ -536,86 +516,6 @@ export default function ContentViewer() {
                             </pre>
                           )}
                         </div>
-                      </div>
-                    </div>
-
-                    {/* ========================= EJERCICIOS ========================= */}
-                    <div data-tabpanel="ejercicios">
-                      <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px'}}>
-                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(2,132,199,.14)',color:'#0284C7',display:'grid',placeItems:'center'}}><FileSearch size={19} /></div>
-                        <div style={{minWidth:0,marginRight:'auto'}}>
-                          <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'15.5px',letterSpacing:'-.4px',color:'var(--kt-heading)'}}>Hoja de Ejercicios</div>
-                          <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'12px',color:'var(--kt-muted)'}}>Problemas resueltos y casos prácticos</div>
-                        </div>
-                        <div style={{display:'flex',gap:'3px',padding:'3px',background:'var(--kt-input-bg)',border:'1px solid var(--kt-input-border)',borderRadius:'10px'}}>
-                          <button data-seg={eView === 'render' ? 'ev-render' : ''} onClick={() => setEView('render')} style={{display:'flex',alignItems:'center',gap:'6px',height:'32px',padding:'0 12px',border:'none',borderRadius:'8px',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:700,fontSize:'12px'}}>Interactivo</button>
-                          <button data-seg={eView === 'md' ? 'ev-md' : ''} onClick={() => setEView('md')} style={{display:'flex',alignItems:'center',gap:'6px',height:'32px',padding:'0 12px',border:'none',borderRadius:'8px',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:700,fontSize:'12px'}}>Markdown</button>
-                        </div>
-                        <button onClick={() => handleCopy(content?.ejercicios)} className="kt-iconbtn" style={{display:'flex',alignItems:'center',justifyContent:'center',width:'40px',height:'40px',border:'1px solid var(--kt-chip-border)',background:'var(--kt-chip-bg)',borderRadius:'10px',color:'var(--kt-text)',cursor:'pointer'}} title="Copiar Ejercicios">
-                          <Copy size={17} />
-                        </button>
-                        <div style={{position:'relative'}}>
-                          <button onClick={() => {setExportTarget('ejercicios'); setExportOpen(!exportOpen)}} className="kt-primary" style={{display:'flex',alignItems:'center',gap:'8px',height:'40px',padding:'0 16px',border:'none',borderRadius:'10px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'13px',boxShadow:'0 10px 22px -12px rgba(16,185,129,.7)',transition:'transform .18s,box-shadow .25s'}}>
-                            <Download size={15} />
-                            Exportar con ...
-                          </button>
-                          {exportOpen && exportTarget === 'ejercicios' && (
-                            <>
-                              <div data-export-catcher onClick={() => setExportOpen(false)} style={{position:'fixed',inset:0,zIndex:65}}></div>
-                              <div data-export-menu style={{position:'absolute',top:'48px',right:0,width:'262px',background:'var(--kt-modal-bg1)',border:'1px solid var(--kt-modal-border)',borderRadius:'14px',boxShadow:'var(--kt-shadow-modal)',zIndex:70,padding:'8px'}}>
-                                <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'9.5px',letterSpacing:'1px',textTransform:'uppercase',color:'var(--kt-label)',padding:'8px 10px 6px'}}>Exportar ejercicios a</div>
-                                <button onClick={() => {setExportOpen(false); window.print()}} className="kt-expitem" style={{display:'flex',alignItems:'center',gap:'11px',width:'100%',padding:'9px 10px',border:'none',background:'none',borderRadius:'9px',cursor:'pointer',textAlign:'left'}}>
-                                  <span style={{width:'30px',height:'30px',flex:'none',borderRadius:'8px',background:'rgba(244,63,94,.14)',color:'#EF4444',display:'grid',placeItems:'center'}}><FileText size={15} /></span>
-                                  <span style={{minWidth:0}}><span style={{display:'block',fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',color:'var(--kt-heading)'}}>Documento PDF</span><span style={{display:'block',fontFamily:"'Manrope'",fontWeight:500,fontSize:'11px',color:'var(--kt-muted)'}}>Hoja imprimible</span></span>
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      <div style={{background:'var(--kt-card-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'16px',boxShadow:'var(--kt-shadow-panel)',overflow:'hidden'}}>
-                        <div style={{height:'4px',background:'linear-gradient(90deg,#0284C7,#10B981)'}}></div>
-                        
-                        {eView === 'render' ? (
-                          <div style={{padding:'28px 32px'}}>
-                            {/* Rendered Markdown inside the view! */}
-                            <div className="markdown-body">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {content?.ejercicios || ''}
-                              </ReactMarkdown>
-                            </div>
-                            
-                            {/* Terminal for Interactive Programming (Optional representation if the markdown had code blocks) */}
-                            {content?.ejercicios?.includes('```') && (
-                              <div style={{marginTop:'32px', border:'1px solid var(--kt-border)', borderRadius:'12px', overflow:'hidden', background:'var(--kt-card-bg)'}}>
-                                <div style={{display:'flex',alignItems:'center',gap:'11px',padding:'14px 20px', borderBottom:'1px solid var(--kt-border-soft)'}}>
-                                  <span style={{display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 11px',borderRadius:'8px',background:'rgba(2,132,199,.14)',color:'#0284C7',fontFamily:"'Manrope'",fontWeight:800,fontSize:'10px',letterSpacing:'.5px',textTransform:'uppercase'}}>Consola Interactiva</span>
-                                </div>
-                                <div style={{margin:'20px',borderRadius:'12px 12px 0 0',overflow:'hidden',border:'1px solid var(--kt-border)',borderBottom:'none'}}>
-                                  <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'9px 13px',background:'var(--kt-term-bg)',borderBottom:'1px solid var(--kt-border-soft)'}}>
-                                    <span style={{width:'11px',height:'11px',borderRadius:'50%',background:'#F87171'}}></span><span style={{width:'11px',height:'11px',borderRadius:'50%',background:'#FBBF24'}}></span><span style={{width:'11px',height:'11px',borderRadius:'50%',background:'#34D399'}}></span>
-                                    <span style={{marginLeft:'6px',fontFamily:"'JetBrains Mono',monospace",fontSize:'11.5px',color:'var(--kt-term-fg)'}}>editor.js</span>
-                                    <span style={{marginLeft:'auto',display:'flex',gap:'8px'}}>
-                                      <button onClick={handleRunCode} style={{display:'flex',alignItems:'center',gap:'5px',height:'26px',padding:'0 12px',border:'none',background:'linear-gradient(150deg,#10B981,#059669)',borderRadius:'7px',color:'#fff',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'11px'}}>Ejecutar</button>
-                                    </span>
-                                  </div>
-                                  <textarea value={codeContent} onChange={e => setCodeContent(e.target.value)} spellCheck="false" style={{width:'100%',height:'160px',padding:'14px',border:'none',background:'var(--kt-term-bg)',color:'var(--kt-term-fg)',fontFamily:"'JetBrains Mono',monospace",fontSize:'13px',lineHeight:1.6,resize:'vertical'}}></textarea>
-                                </div>
-                                <div style={{margin:'0 20px 20px',borderRadius:'0 0 12px 12px',border:'1px solid var(--kt-border)',background:'var(--kt-card-bg)',overflow:'hidden'}}>
-                                  <div style={{display:'flex',alignItems:'center',gap:'7px',padding:'8px 13px',borderBottom:'1px solid var(--kt-border-soft)'}}>
-                                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:'11px',color:'var(--kt-muted)',letterSpacing:'.4px'}}>TERMINAL — salida</span>
-                                  </div>
-                                  <pre style={{margin:0,padding:'13px 15px',minHeight:'64px',fontFamily:"'JetBrains Mono',monospace",fontSize:'12.5px',lineHeight:1.7,color:'var(--kt-text)',whiteSpace:'pre-wrap', background:'transparent', border:'none'}}>{consoleOutput}</pre>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <pre style={{margin:0,padding:'28px 32px',fontFamily:"'JetBrains Mono',monospace",fontSize:'13px',lineHeight:1.75,color:'var(--kt-text)',whiteSpace:'pre-wrap',wordBreak:'break-word', background:'transparent'}}>
-                            {content?.ejercicios || ''}
-                          </pre>
-                        )}
                       </div>
                     </div>
 
@@ -781,16 +681,42 @@ export default function ContentViewer() {
                             {content?.diapositivas?.map((slide, idx) => (
                               <div key={idx} style={{flex:'none',width:'100%',height:'100%',position:'relative',padding:'8% 9%',display:'flex',flexDirection:'column',background:'var(--kt-card-bg)'}}>
                                 <div style={{position:'absolute',top:0,left:0,right:0,height:'6px',background:'linear-gradient(90deg,#0284C7,#38BDF8)'}}></div>
-                                <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#38BDF8',textTransform:'uppercase',marginBottom:'auto'}}>{String(idx + 1).padStart(2, '0')} · {course.asignatura}</div>
-                                <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'34px',letterSpacing:'-1.2px',color:'var(--kt-heading)',margin:'0 0 22px'}}>{slide.titulo}</h3>
-                                <div style={{display:'flex',flexDirection:'column',gap:'13px',marginBottom:'auto'}}>
-                                  {slide.puntos.map((pt, pIdx) => (
-                                    <div key={pIdx} style={{display:'flex',alignItems:'center',gap:'12px',fontFamily:"'Manrope'",fontWeight:600,fontSize:'17px',color:'var(--kt-text)'}}>
-                                      <span style={{color:'#38BDF8'}}><CheckCircle2 size={18} /></span>{pt}
+                                {idx === 0 ? (
+                                  /* Cover slide: temario + topic title, large and centered */
+                                  <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'18px'}}>
+                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'3px',color:'#38BDF8',textTransform:'uppercase'}}>{course.asignatura}</div>
+                                    <h2 style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'48px',letterSpacing:'-1.8px',lineHeight:1.1,color:'var(--kt-heading)',margin:0}}>{course.titulo}</h2>
+                                    {slide.titulo && slide.titulo !== course.titulo && (
+                                      <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'26px',letterSpacing:'-.8px',color:'var(--kt-text)',margin:0}}>{slide.titulo}</h3>
+                                    )}
+                                    {slide.puntos?.length > 0 && (
+                                      <div style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'15px',color:'var(--kt-muted)'}}>
+                                        {slide.puntos.slice(0, 2).join(' · ')}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  /* Content slide: discreet temario title above the slide title */
+                                  <>
+                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#38BDF8',textTransform:'uppercase',marginBottom:'auto'}}>{String(idx + 1).padStart(2, '0')} · {course.asignatura}</div>
+                                    <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',letterSpacing:'.5px',color:'var(--kt-muted)',marginBottom:'6px'}}>{course.titulo}</div>
+                                    <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'34px',letterSpacing:'-1.2px',color:'var(--kt-heading)',margin:'0 0 22px'}}>{slide.titulo}</h3>
+                                    <div style={{display:'flex',flexDirection:'column',gap:'13px',marginBottom:'auto'}}>
+                                      {slide.puntos.map((pt, pIdx) => (
+                                        <div key={pIdx} style={{display:'flex',alignItems:'center',gap:'12px',fontFamily:"'Manrope'",fontWeight:600,fontSize:'17px',color:'var(--kt-text)'}}>
+                                          <span style={{color:'#38BDF8'}}><CheckCircle2 size={18} /></span>{pt}
+                                        </div>
+                                      ))}
                                     </div>
-                                  ))}
+                                  </>
+                                )}
+                                {/* Watermark footer on every slide (fixed px, not %, so it
+                                    clears the absolutely-positioned nav pill at bottom:20px
+                                    regardless of slide container height) */}
+                                <div style={{position:'absolute',bottom:'56px',left:0,right:0,display:'flex',alignItems:'center',justifyContent:'center',gap:'9px',opacity:.45,pointerEvents:'none'}}>
+                                  <span style={{width:'20px',height:'20px',borderRadius:'5px',background:'#10B981',display:'grid',placeItems:'center',fontFamily:"'Inter'",fontWeight:700,fontSize:'11px',color:'#fff'}}>K</span>
+                                  <span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'10px',letterSpacing:'2.5px',color:'var(--kt-muted)',textTransform:'uppercase'}}>Creado por Katedra</span>
                                 </div>
-                                <div style={{display:'flex',alignItems:'center',gap:'10px'}}><span style={{width:'24px',height:'24px',borderRadius:'6px',background:'#10B981',display:'grid',placeItems:'center',fontFamily:"'Inter'",fontWeight:700,fontSize:'13px',color:'#fff'}}>K</span><span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'11px',letterSpacing:'1.5px',color:'var(--kt-muted)',textTransform:'uppercase'}}>Katedra</span></div>
                               </div>
                             ))}
                           </div>

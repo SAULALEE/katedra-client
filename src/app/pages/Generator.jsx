@@ -29,14 +29,6 @@ import {
 } from 'lucide-react';
 
 // Reusable SVG Icons for exports
-const IconGoogleForms = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V7.5L14.5 2Z" fill="#7248B9" fillOpacity="0.1"/>
-    <path d="M14.5 2V7.5H20" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M14.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V7.5L14.5 2Z" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M8 13H16M8 17H16M8 9H10" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
 
 const IconMSForms = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -524,17 +516,21 @@ export default function Generator() {
                     {PIEZAS.map(pieza => {
                       const selected = piezas.includes(pieza.id);
                       const exists = piezaYaGenerada(pieza.id);
+                      const theoryExists = piezaYaGenerada('teoria');
+                      const theorySelected = piezas.includes('teoria');
+                      const isDisabled = (pieza.id === 'evaluacion' || pieza.id === 'diapositivas') && !theoryExists && !theorySelected;
+                      
                       return (
                         <div 
                           key={pieza.id} 
-                          onClick={() => { if(temarioId) togglePieza(pieza.id); }}
+                          onClick={() => { if(temarioId && !isDisabled) togglePieza(pieza.id); }}
                           style={{ 
                             border:`1px solid ${selected ? '#10B981' : 'var(--kt-input-border)'}`, 
-                            background: selected ? 'rgba(16,185,129,0.05)' : 'var(--kt-input-bg)', 
+                            background: selected ? 'rgba(16,185,129,0.05)' : (isDisabled ? 'var(--kt-border-soft)' : 'var(--kt-input-bg)'), 
                             borderRadius:'9px', 
                             padding:'10px 12px', 
-                            cursor: temarioId ? 'pointer' : 'not-allowed', 
-                            opacity: temarioId ? 1 : 0.55,
+                            cursor: (temarioId && !isDisabled) ? 'pointer' : 'not-allowed', 
+                            opacity: (temarioId && !isDisabled) ? 1 : 0.55,
                             transition:'all .2s ease'
                           }}
                         >
@@ -550,6 +546,7 @@ export default function Generator() {
                             </div>
                             <div style={{ flex: 1 }}>
                               <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px', color: selected ? 'var(--kt-heading)' : 'var(--kt-text)', transition: 'color 0.2s ease' }}>{pieza.label}</div>
+                              {isDisabled && <div style={{ fontFamily:"'Manrope'", fontSize:'10px', color:'#F43F5E', marginTop:'2px' }}>Requiere Teoría primero</div>}
                             </div>
                             {exists && (
                               <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', color:'#059669', background:'rgba(16,185,129,.14)', border:'1px solid rgba(16,185,129,.3)', padding:'4px 10px', borderRadius:'9999px', whiteSpace:'nowrap' }}>
@@ -634,7 +631,6 @@ export default function Generator() {
               <div style={{ display:'flex', overflowX:'auto', borderBottom:'1px solid var(--kt-border-soft)' }}>
                 {[
                   { id: 'teoria', label: 'Teoría Docente', icon: <FileText size={16}/> },
-                  { id: 'ejercicios', label: 'Ejercicios Prácticos', icon: <CheckSquare size={16}/> },
                   { id: 'evaluacion', label: 'Evaluación', icon: <FileQuestion size={16}/> },
                   { id: 'diapositivas', label: 'Diapositivas', icon: <MonitorPlay size={16}/> }
                 ].map((tab) => {
@@ -739,28 +735,7 @@ export default function Generator() {
                       </div>
                     )}
 
-                    {/* 2. Ejercicios */}
-                    {activeTab === 'ejercicios' && (
-                      <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
-                        <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px' }}>
-                           <button onClick={() => notify('success','Exportado','Exportado a Google Forms.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(114,72,185,.2)', background:'rgba(114,72,185,.05)', color:'#7248B9', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
-                             <IconGoogleForms /> Forms
-                           </button>
-                           <button onClick={() => notify('success','Exportado','Exportado a PDF.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(225,29,72,.2)', background:'rgba(225,29,72,.05)', color:'#E11D48', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
-                             <IconPDF /> PDF
-                           </button>
-                        </div>
-                        <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'40px', boxShadow:'var(--kt-shadow-panel)' }}>
-                          <div className="markdown-body">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {displayData.ejercicios || ''}
-                            </ReactMarkdown>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 3. Evaluacion */}
+                    {/* 2. Evaluacion */}
                     {activeTab === 'evaluacion' && (
                       <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
                          <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px' }}>
@@ -947,7 +922,7 @@ export default function Generator() {
               <div style={{ padding:'0 16px 8px' }}>
                 <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'9.5px', letterSpacing:'1px', textTransform:'uppercase', color:'var(--kt-label)', marginBottom:'8px' }}>Sugerencias rápidas</div>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:'7px' }}>
-                  {['✨ Más didáctico', '➕ Añadir ejemplos', '📝 2 ejercicios más', '📉 Resumir teoría'].map(sug => (
+                  {['✨ Más didáctico', '➕ Añadir ejemplos', '📝 2 preguntas más', '📉 Resumir teoría'].map(sug => (
                     <button key={sug} onClick={() => { setChatInput(sug); }} style={{ padding:'7px 12px', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'20px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', color:'var(--kt-text)', transition:'all .18s' }}>
                       {sug}
                     </button>
