@@ -13,13 +13,6 @@ export default function ResponsiveTopNav() {
     <header className="w-full h-[56px] border-b border-hairline bg-canvas/80 backdrop-blur-md sticky top-0 z-50 flex items-center">
       <Container size="7xl" className="flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="relative w-9 h-9 rounded-full overflow-hidden border border-hairline bg-surface-1 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:scale-105 group-hover:border-brand-primary/30 group-hover:shadow-[0_4px_12px_rgba(var(--brand-primary-rgb,5,43,88),0.15)]">
-            <img 
-              src="/katedra.svg" 
-              alt="Katedra Logo" 
-              className="w-full h-full object-cover"
-            />
-          </div>
           <span className="font-sans font-semibold tracking-subhead text-[15px] text-ink group-hover:text-brand-primary transition-colors duration-300">Katedra</span>
         </div>
 

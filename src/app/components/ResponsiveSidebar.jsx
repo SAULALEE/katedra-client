@@ -33,6 +33,12 @@ export default function ResponsiveSidebar() {
       )
     },
     {
+      name: 'Generador',
+      path: '/generador',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5},
+    {
       name: 'Contenidos Generados',
       path: '/contenidos',
       icon: (
@@ -40,13 +46,7 @@ export default function ResponsiveSidebar() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
       )
-    },
-    {
-      name: 'Generador',
-      path: '/generador',
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+    }, d="M12 4v16m8-8H4" />
         </svg>
       )
     }
@@ -69,13 +69,6 @@ export default function ResponsiveSidebar() {
       <div className="p-5 flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-none">
         {/* Logo */}
         <div className="flex items-center gap-3 cursor-pointer group px-1" onClick={() => handleNavigation('/')}>
-          <div className="relative w-10 h-10 rounded-[12px] overflow-hidden border border-hairline bg-surface-2 flex items-center justify-center shadow-soft transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-hover">
-            <img 
-              src="/katedra.svg" 
-              alt="Katedra Logo" 
-              className="w-full h-full object-cover"
-            />
-          </div>
           <span className="font-sans font-bold tracking-tight text-lg text-ink group-hover:text-blue-600 transition-colors duration-300">
             Katedra
           </span>
@@ -165,13 +158,6 @@ export default function ResponsiveSidebar() {
       {/* Mobile Top Navbar with Hamburger menu button */}
       <div className="md:hidden flex items-center justify-between w-full h-[60px] border-b border-hairline px-4 bg-canvas/80 backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-hairline bg-surface-1 flex items-center justify-center shadow-soft">
-            <img 
-              src="/katedra.svg" 
-              alt="Katedra Logo" 
-              className="w-full h-full object-cover"
-            />
-          </div>
           <span className="font-sans font-bold tracking-tight text-sm text-ink group-hover:text-blue-600 transition-colors duration-300">Katedra</span>
         </div>
         

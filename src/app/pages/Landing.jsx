@@ -336,9 +336,6 @@ export default function Landing() {
         transition: 'all 0.3s ease'
       }}>
         <a href="#top" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <span style={{ display: 'grid', placeItems: 'center', width: '32px', height: '32px', borderRadius: '9px', overflow: 'hidden' }}>
-            <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </span>
           <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#0F172A' }}>Katedra</span>
         </a>
         
@@ -414,7 +411,7 @@ export default function Landing() {
       </nav>
 
       {/* ============ HERO SECTION ============ */}
-      <header id="top" style={{ position: 'relative', padding: '148px 24px 0', background: 'radial-gradient(130% 135% at 12% 6%, #2B6CB0 0%, #2C5282 20%, #475569 42%, #10B981 66%, #34D399 86%, #FCD34D 112%)', overflow: 'hidden' }}>
+      <header id="top" style={{ position: 'relative', padding: '148px 24px 0', background: 'radial-gradient(130% 135% at 12% 6%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 86%, #FCD34D 112%)', overflow: 'hidden' }}>
         
         {/* Glow Blobs */}
         <div style={{ position: 'absolute', width: '520px', height: '520px', left: '-120px', bottom: '-90px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, rgba(52,211,153,0) 68%)', filter: 'blur(18px)', opacity: 0.6, animation: 'pulseGlow 9s ease-in-out infinite', pointerEvents: 'none' }}></div>
@@ -1384,7 +1381,7 @@ export default function Landing() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-10%' }}
           transition={{ duration: 0.75, ease: 'easeOut' }}
-          style={{ position: 'relative', maxWidth: '1080px', margin: '0 auto', padding: '64px 32px', borderRadius: '26px', textAlign: 'center', overflow: 'hidden', background: 'radial-gradient(125% 140% at 18% 8%, #2B6CB0, #475569 34%, #10B981 66%, #34D399 88%, #FCD34D 116%)' }}
+          style={{ position: 'relative', maxWidth: '1080px', margin: '0 auto', padding: '64px 32px', borderRadius: '26px', textAlign: 'center', overflow: 'hidden', background: 'radial-gradient(125% 140% at 18% 8%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 88%, #FCD34D 116%)' }}
         >
           {/* Noise overlay */}
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', mixBlendMode: 'overlay', opacity: 0.45, backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n2'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n2)'/></svg>")` }}></div>
@@ -1429,9 +1426,6 @@ export default function Landing() {
           <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: '40px', paddingBottom: '48px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
             <div className="footer-grid-brand">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                <span style={{ display: 'grid', placeItems: 'center', width: '30px', height: '30px', borderRadius: '9px', overflow: 'hidden' }}>
-                  <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </span>
                 <span style={{ fontFamily: "'Inter'", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#fff' }}>Katedra</span>
               </div>
               <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: 1.6, color: '#94A3B8', margin: '0 0 20px', maxWidth: '260px' }}>

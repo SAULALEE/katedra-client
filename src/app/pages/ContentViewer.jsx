@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getContenidoTemario } from '../services/temarioService';
+import { getContenidoTemario, enviarMensajeAsistente } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAuth } from '../hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
@@ -21,8 +21,19 @@ import {
   FileBox,
   MonitorPlay,
   Copy,
-  Download
+  Download,
+  MessageSquare,
+  Send,
+  Loader2
 } from 'lucide-react';
+
+const ASSISTANT_QUICK_ACTIONS = [
+  { id: 'ACORTAR', label: 'Acortar' },
+  { id: 'EXTENDER', label: 'Extender' },
+  { id: 'SIMPLIFICAR', label: 'Simplificar' },
+  { id: 'AGREGAR_EJEMPLO', label: 'Agregar Ejemplo' },
+  { id: 'CORREGIR_REDACCION', label: 'Corregir Redacción' }
+];
 
 export default function ContentViewer() {
   const { id } = useParams();
@@ -49,6 +60,14 @@ export default function ContentViewer() {
   const [checkedAnswers, setCheckedAnswers] = useState({});
   const [examChecked, setExamChecked] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [assistantMessage, setAssistantMessage] = useState('');
+  const [assistantLoading, setAssistantLoading] = useState(false);
+  // Status-only chat log: the edited theory shows in the panel above, never here.
+  // Each entry: { id, role: 'user' | 'assistant', kind: 'pending' | 'success' | 'error', text }
+  const [assistantMessages, setAssistantMessages] = useState([]);
+  const assistantMessageIdRef = useRef(0);
 
   const course = courses.find(c => c.id === id) || { titulo: 'Temario Generado', asignatura: 'Cargando...' };
 
@@ -141,6 +160,52 @@ export default function ContentViewer() {
     notify('success', 'Copiado', 'El contenido fue copiado al portapapeles.');
   };
 
+  const appendAssistantMessage = (msg) => {
+    assistantMessageIdRef.current += 1;
+    const entry = { id: assistantMessageIdRef.current, ...msg };
+    setAssistantMessages(prev => [...prev, entry]);
+    return entry.id;
+  };
+
+  const updatePendingMessage = (pendingId, patch) => {
+    setAssistantMessages(prev => prev.map(m => (m.id === pendingId ? { ...m, ...patch } : m)));
+  };
+
+  const handleAssistantAction = async (action, text = '') => {
+    const actionLabel = ASSISTANT_QUICK_ACTIONS.find(a => a.id === action)?.label || text;
+    appendAssistantMessage({ role: 'user', kind: 'sent', text: actionLabel });
+    const pendingId = appendAssistantMessage({ role: 'assistant', kind: 'pending', text: 'Generando contenido...' });
+
+    setAssistantLoading(true);
+    try {
+      // No modelo sent: corrections always run on the backend's fast tier so every
+      // response stays within its 10s budget, regardless of what tier generated the theory.
+      const res = await enviarMensajeAsistente({
+        temarioId: id,
+        action,
+        message: text
+      });
+      if (res.corregido) {
+        const data = await getContenidoTemario(id);
+        setContent(data);
+        updatePendingMessage(pendingId, { kind: 'success', text: 'Contenido generado con éxito' });
+        notify('success', 'Teoría actualizada', 'El asistente modificó el contenido con éxito.');
+      } else {
+        const refusalText = res.content || 'El asistente no modificó el texto.';
+        updatePendingMessage(pendingId, { kind: 'error', text: refusalText });
+        notify('warn', 'Atención', refusalText);
+      }
+    } catch (error) {
+      console.error('Error al hablar con el asistente', error);
+      const errorText = error.message || 'No se pudo procesar la solicitud';
+      updatePendingMessage(pendingId, { kind: 'error', text: errorText });
+      notify('error', 'Error', errorText);
+    } finally {
+      setAssistantLoading(false);
+      if (action === 'FREE_CHAT') setAssistantMessage('');
+    }
+  };
+
   const getEvaluationMarkdown = () => {
     if (!content || !content.evaluacion) return '';
     return content.evaluacion.map((q, qIndex) => {
@@ -202,6 +267,7 @@ export default function ContentViewer() {
   @keyframes ktToastOut{to{transform:translateX(130%) scale(.92);opacity:0}}
   @keyframes ktBlink{0%,100%{opacity:1}50%{opacity:0}}
   @keyframes ktFadeUp{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+  @keyframes ktSpin{100%{transform:rotate(360deg)}}
 
   .kt-nav:hover{background:var(--kt-chip-hover) !important}
   .kt-primary:hover{transform:translateY(-2px);box-shadow:0 16px 34px -12px rgba(16,185,129,.7)}
@@ -327,13 +393,13 @@ export default function ContentViewer() {
               <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><FolderDot size={19} /></span>
               <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Mis Temarios</span>
             </Link>
-            <Link to="/contenidos" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',background:'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))',border:'1px solid rgba(16,185,129,.28)',color:'var(--kt-heading)'}}>
-              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center',color:'#10B981'}}><Sparkles size={19} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px'}}>Contenidos Generados</span>
-            </Link>
             <Link to="/generador" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
               <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><Wand2 size={19} /></span>
               <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Generador</span>
+            </Link>
+            <Link to="/contenidos" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',background:'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))',border:'1px solid rgba(16,185,129,.28)',color:'var(--kt-heading)'}}>
+              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center',color:'#10B981'}}><Sparkles size={19} /></span>
+              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px'}}>Contenidos Generados</span>
             </Link>
           </nav>
           <div style={{marginTop:'auto',padding:'16px 14px 18px',display:'flex',flexDirection:'column',gap:'12px'}}>
@@ -516,6 +582,74 @@ export default function ContentViewer() {
                             </pre>
                           )}
                         </div>
+                      </div>
+
+                      {/* Asistente UI */}
+                      <div style={{marginTop:'24px'}}>
+                        <button onClick={() => setAssistantOpen(!assistantOpen)} className="kt-ghostbtn" style={{display:'flex',alignItems:'center',gap:'8px',padding:'10px 16px',border:'1px solid var(--kt-chip-border)',background:'var(--kt-chip-bg)',borderRadius:'12px',color:'var(--kt-text)',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px'}}>
+                          <MessageSquare size={18} />
+                          {assistantOpen ? 'Ocultar Asistente' : 'Asistente de Corrección'}
+                        </button>
+
+                        {assistantOpen && (
+                          <div style={{marginTop:'16px',background:'var(--kt-card-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'16px',padding:'24px',boxShadow:'var(--kt-shadow-panel)'}}>
+                            <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'16px',color:'var(--kt-heading)',marginBottom:'16px'}}>Acciones Rápidas</div>
+                            <div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginBottom:'24px'}}>
+                              {ASSISTANT_QUICK_ACTIONS.map(action => (
+                                <button 
+                                  key={action.id}
+                                  onClick={() => handleAssistantAction(action.id)}
+                                  disabled={assistantLoading}
+                                  style={{padding:'8px 14px',borderRadius:'8px',border:'1px solid var(--kt-chip-border)',background:'var(--kt-chip-bg)',color:'var(--kt-text)',cursor:assistantLoading ? 'not-allowed' : 'pointer',fontFamily:"'Manrope'",fontWeight:600,fontSize:'13px',opacity:assistantLoading ? 0.6 : 1}}
+                                >
+                                  {action.label}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'16px',color:'var(--kt-heading)',marginBottom:'12px'}}>Petición Personalizada (Free Chat)</div>
+                            <div style={{display:'flex',gap:'12px'}}>
+                              <input 
+                                type="text"
+                                value={assistantMessage}
+                                onChange={e => setAssistantMessage(e.target.value)}
+                                placeholder="Ej. Reescribe el segundo párrafo para que sea más formal..."
+                                disabled={assistantLoading}
+                                style={{flex:1,padding:'12px 16px',borderRadius:'10px',border:'1px solid var(--kt-input-border)',background:'var(--kt-input-bg)',color:'var(--kt-text)',fontFamily:"'Manrope'",fontSize:'14px'}}
+                              />
+                              <button 
+                                onClick={() => handleAssistantAction('FREE_CHAT', assistantMessage)}
+                                disabled={assistantLoading || !assistantMessage.trim()}
+                                className="kt-primary"
+                                style={{display:'flex',alignItems:'center',gap:'8px',padding:'0 20px',borderRadius:'10px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',border:'none',cursor:(assistantLoading || !assistantMessage.trim()) ? 'not-allowed' : 'pointer',fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px',opacity:(assistantLoading || !assistantMessage.trim()) ? 0.6 : 1}}
+                              >
+                                {assistantLoading ? <Loader2 size={18} style={{animation:'ktSpin 1s infinite linear'}} /> : <Send size={18} />}
+                                Enviar
+                              </button>
+                            </div>
+
+                            {assistantMessages.length > 0 && (
+                              <div style={{marginTop:'20px',display:'flex',flexDirection:'column',gap:'10px',maxHeight:'260px',overflowY:'auto',paddingRight:'4px'}}>
+                                {assistantMessages.map(msg => {
+                                  const isUser = msg.role === 'user';
+                                  const iconColor = msg.kind === 'success' ? '#10B981' : msg.kind === 'error' ? '#D97706' : 'var(--kt-muted)';
+                                  return (
+                                    <div key={msg.id} style={{display:'flex',justifyContent: isUser ? 'flex-end' : 'flex-start'}}>
+                                      <div style={{display:'flex',alignItems:'center',gap:'8px',maxWidth:'80%',padding:'9px 13px',borderRadius:'12px',background: isUser ? 'rgba(16,185,129,.12)' : 'var(--kt-chip-bg)',border:'1px solid', borderColor: isUser ? 'rgba(16,185,129,.25)' : 'var(--kt-chip-border)'}}>
+                                        {!isUser && msg.kind === 'pending' && <Loader2 size={14} style={{animation:'ktSpin 1s infinite linear',flex:'none',color:iconColor}} />}
+                                        {!isUser && msg.kind === 'success' && <CheckCircle2 size={14} style={{flex:'none',color:iconColor}} />}
+                                        {!isUser && msg.kind === 'error' && <AlertCircle size={14} style={{flex:'none',color:iconColor}} />}
+                                        <span style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'13px',color: isUser ? 'var(--kt-heading)' : 'var(--kt-text)'}}>
+                                          {isUser ? `Tú: ${msg.text}` : msg.text}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 

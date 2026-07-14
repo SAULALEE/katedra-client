@@ -10,9 +10,9 @@ export const PIEZAS = [
 ];
 
 export const MODELOS = [
-  { id: 'flash', label: 'Tutor', hint: 'Rápido y económico, teoría breve (3–5 párrafos), 8 diapositivas' },
-  { id: 'pro', label: 'Maestro', hint: 'Profundidad equilibrada (5–8 párrafos), 15 diapositivas' },
-  { id: 'max', label: 'Catedrático', hint: 'Máximo rigor con modelo de razonamiento (8–12 párrafos), 20 diapositivas, más costoso' }
+  { id: 'flash', label: 'Tutor', hint: 'Rápido y económico, ideal para tareas sencillas' },
+  { id: 'pro', label: 'Maestro', hint: 'Profundidad equilibrada y mayor razonamiento analítico' },
+  { id: 'max', label: 'Catedrático', hint: 'El modelo más potente de Katedra, ideal para problemas matemáticos y lógica' }
 ];
 
 /** Maps a response tier key to its display name. */
@@ -114,10 +114,8 @@ export const useGenerator = () => {
     try {
       const data = await generarMaterialParaTemario(temarioId, { piezas, modelo });
       setGeneratedData(data);
-      setContenidoExistente(data);
       const fallidas = data.piezasFallidas || {};
       if (Object.keys(fallidas).length > 0) {
-        // Raw provider/exception detail is developer information, not user-facing text.
         console.error('Fallos de generación IA:', fallidas);
       }
       setPiezasFallidas(fallidas);
@@ -129,6 +127,13 @@ export const useGenerator = () => {
     } finally {
       setIsGenerating(false);
       clearInterval(stepInterval);
+    }
+  };
+
+  const handleSave = () => {
+    if (generatedData) {
+      setContenidoExistente(generatedData);
+      setGeneratedData(null);
     }
   };
 
@@ -148,6 +153,7 @@ export const useGenerator = () => {
     piezasFallidas,
     activeTab, setActiveTab,
     checkedAnswers, setCheckedAnswers,
-    handleGenerate
+    handleGenerate,
+    handleSave
   };
 };

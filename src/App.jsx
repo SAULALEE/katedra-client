@@ -14,11 +14,28 @@ import ProtectedRoute from './app/components/ProtectedRoute';
 import { useThemeStore } from './app/store/useThemeStore';
 
 function App() {
-  const initTheme = useThemeStore(state => state.initTheme);
+  const isDarkMode = useThemeStore(state => state.isDarkMode);
 
   useEffect(() => {
-    initTheme();
-  }, [initTheme]);
+    // Force sync with localStorage to prevent hydration mismatches
+    const storageStr = localStorage.getItem('katedra-theme-storage-v3');
+    let actualIsDark = isDarkMode;
+    
+    if (storageStr) {
+      try {
+        const parsed = JSON.parse(storageStr);
+        if (parsed && parsed.state && typeof parsed.state.isDarkMode === 'boolean') {
+          actualIsDark = parsed.state.isDarkMode;
+        }
+      } catch (e) {}
+    }
+
+    if (actualIsDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   return (
     <BrowserRouter>
