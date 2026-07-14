@@ -73,19 +73,24 @@ export const getContenidoTemario = async (id) => {
 };
 
 /**
- * Sends a message to the AI assistant with an optional quick action and model selection.
+ * Sends a message to the AI assistant with an optional quick action.
+ *
+ * Corrections always run on the backend's fast tier (never a reasoning model) so every
+ * response stays within its 10s budget — there is no model choice for this endpoint.
  *
  * @param {object} params
  * @param {string} params.temarioId - the selected temario UUID
- * @param {string} params.action - AssistantQuickAction enum: 'GENERATE_THEORY' | 'GENERATE_EXERCISES' | 'GENERATE_QUIZ' | 'EXPLAIN_CONCEPT' | 'SUMMARIZE_TOPIC' | 'FREE_CHAT'
+ * @param {string} params.action - AssistantQuickAction: 'ACORTAR' | 'EXTENDER' | 'SIMPLIFICAR' | 'AGREGAR_EJEMPLO' | 'CORREGIR_REDACCION' | 'FREE_CHAT'
  * @param {string} params.message - user text prompt
- * @param {string} params.modelo - ModeloIA enum: 'FLASH' | 'PRO' | 'MAX'
  */
-export const enviarMensajeAsistente = async ({ temarioId, action, message, modelo }) => {
+export const enviarMensajeAsistente = async ({ temarioId, action, message }) => {
   try {
-    const response = await api.post('/assistant/chat', { temarioId, action, message, modelo });
+    const response = await api.post('/assistant/chat', { temarioId, action, message });
     return response.data;
   } catch (error) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message, { cause: error });
+    }
     throw new Error('Error al hablar con el asistente', { cause: error });
   }
 };

@@ -57,13 +57,6 @@ export default function LandingHeader() {
             className="flex items-center gap-2.5 cursor-pointer select-none group pl-1"
             onClick={() => navigate('/')}
           >
-            <div className="relative w-9 h-9 shrink-0 rounded-full overflow-hidden border border-hairline bg-surface-1 shadow-sm flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <img
-                src="/katedra.svg"
-                alt="Katedra"
-                className="w-full h-full object-cover"
-              />
-            </div>
             <span className="font-sans font-bold text-[15px] tracking-tight text-ink">
               Katedra
             </span>

@@ -114,26 +114,6 @@ export const useGenerator = () => {
     try {
       const data = await generarMaterialParaTemario(temarioId, { piezas, modelo });
       setGeneratedData(data);
-      
-      try {
-        const saved = JSON.parse(localStorage.getItem('katedra_generations') || '[]');
-        const course = courses.find(c => c.id === temarioId);
-        const newGen = {
-          id: 'gen_' + Date.now(),
-          temarioId,
-          temarioTitulo: course ? (course.titulo || course.nombre) : 'Temario',
-          asignatura: course ? (course.asignatura || course.curso) : 'Materia',
-          modelo,
-          piezas,
-          contenido: data,
-          createdAt: new Date().toISOString()
-        };
-        saved.unshift(newGen);
-        localStorage.setItem('katedra_generations', JSON.stringify(saved));
-      } catch (e) {
-        console.error('Error saving generation to history', e);
-      }
-
       const fallidas = data.piezasFallidas || {};
       if (Object.keys(fallidas).length > 0) {
         console.error('Fallos de generación IA:', fallidas);

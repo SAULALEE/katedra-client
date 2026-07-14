@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/katedra.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Katedra — Generador de Contenido Académico de IA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,6 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script>
+      try {
+        var storageStr = localStorage.getItem('katedra-theme-storage-v3');
+        if (storageStr) {
+          var parsed = JSON.parse(storageStr);
+          if (parsed && parsed.state && parsed.state.isDarkMode) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        }
+      } catch(e) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

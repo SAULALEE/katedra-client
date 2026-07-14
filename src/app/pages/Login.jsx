@@ -203,9 +203,6 @@ export default function Login() {
           transition: 'all 0.3s ease'
         }}>
           <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-            <span style={{ display: 'grid', placeItems: 'center', width: '32px', height: '32px', borderRadius: '9px', overflow: 'hidden' }}>
-              <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </span>
             <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#fff' }}>Katedra</span>
           </a>
           
