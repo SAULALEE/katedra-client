@@ -241,7 +241,7 @@ export default function Landing() {
 
   const FAQ_DATA = [
     { q: '¿Qué tan rigurosa es la teoría generada?', a: 'Cada nota de teoría se basa en fuentes académicas establecidas y se cita automáticamente para que puedas verificarla con un solo clic. Tú sigues siendo el editor en jefe — Katedra redacta y tú apruebas.' },
-    { q: '¿Puedo editar todo lo que Katedra produce?', a: 'Sí. Los módulos, la teoría, los ejercicios y las diapositivas son totalmente editables dentro de un editor de documentos limpio. Modifica oraciones, cambia preguntas o reestructura bloques antes de exportar.' },
+    { q: '¿Puedo editar todo lo que Katedra produce?', a: 'Sí. Los módulos, la teoría, las evaluaciones y las diapositivas son totalmente editables dentro de un editor de documentos limpio. Modifica oraciones, cambia preguntas o reestructura bloques antes de exportar.' },
     { q: '¿A qué formatos puedo exportar mis cursos?', a: 'Soportamos exportación directa a PowerPoint (PPTX), PDF estructurado, Google Classroom, Canvas LMS y Moodle de manera nativa para integrarse a tu flujo de enseñanza diario.' },
     { q: '¿El motor funciona para cualquier materia?', a: 'Katedra maneja ciencias naturales, humanidades, matemáticas, ingeniería y más. Si puedes definir el tema, la inteligencia artificial puede estructurar el temario.' },
     { q: '¿Hay algún plan gratuito?', a: 'Sí, el plan Básico es gratuito para siempre e incluye la creación de cursos completos con un límite mensual. Puedes mejorar a Pro en cualquier momento.' }
@@ -336,9 +336,6 @@ export default function Landing() {
         transition: 'all 0.3s ease'
       }}>
         <a href="#top" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <span style={{ display: 'grid', placeItems: 'center', width: '32px', height: '32px', borderRadius: '9px', overflow: 'hidden' }}>
-            <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </span>
           <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#0F172A' }}>Katedra</span>
         </a>
         
@@ -414,7 +411,7 @@ export default function Landing() {
       </nav>
 
       {/* ============ HERO SECTION ============ */}
-      <header id="top" style={{ position: 'relative', padding: '148px 24px 0', background: 'radial-gradient(130% 135% at 12% 6%, #2B6CB0 0%, #2C5282 20%, #475569 42%, #10B981 66%, #34D399 86%, #FCD34D 112%)', overflow: 'hidden' }}>
+      <header id="top" style={{ position: 'relative', padding: '148px 24px 0', background: 'radial-gradient(130% 135% at 12% 6%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 86%, #FCD34D 112%)', overflow: 'hidden' }}>
         
         {/* Glow Blobs */}
         <div style={{ position: 'absolute', width: '520px', height: '520px', left: '-120px', bottom: '-90px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, rgba(52,211,153,0) 68%)', filter: 'blur(18px)', opacity: 0.6, animation: 'pulseGlow 9s ease-in-out infinite', pointerEvents: 'none' }}></div>
@@ -452,7 +449,7 @@ export default function Landing() {
             transition={{ duration: 0.75, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 'clamp(16px, 2vw, 20px)', lineHeight: 1.55, color: 'rgba(255, 255, 255, 0.86)', maxWidth: '620px', margin: '0 auto 36px', textWrap: 'pretty' }}
           >
-            Teoría rigurosa, ejercicios con clave y diapositivas de clase — generadas en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#ffffff' }}>segundos</span> para educadores.
+            Teoría rigurosa, exámenes con clave y diapositivas de clase — generadas en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#ffffff' }}>segundos</span> para educadores.
           </motion.p>
 
           <motion.div 
@@ -647,7 +644,7 @@ export default function Landing() {
               Observa cómo un curso completo se arma solo.
             </h2>
             <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '17px', color: '#64748B', maxWidth: '560px', margin: '16px auto 0' }}>
-              Elige una materia. Katedra redacta los módulos, la teoría, los ejercicios y las diapositivas <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>en vivo</span>.
+              Elige una materia. Katedra redacta los módulos, la teoría, las evaluaciones y las diapositivas <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>en vivo</span>.
             </p>
           </motion.div>
 
@@ -705,7 +702,7 @@ export default function Landing() {
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, background: '#fff' }}>
               {/* Toolbar Tabs */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '11px 16px', borderBottom: '1px solid #EEF1F5', background: '#FCFCFD', overflowX: 'auto' }}>
-                {['Módulos', 'Teoría', 'Ejercicios', 'Diapositivas'].map((label, idx) => {
+                {['Módulos', 'Teoría', 'Evaluación', 'Diapositivas'].map((label, idx) => {
                   const active = idx === selectedTab;
                   return (
                     <button 
@@ -800,7 +797,7 @@ export default function Landing() {
                 {/* Content Exercises */}
                 {!isLoading && selectedTab === 2 && (
                   <div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '1.2px', textTransform: 'uppercase', color: '#10B981', marginBottom: '6px' }}>Ejercicios · Clave de Respuestas Incluida</div>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '1.2px', textTransform: 'uppercase', color: '#10B981', marginBottom: '6px' }}>Evaluación · Clave de Respuestas Incluida</div>
                     <div style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '22px', letterSpacing: '-0.6px', marginBottom: '20px' }}>{activeCourse.name}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                       {activeCourse.exercises.map((q, qi) => (
@@ -949,12 +946,12 @@ export default function Landing() {
                 </div>
               </div>
               <div style={{ padding: '24px 26px 28px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '22px', letterSpacing: '-0.7px', margin: '0 0 9px', color: '#0F172A' }}>Ejercicios y Exámenes</h3>
+                <h3 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '22px', letterSpacing: '-0.7px', margin: '0 0 9px', color: '#0F172A' }}>Exámenes y Evaluaciones</h3>
                 <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14.5px', lineHeight: 1.6, color: '#475569', margin: '0 0 16px', flex: 1 }}>
                   Opción múltiple, preguntas abiertas y exámenes completos — cada uno con su respectiva clave de respuestas.
                 </p>
                 <a className="explore-link" href="#playground" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '14px', color: '#D97706', textDecoration: 'none', width: 'fit-content' }}>
-                  Explorar ejercicios <span style={{ display: 'inline-block', transition: 'transform .25s ease' }}>›</span>
+                  Explorar evaluaciones <span style={{ display: 'inline-block', transition: 'transform .25s ease' }}>›</span>
                 </a>
               </div>
             </motion.div>
@@ -1236,7 +1233,7 @@ export default function Landing() {
               >
                 Comenzar gratis
               </a>
-              {['3 cursos al mes', 'Teoría y ejercicios', 'Exportación a PDF', 'Soporte de la comunidad'].map((bf, idx) => (
+              {['3 cursos al mes', 'Teoría y evaluaciones', 'Exportación a PDF', 'Soporte de la comunidad'].map((bf, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '11px', padding: '7px 0', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#334155' }}>
                   <span style={{ display: 'grid', placeItems: 'center', width: '19px', height: '19px', borderRadius: '50%', background: '#F1F5F9', color: '#64748B', fontSize: '11px', flex: 'none' }}>✓</span>
                   {bf}
@@ -1384,7 +1381,7 @@ export default function Landing() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-10%' }}
           transition={{ duration: 0.75, ease: 'easeOut' }}
-          style={{ position: 'relative', maxWidth: '1080px', margin: '0 auto', padding: '64px 32px', borderRadius: '26px', textAlign: 'center', overflow: 'hidden', background: 'radial-gradient(125% 140% at 18% 8%, #2B6CB0, #475569 34%, #10B981 66%, #34D399 88%, #FCD34D 116%)' }}
+          style={{ position: 'relative', maxWidth: '1080px', margin: '0 auto', padding: '64px 32px', borderRadius: '26px', textAlign: 'center', overflow: 'hidden', background: 'radial-gradient(125% 140% at 18% 8%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 88%, #FCD34D 116%)' }}
         >
           {/* Noise overlay */}
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', mixBlendMode: 'overlay', opacity: 0.45, backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n2'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n2)'/></svg>")` }}></div>
@@ -1429,9 +1426,6 @@ export default function Landing() {
           <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: '40px', paddingBottom: '48px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
             <div className="footer-grid-brand">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                <span style={{ display: 'grid', placeItems: 'center', width: '30px', height: '30px', borderRadius: '9px', overflow: 'hidden' }}>
-                  <img src="/katedra.svg" alt="Katedra Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </span>
                 <span style={{ fontFamily: "'Inter'", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#fff' }}>Katedra</span>
               </div>
               <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: 1.6, color: '#94A3B8', margin: '0 0 20px', maxWidth: '260px' }}>

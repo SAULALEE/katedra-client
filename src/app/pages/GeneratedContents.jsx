@@ -1,131 +1,497 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { useTemarios } from '../hooks/useTemarios';
-import ResponsiveSidebar from '../components/ResponsiveSidebar';
-import Button from '../components/Button';
+import { 
+  Users as UsersIcon, 
+  FolderDot, 
+  Sparkles, 
+  Wand2, 
+  ChevronLeft,
+  Moon,
+  Sun,
+  LogOut,
+  Bell,
+  Trash2,
+  BookOpen
+} from 'lucide-react';
 
 export default function GeneratedContents() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuth();
   const { courses, loading } = useTemarios();
 
+  const [theme, setTheme] = useState('dark');
+  const [collapsed, setCollapsed] = useState(false);
+  const [zoom, setZoom] = useState(100);
+
+  const [generations, setGenerations] = useState([]);
+  const [expandedGenId, setExpandedGenId] = useState(null);
+
+  useEffect(() => {
+    let list = JSON.parse(localStorage.getItem('katedra_generations') || '[]');
+    if (list.length === 0 && courses.length > 0) {
+      list = courses.map((c, idx) => ({
+        id: 'gen_' + c.id + '_' + idx,
+        temarioId: c.id,
+        temarioTitulo: c.titulo || c.nombre,
+        asignatura: c.asignatura || c.curso || 'Materia',
+        modelo: 'pro',
+        piezas: ['teoria', 'evaluacion'],
+        contenido: c.contenido || {},
+        createdAt: c.createdAt || new Date(Date.now() - idx * 86400000).toISOString()
+      }));
+      localStorage.setItem('katedra_generations', JSON.stringify(list));
+    }
+    setGenerations(list);
+  }, [courses]);
+
+  const handleDelete = (id) => {
+    const updated = generations.filter(g => g.id !== id);
+    setGenerations(updated);
+    localStorage.setItem('katedra_generations', JSON.stringify(updated));
+    if (expandedGenId === id) setExpandedGenId(null);
+  };
+
+  const handleDeleteAll = () => {
+    setGenerations([]);
+    localStorage.removeItem('katedra_generations');
+    setExpandedGenId(null);
+  };
+
+  useEffect(() => {
+    const linkId = 'katedra-fonts';
+    if (!document.getElementById(linkId)) {
+      const link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap';
+      document.head.appendChild(link);
+    }
+  }, []);
+
+  const getInitial = (name) => {
+    if (!name) return 'U';
+    const clean = name.replace(/^(prof\.|dra\.|dr\.|ing\.|mtra\.|mtro\.|lic\.)\s*/i, '').trim();
+    return (clean[0] || 'U').toUpperCase();
+  };
+
+  const calculatePct = (done, total) => {
+    if (!total) return 0;
+    return Math.round((done / total) * 100);
+  };
+
   return (
-    <div className="w-full h-screen bg-canvas text-ink flex flex-col md:flex-row overflow-hidden font-sans">
+    <>
+      <style>{`
+        [data-root]{margin:0;padding:0}
+        *{box-sizing:border-box}
+        input,textarea,select{outline:none;font-family:inherit}
+        ::-webkit-scrollbar{width:10px;height:10px}
+        ::-webkit-scrollbar-thumb{background:var(--kt-scrollbar);border-radius:8px;border:2px solid transparent;background-clip:content-box}
 
-      {/* Sidebar */}
-      <ResponsiveSidebar />
+        /* ===== THEME TOKENS ===== */
+        [data-root]{
+          --kt-bg1:#FFFFFF;--kt-bg2:#EEF2F7;--kt-bg3:#F8FAFC;--kt-blob-scale:.5;
+          --kt-grain-op:.035;--kt-grain-blend:multiply;
+          --kt-text:#334155;--kt-heading:#0F172A;--kt-muted:#64748B;--kt-faint:#94A3B8;--kt-label:#94A3B8;
+          --kt-border:rgba(15,23,42,.09);--kt-border-soft:rgba(15,23,42,.06);
+          --kt-sidebar-bg:rgba(255,255,255,.75);--kt-panel-bg:rgba(255,255,255,.85);--kt-panel-border:rgba(15,23,42,.08);
+          --kt-chip-bg:rgba(15,23,42,.045);--kt-chip-border:rgba(15,23,42,.08);--kt-chip-hover:rgba(15,23,42,.08);
+          --kt-card-bg:rgba(255,255,255,.9);
+          --kt-input-bg:rgba(241,245,249,.7);--kt-input-border:rgba(15,23,42,.12);
+          --kt-modal-bg1:rgba(255,255,255,.98);--kt-modal-bg2:rgba(248,250,252,.98);--kt-modal-border:rgba(15,23,42,.09);--kt-modal-backdrop:rgba(15,23,42,.25);
+          --kt-scrollbar:rgba(15,23,42,.16);
+          --kt-shadow-panel:0 24px 50px -28px rgba(15,23,42,.16);
+          --kt-shadow-card:0 14px 30px -18px rgba(15,23,42,.22);
+          --kt-shadow-modal:0 30px 70px -25px rgba(15,23,42,.25);
+        }
+        [data-root][data-kt-theme="dark"]{
+          --kt-bg1:#0F172A;--kt-bg2:#1E293B;--kt-bg3:#0F172A;--kt-blob-scale:1;
+          --kt-grain-op:.09;--kt-grain-blend:overlay;
+          --kt-text:#E2E8F0;--kt-heading:#F8FAFC;--kt-muted:#94A3B8;--kt-faint:#64748B;--kt-label:#64748B;
+          --kt-border:rgba(148,163,184,.1);--kt-border-soft:rgba(148,163,184,.06);
+          --kt-sidebar-bg:rgba(11,17,32,.72);--kt-panel-bg:rgba(17,24,39,.66);--kt-panel-border:rgba(148,163,184,.12);
+          --kt-chip-bg:rgba(148,163,184,.08);--kt-chip-border:rgba(148,163,184,.14);--kt-chip-hover:rgba(148,163,184,.16);
+          --kt-card-bg:rgba(17,24,39,.72);
+          --kt-input-bg:rgba(15,23,42,.6);--kt-input-border:rgba(148,163,184,.14);
+          --kt-modal-bg1:rgba(23,31,48,.96);--kt-modal-bg2:rgba(15,23,42,.96);--kt-modal-border:rgba(148,163,184,.16);--kt-modal-backdrop:rgba(2,6,23,.6);
+          --kt-scrollbar:rgba(148,163,184,.22);
+          --kt-shadow-panel:0 30px 60px -30px rgba(0,0,0,.6);
+          --kt-shadow-card:0 20px 40px -22px rgba(0,0,0,.7);
+          --kt-shadow-modal:0 40px 90px -30px rgba(0,0,0,.8);
+        }
 
-      {/* Main Panel Content */}
-      <main className="flex-1 flex flex-col min-w-0 bg-surface-2 relative h-screen">
+        @keyframes ktBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-28px) scale(1.14)}}
+        @keyframes ktBlob2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-26px,24px) scale(1.1)}}
+        @keyframes ktGrainShift{0%{transform:translate(0,0)}25%{transform:translate(-4%,3%)}50%{transform:translate(3%,-2%)}75%{transform:translate(-2%,-3%)}100%{transform:translate(0,0)}}
+        @keyframes ktToastIn{0%{transform:translateX(130%) scale(.9);opacity:0}55%{transform:translateX(-10px) scale(1.02);opacity:1}75%{transform:translateX(5px) scale(.99)}100%{transform:translateX(0) scale(1)}}
+        @keyframes ktToastOut{to{transform:translateX(130%) scale(.92);opacity:0}}
+        @keyframes ktShimmer{0%{background-position:-360px 0}100%{background-position:360px 0}}
+        @keyframes ktSpin{to{transform:rotate(360deg)}}
 
-        {/* Top Navbar */}
-        <header className="h-[88px] border-b border-hairline bg-canvas/80 backdrop-blur-md sticky top-0 z-30 w-full flex items-center px-6 sm:px-10 justify-between transition-all">
-          <div className="flex flex-col">
-            <h2 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight text-ink">Materiales Educativos</h2>
-            <span className="text-xs mt-1 font-medium text-brand-secure">Material generado con IA</span>
+        .kt-nav:hover{background:var(--kt-chip-hover) !important}
+        .kt-primary:hover{transform:translateY(-2px);box-shadow:0 16px 34px -12px rgba(16,185,129,.7)}
+        .kt-primary:active{transform:translateY(0)}
+        .kt-ghostbtn:hover{background:var(--kt-chip-hover) !important;color:var(--kt-heading) !important}
+
+        /* stat widgets */
+        .kt-stat{transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,border-color .25s;cursor:pointer}
+        .kt-stat:hover{transform:translateY(-3px);box-shadow:var(--kt-shadow-card);border-color:rgba(16,185,129,.3)}
+        .kt-stat:hover .kt-stat-action{opacity:1;transform:translateX(0)}
+        .kt-stat-action{opacity:0;transform:translateX(-4px);transition:opacity .2s,transform .2s}
+
+        /* syllabus cards */
+        .kt-scard{position:relative;transition:transform .24s cubic-bezier(.34,1.56,.64,1),box-shadow .28s,border-color .25s;overflow:hidden}
+        .kt-scard:hover{transform:translateY(-4px);box-shadow:var(--kt-shadow-card)}
+        .kt-scard:hover .kt-scard-open{gap:9px}
+        .kt-iconbtn:hover{background:var(--kt-chip-hover) !important;color:var(--kt-heading) !important}
+        .kt-iconbtn.del:hover{background:rgba(244,63,94,.16) !important;color:#FB7185 !important}
+        .kt-newcard{transition:transform .24s cubic-bezier(.34,1.56,.64,1),border-color .25s,background .25s;cursor:pointer}
+        .kt-newcard:hover{transform:translateY(-4px);border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.05)}
+        .kt-newcard:hover .kt-newplus{transform:scale(1.08) rotate(90deg);background:linear-gradient(150deg,#10B981,#059669);color:#fff}
+
+        .kt-scard[data-status="Completado"], .kt-scard[data-status="Activo"]{--sc:#10B981;--sc-rgb:16,185,129}
+        .kt-scard[data-status="En proceso"]{--sc:#0284C7;--sc-rgb:2,132,199}
+        .kt-scard[data-status="Borrador"]{--sc:#F59E0B;--sc-rgb:245,158,11}
+        .kt-scard .kt-accentbar{background:var(--sc)}
+        .kt-scard .kt-statuspill{background:rgba(var(--sc-rgb),.14);color:var(--sc);border:1px solid rgba(var(--sc-rgb),.3)}
+        .kt-scard .kt-progressfill{background:var(--sc)}
+        .kt-scard .kt-cardicon{background:rgba(var(--sc-rgb),.14);color:var(--sc)}
+        [data-root][data-kt-theme="dark"] .kt-scard[data-status="En proceso"]{--sc:#38BDF8;--sc-rgb:56,189,248}
+        [data-root][data-kt-theme="dark"] .kt-scard[data-status="Borrador"]{--sc:#FBBF24;--sc-rgb:251,191,36}
+        [data-root][data-kt-theme="dark"] .kt-scard[data-status="Completado"], [data-root][data-kt-theme="dark"] .kt-scard[data-status="Activo"]{--sc:#34D399;--sc-rgb:52,211,153}
+
+        /* sidebar collapse */
+        .kt-sidebar{width:256px; transition: width .32s cubic-bezier(.4,0,.2,1) !important;}
+        [data-root][data-kt-collapsed="true"] .kt-sidebar{width:76px}
+        .kt-sidelabel{transition: opacity .25s ease, max-width .25s ease, margin .25s ease; opacity:1; max-width: 180px; min-width: 0; overflow: hidden; white-space: nowrap; display: inline-block;}
+        [data-root][data-kt-collapsed="true"] .kt-sidelabel{display: none !important;}
+        .kt-menutitle{transition: opacity .25s ease, max-height .25s ease; opacity: 1; max-height: 20px; overflow: hidden; white-space: nowrap;}
+        [data-root][data-kt-collapsed="true"] .kt-menutitle{display: none !important;}
+        [data-root][data-kt-collapsed="true"] .kt-collapse-icon{transform:rotate(180deg)}
+        .kt-navrow{transition: background .18s ease, padding .32s cubic-bezier(.4,0,.2,1), gap .32s cubic-bezier(.4,0,.2,1) !important;}
+        .kt-brand-header{transition: padding .32s cubic-bezier(.4,0,.2,1), gap .32s cubic-bezier(.4,0,.2,1) !important;}
+        [data-root][data-kt-collapsed="true"] .kt-navrow{justify-content:center !important; gap:0 !important; padding-left:0 !important; padding-right:0 !important;}
+        [data-root][data-kt-collapsed="true"] .kt-brand-header{justify-content:center !important; gap:0 !important; padding-left:0 !important; padding-right:0 !important;}
+
+        /* theme switch */
+        .kt-theme-icon-sun{display:none}.kt-theme-icon-moon{display:inline-flex}
+        [data-root][data-kt-theme="dark"] .kt-theme-icon-sun{display:inline-flex}
+        [data-root][data-kt-theme="dark"] .kt-theme-icon-moon{display:none}
+        .kt-theme-label-light{display:none}.kt-theme-label-dark{display:inline}
+        [data-root][data-kt-theme="dark"] .kt-theme-label-light{display:inline}
+        [data-root][data-kt-theme="dark"] .kt-theme-label-dark{display:none}
+        .kt-theme-track{background:#CBD5E1}
+        [data-root][data-kt-theme="dark"] .kt-theme-track{background:#10B981}
+        .kt-theme-knob{transform:translateX(0)}
+        [data-root][data-kt-theme="dark"] .kt-theme-knob{transform:translateX(16px)}
+
+        /* modal reveal */
+        [data-modal]{opacity:0;pointer-events:none;transition:opacity .22s ease}
+        [data-modal-panel]{transform:scale(.94) translateY(10px);transition:transform .32s cubic-bezier(.34,1.56,.64,1)}
+        [data-root][data-kt-modal="true"] [data-modal]{opacity:1;pointer-events:auto}
+        [data-root][data-kt-modal="true"] [data-modal-panel]{transform:scale(1) translateY(0)}
+
+        /* modal mode swap */
+        .kt-only-create{display:inline}.kt-only-edit{display:none}
+        [data-root][data-kt-modal-mode="edit"] .kt-only-create{display:none}
+        [data-root][data-kt-modal-mode="edit"] .kt-only-edit{display:inline}
+
+        /* modal tabs */
+        [data-tab-opt]{background:transparent;color:var(--kt-muted)}
+        [data-root][data-kt-tab="file"] [data-tab-opt="file"],
+        [data-root][data-kt-tab="web"] [data-tab-opt="web"],
+        [data-root][data-kt-tab="drive"] [data-tab-opt="drive"],
+        [data-root][data-kt-tab="manual"] [data-tab-opt="manual"]{background:linear-gradient(150deg,#10B981,#059669);color:#fff;box-shadow:0 6px 16px -8px rgba(16,185,129,.7)}
+        [data-tab-panel]{display:none}
+        [data-root][data-kt-tab="file"] [data-tab-panel="file"],
+        [data-root][data-kt-tab="web"] [data-tab-panel="web"],
+        [data-root][data-kt-tab="drive"] [data-tab-panel="drive"],
+        [data-root][data-kt-tab="manual"] [data-tab-panel="manual"]{display:block}
+        .kt-manual-only{display:none}
+        [data-root][data-kt-tab="manual"] .kt-manual-only{display:block}
+
+        /* notifications */
+        [data-notif-panel]{opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;transform:translateY(-8px) scale(.97)}
+        [data-root][data-kt-notif="true"] [data-notif-panel]{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+        [data-notif-catcher]{display:none}
+        [data-root][data-kt-notif="true"] [data-notif-catcher]{display:block}
+        [data-notif-icon][data-kind="success"]{background:rgba(16,185,129,.16);color:#10B981}
+        [data-notif-icon][data-kind="error"]{background:rgba(244,63,94,.16);color:#F43F5E}
+        [data-notif-icon][data-kind="warn"]{background:rgba(245,158,11,.16);color:#F59E0B}
+
+        @media(max-width:1024px){
+          .kt-sidebar{width:74px !important}
+          .kt-sidelabel{display:none !important}
+          .kt-menutitle{opacity:0 !important}
+          .kt-navrow{justify-content:center !important}
+          .kt-collapsebtn{display:none !important}
+        }
+        @media(max-width:760px){
+          .kt-headtitle{font-size:22px !important}
+          .kt-main-pad{padding:18px !important}
+          .kt-zoom{display:none !important}
+          .kt-modal-2col{grid-template-columns:1fr !important}
+        }
+        @media(max-width:560px){
+          .kt-sidebar{position:absolute !important;z-index:40;height:100%;box-shadow:0 0 60px rgba(0,0,0,.6)}
+        }
+      `}</style>
+
+      <div 
+        data-root 
+        data-kt-theme={theme}
+        data-kt-collapsed={collapsed ? "true" : "false"}
+        style={{ position:'fixed', inset:0, display:'flex', overflow:'hidden', fontFamily:"'Manrope',sans-serif", background:'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)', color:'var(--kt-text)' }}
+      >
+        {/* Decorative layer */}
+        <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none', zIndex:0 }}>
+          <div style={{ position:'absolute', inset:0, opacity:'var(--kt-blob-scale)' }}>
+            <div style={{ position:'absolute', top:'-160px', left:'120px', width:'520px', height:'520px', borderRadius:'50%', background:'radial-gradient(circle at 50% 50%, rgba(16,185,129,.32), rgba(16,185,129,0) 68%)', filter:'blur(30px)', animation:'ktBlob 16s ease-in-out infinite' }}></div>
+            <div style={{ position:'absolute', bottom:'-200px', right:'-80px', width:'560px', height:'560px', borderRadius:'50%', background:'radial-gradient(circle at 50% 50%, rgba(245,158,11,.24), rgba(245,158,11,0) 66%)', filter:'blur(34px)', animation:'ktBlob2 20s ease-in-out infinite' }}></div>
+            <div style={{ position:'absolute', top:'30%', right:'26%', width:'360px', height:'360px', borderRadius:'50%', background:'radial-gradient(circle at 50% 50%, rgba(56,189,248,.18), rgba(56,189,248,0) 70%)', filter:'blur(32px)', animation:'ktBlob 24s ease-in-out infinite' }}></div>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/generador')}
-            className="bg-brand-primary text-white hover:bg-brand-primary-hover px-6 py-3 text-sm font-bold rounded-xl shadow-elevated hover:-translate-y-0.5 transition-all duration-300"
-          >
-            + Nuevo Material
-          </Button>
-        </header>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto scrollbar-none">
-          <div className="p-6 sm:p-10 lg:p-14 w-full max-w-7xl mx-auto flex flex-col gap-10">
-
-            {/* Header info */}
-            <div className="flex flex-col gap-3">
-              <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-ink">Explora tus Temarios</h3>
-              <p className="text-base text-ink-subtle max-w-2xl leading-relaxed">
-                Administra, revisa y exporta todos los contenidos generados con Inteligencia Artificial. Haz clic en cualquier módulo para abrir el visor interactivo.
-              </p>
-            </div>
-
-            {/* Grid of contents */}
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {[1, 2, 3].map((skeleton) => (
-                  <div key={skeleton} className="p-8 h-56 animate-pulse border border-hairline rounded-[24px] bg-canvas shadow-soft flex flex-col gap-4">
-                    <div className="w-1/3 h-4 bg-surface-3 rounded"></div>
-                    <div className="w-3/4 h-6 bg-surface-3 rounded mt-3"></div>
-                    <div className="w-1/2 h-4 bg-surface-3 rounded"></div>
-                  </div>
-                ))}
-              </div>
-            ) : courses.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 px-6 text-center border-2 border-dashed border-hairline rounded-[32px] bg-canvas/50 shadow-soft">
-                <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 text-brand-primary border border-brand-primary/20 flex items-center justify-center mb-6 shadow-sm">
-                  <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <h4 className="text-2xl font-bold text-ink">Sin contenidos generados</h4>
-                <p className="text-sm text-ink-muted max-w-md mt-3 mb-8 leading-relaxed">
-                  El repositorio está vacío. Inicia la experiencia creando tu primer contenido automatizado con Katedra AI.
-                </p>
-                <Button variant="primary" onClick={() => navigate('/generador')} className="bg-brand-primary text-white hover:bg-brand-primary-hover px-8 py-3.5 text-sm font-bold rounded-xl shadow-soft hover:-translate-y-1 transition-all duration-300">
-                  Comenzar Creación
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {courses.map((c) => (
-                  <div
-                    key={c.id}
-                    onClick={() => navigate(`/contenido/${c.id}`)}
-                    className="p-8 border border-hairline rounded-[28px] bg-canvas shadow-soft hover:shadow-illustrative hover:-translate-y-2 transition-all duration-400 flex flex-col justify-between group cursor-pointer relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                    <div className="flex flex-col gap-5">
-                      <div className="flex justify-between items-start">
-                        <span className="text-[10px] font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-sm">
-                          {c.origen || 'AI Generado'}
-                        </span>
-                        <span className="text-[11px] font-bold text-ink-subtle">{c.createdAt ? c.createdAt.split('T')[0] : ''}</span>
-                      </div>
-
-                      <div className="mt-1">
-                        <h4 className="text-xl font-bold text-ink leading-snug mb-2 group-hover:text-brand-primary transition-colors line-clamp-2 tracking-tight">{c.titulo}</h4>
-                        <p className="text-sm font-medium text-ink-muted truncate">{c.asignatura}</p>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-2 text-[10px] font-bold text-ink-subtle border border-hairline group-hover:border-brand-primary/20 transition-colors">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                          Teoría
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-2 text-[10px] font-bold text-ink-subtle border border-hairline group-hover:border-brand-primary/20 transition-colors">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                          Quizzes
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-2 text-[10px] font-bold text-ink-subtle border border-hairline group-hover:border-brand-primary/20 transition-colors">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
-                          Slides
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-hairline flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-semantic-success bg-semantic-success/10 border border-semantic-success/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-semantic-success shadow-[0_0_8px_var(--app-semantic-success)] animate-pulse"></span> Generado
-                      </span>
-                      <span className="text-sm font-bold text-brand-primary flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-                        Abrir Visor
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-          </div>
+          <svg style={{ position:'absolute', inset:'-6%', width:'112%', height:'112%', opacity:'var(--kt-grain-op)', mixBlendMode:'var(--kt-grain-blend)', animation:'ktGrainShift 8s steps(6) infinite' }} xmlns="http://www.w3.org/2000/svg">
+            <filter id="ktnoise"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix></filter>
+            <rect width="100%" height="100%" filter="url(#ktnoise)"></rect>
+          </svg>
         </div>
-      </main>
-    </div>
+
+        {/* SIDEBAR */}
+        <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .32s cubic-bezier(.4,0,.2,1)', overflow:'visible' }}>
+          <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{ position:'absolute', right:'-14px', top:'26px', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'1px solid var(--kt-border)', background:'var(--kt-panel-bg)', borderRadius:'50%', color:'var(--kt-muted)', cursor:'pointer', zIndex:50, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' }}>
+            <ChevronLeft className="kt-collapse-icon" size={16} style={{ transition:'transform .3s' }} />
+          </button>
+          
+          <div className="kt-brand-header" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'22px 20px 20px', position: 'relative', overflow: 'hidden' }}>
+            <div className="kt-brand-logo" style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', display:'grid', placeItems:'center', boxShadow:'0 6px 16px -5px rgba(16,185,129,.6)' }}>
+              <span style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'19px', color:'#fff', letterSpacing:'-1px' }}>K</span>
+            </div>
+            <span className="kt-sidelabel" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.8px', color:'var(--kt-heading)' }}>Katedra</span>
+          </div>
+
+          <div className="kt-menutitle" style={{ padding:'6px 22px 10px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1.4px', textTransform:'uppercase', color:'var(--kt-label)', overflow:'hidden' }}>Menú Principal</div>
+
+          <nav style={{ display:'flex', flexDirection:'column', gap:'4px', padding:'0 12px' }}>
+            <Link to="/usuarios" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/usuarios' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/usuarios' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/usuarios' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/usuarios' ? '#10B981' : 'inherit' }}><UsersIcon size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/usuarios' ? 700 : 600, fontSize:'14px' }}>Usuarios</span>
+            </Link>
+            <Link to="/dashboard" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/dashboard' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/dashboard' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/dashboard' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/dashboard' ? '#10B981' : 'inherit' }}><FolderDot size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/dashboard' ? 700 : 600, fontSize:'14px' }}>Mis Temarios</span>
+            </Link>
+            <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
+            </Link>
+            <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/contenidos' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/contenidos' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/contenidos' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/contenidos' ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
+            </Link>
+          </nav>
+
+          <div style={{ marginTop:'auto', padding:'16px 14px 18px', display:'flex', flexDirection:'column', gap:'12px' }}>
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'10px 12px', borderRadius:'12px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', cursor:'pointer', textAlign:'left', width:'100%' }}>
+              {theme === 'dark' ? <Sun size={18} color="#F59E0B" style={{ flex:'none' }} /> : <Moon size={18} style={{ flex:'none', color:'var(--kt-muted)' }} />}
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px', color:'var(--kt-text)' }}>{theme === 'dark' ? 'Claro' : 'Oscuro'}</span>
+              <span className="kt-sidelabel" style={{ marginLeft:'auto', width:'38px', height:'22px', borderRadius:'20px', position:'relative', flex:'none', transition:'background .25s', background: theme === 'dark' ? '#10B981' : '#CBD5E1' }}>
+                <span style={{ position:'absolute', top:'2px', left:'2px', width:'18px', height:'18px', borderRadius:'50%', background:'#fff', transition:'transform .25s', transform: theme === 'dark' ? 'translateX(16px)' : 'translateX(0)' }}></span>
+              </span>
+            </button>
+            <div className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'6px 8px', overflow:'hidden' }}>
+              <div style={{ width:'38px', height:'38px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,#38BDF8,#2563EB)', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>
+                {getInitial(user?.nombre || user?.email || 'Docente')}
+              </div>
+              <div className="kt-sidelabel" style={{ minWidth:0 }}>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {user?.nombre || user?.email || 'Saul Martinez'}
+                </div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {user?.rol === 'ROLE_ADMIN' ? 'Administrador' : 'Docente'}
+                </div>
+              </div>
+            </div>
+            <button onClick={async () => { await logout(); navigate('/login'); }} className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'11px 12px', borderRadius:'11px', border:'1px solid rgba(244,63,94,.22)', background:'rgba(244,63,94,.08)', color:'#FB7185', cursor:'pointer' }}>
+              <span style={{ flex:'none' }}><LogOut size={18} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', letterSpacing:'.3px' }}>CERRAR SESIÓN</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* MAIN */}
+        <main style={{ position:'relative', zIndex:5, flex:1, minWidth:0, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          {/* Header */}
+          <header className="kt-main-pad" style={{ display:'flex', alignItems:'center', gap:'18px', padding:'26px 32px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+            <div style={{ minWidth:0 }}>
+              <h1 className="kt-headtitle" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'27px', lineHeight:1.15, letterSpacing:'-1.2px', color:'var(--kt-heading)', margin:0 }}>Historial de Creaciones</h1>
+              <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', color:'var(--kt-muted)', margin:'3px 0 0' }}>Contenidos generados recientemente</p>
+            </div>
+            <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'12px' }}>
+              {generations.length > 0 && (
+                <button 
+                  onClick={handleDeleteAll} 
+                  style={{ height:'44px', padding:'0 20px', border:'1px solid #F43F5E', borderRadius:'11px', background:'rgba(244,63,94,0.08)', color:'#F43F5E', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', transition:'all .2s' }}
+                >
+                  Eliminar todo
+                </button>
+              )}
+              <button className="kt-primary" onClick={() => navigate('/generador')} style={{ flex:'none', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:'8px', height:'44px', padding:'0 20px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow:'0 12px 26px -12px rgba(16,185,129,.7)', transition:'transform .18s,box-shadow .25s' }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"></path></svg> Generar Nuevo
+              </button>
+            </div>
+          </header>
+
+          {/* Timeline View */}
+          <div className="kt-main-pad" style={{ flex:1, overflow:'auto', padding:'40px 32px 80px' }}>
+            <div style={{ maxWidth:'900px', margin:'0 auto', position:'relative' }}>
+              {/* Timeline spine */}
+              <div style={{ position:'absolute', top:'10px', bottom:0, left:'28px', width:'2px', background:'linear-gradient(to bottom, rgba(16,185,129,.3), transparent)' }}></div>
+
+              {loading && generations.length === 0 ? (
+                 <div style={{ padding:'40px 60px', color:'var(--kt-muted)', fontFamily:"'Manrope'", fontSize:'14px' }}>Cargando línea de tiempo...</div>
+              ) : generations.length === 0 ? (
+                 <div style={{ padding:'40px 60px', color:'var(--kt-faint)', fontFamily:"'Manrope'", fontSize:'14px' }}>No hay contenidos generados todavía.</div>
+              ) : (
+                 generations.map((g, idx) => {
+                   const hasTeoria = !!(g.contenido?.teoria || (g.piezas && g.piezas.includes('teoria')));
+                   const hasQuizzes = !!(g.contenido?.evaluacion || (g.piezas && g.piezas.includes('evaluacion')));
+                   const hasSlides = !!(g.contenido?.diapositivas || (g.piezas && g.piezas.includes('diapositivas')));
+
+                   let completedPieces = 0;
+                   if (hasTeoria) completedPieces++;
+                   if (hasQuizzes) completedPieces++;
+                   if (hasSlides) completedPieces++;
+                   
+                   const pct = Math.round((completedPieces / 3) * 100);
+                   const isExpanded = expandedGenId === g.id;
+                   
+                   return (
+                     <div key={g.id} style={{ position:'relative', paddingLeft:'74px', marginBottom:'32px', display:'flex', flexDirection:'column', gap:'12px' }}>
+                       
+                       {/* Timeline node */}
+                       <div style={{ position:'absolute', left:'17px', top:'24px', width:'24px', height:'24px', borderRadius:'50%', background:'var(--kt-bg1)', border:'2px solid #10B981', boxShadow:'0 0 0 4px var(--kt-bg2)', display:'grid', placeItems:'center', zIndex:2 }}>
+                         <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#10B981' }}></div>
+                       </div>
+
+                       <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                         <span style={{ fontFamily:"'Manrope'", fontWeight:800, fontSize:'12px', letterSpacing:'1px', color:'var(--kt-muted)', textTransform:'uppercase' }}>{g.createdAt ? new Date(g.createdAt).toLocaleDateString('es-ES', { month:'long', day:'numeric', year:'numeric' }) : 'Reciente'}</span>
+                         <span style={{ padding:'3px 10px', borderRadius:'20px', background:'rgba(16,185,129,.12)', border:'1px solid rgba(16,185,129,.2)', fontFamily:"'Manrope'", fontWeight:800, fontSize:'9.5px', letterSpacing:'1.2px', textTransform:'uppercase', color:'#10B981' }}>Generado con IA ({g.modelo?.toUpperCase()})</span>
+                       </div>
+
+                       <div className="kt-scard" data-status={pct === 100 ? 'Completado' : 'En proceso'} style={{ display:'flex', flexDirection:'column', background:'var(--kt-card-bg)', border:'1px solid var(--kt-panel-border)', borderRadius:'16px', padding:'24px', backdropFilter:'blur(12px)', cursor:'pointer' }} onClick={() => setExpandedGenId(isExpanded ? null : g.id)}>
+                         
+                         <div style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
+                           <div style={{ width:'52px', height:'52px', flex:'none', borderRadius:'14px', background:'var(--kt-chip-bg)', display:'grid', placeItems:'center', color:'var(--kt-heading)', border:'1px solid var(--kt-chip-border)' }}>
+                             <FolderDot size={24} strokeWidth={1.5} />
+                           </div>
+                           
+                           <div style={{ flex:1, minWidth:0 }}>
+                             <h3 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'20px', letterSpacing:'-.6px', color:'var(--kt-heading)', margin:'0 0 4px 0' }}>{g.temarioTitulo}</h3>
+                             <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-muted)', margin:0 }}>{g.asignatura}</p>
+                           </div>
+
+                           <div style={{ flex:'none', display:'flex', alignItems:'center', gap:'10px' }} onClick={(e) => e.stopPropagation()}>
+                             <button 
+                               onClick={() => navigate(`/contenido/${g.temarioId}`)}
+                               style={{ display:'flex', alignItems:'center', gap:'6px', height:'32px', padding:'0 12px', border:'1px solid var(--kt-chip-border)', borderRadius:'8px', background:'var(--kt-chip-bg)', color:'var(--kt-heading)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', transition:'background .2s' }}
+                             >
+                               <BookOpen size={13} />
+                               Ver Temario
+                             </button>
+                             <button 
+                               onClick={() => handleDelete(g.id)}
+                               aria-label="Eliminar versión"
+                               style={{ background:'rgba(244,63,94,0.08)', border:'1px solid rgba(244,63,94,0.2)', color:'#F43F5E', width:'32px', height:'32px', borderRadius:'8px', cursor:'pointer', display:'grid', placeItems:'center' }}
+                             >
+                               <Trash2 size={15} />
+                             </button>
+                           </div>
+                         </div>
+
+                         <div style={{ marginTop:'20px', paddingTop:'16px', borderTop:'1px solid var(--kt-border-soft)', display:'flex', alignItems:'center', gap:'20px', flexWrap:'wrap' }}>
+                           
+                           <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                             <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12px', color:'var(--kt-faint)' }}>Recursos Generados:</span>
+                             <div style={{ display:'flex', gap:'6px' }}>
+                               {hasTeoria && <span style={{ padding:'4px 10px', borderRadius:'8px', background:'rgba(16,185,129,.1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#10B981' }}>Teoría</span>}
+                               {hasQuizzes && <span style={{ padding:'4px 10px', borderRadius:'8px', background:'rgba(16,185,129,.1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#10B981' }}>Quizzes</span>}
+                               {hasSlides && <span style={{ padding:'4px 10px', borderRadius:'8px', background:'rgba(16,185,129,.1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#10B981' }}>Diapositivas</span>}
+                               {!hasTeoria && !hasQuizzes && !hasSlides && <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12px', color:'var(--kt-muted)' }}>Ninguno todavía</span>}
+                             </div>
+                           </div>
+
+                           <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'10px', width:'200px' }}>
+                             <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11px', color:'var(--kt-faint)' }}>{pct}% Generación de la IA</div>
+                             <div style={{ flex:1, height:'4px', borderRadius:'4px', background:'var(--kt-chip-bg)', overflow:'hidden' }}>
+                               <div style={{ height:'100%', width:`${pct}%`, background: pct === 100 ? '#10B981' : '#38BDF8', borderRadius:'4px', transition:'width .4s ease' }}></div>
+                             </div>
+                           </div>
+                           
+                         </div>
+
+                         {/* Version Contents Expansion */}
+                         {isExpanded && (
+                           <div style={{ marginTop:'20px', paddingTop:'20px', borderTop:'1px solid var(--kt-border-soft)', display:'flex', flexDirection:'column', gap:'16px' }} onClick={(e) => e.stopPropagation()}>
+                             
+                             {hasTeoria && (
+                               <div>
+                                 <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'14px', color:'var(--kt-heading)', margin:'0 0 8px' }}>Teoría Docente</h4>
+                                 <div className="kt-scroller" style={{ maxHeight:'200px', overflowY:'auto', background:'var(--kt-input-bg)', border:'1px solid var(--kt-border-soft)', borderRadius:'8px', padding:'12px', fontFamily:"'Manrope'", fontSize:'13px', color:'var(--kt-text)', whiteSpace:'pre-wrap', lineHeight: 1.5 }}>
+                                   {g.contenido?.teoria || 'No generada'}
+                                 </div>
+                               </div>
+                             )}
+
+                             {hasQuizzes && (
+                               <div>
+                                 <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'14px', color:'var(--kt-heading)', margin:'0 0 8px' }}>Examen / Evaluación ({g.contenido?.evaluacion?.length || 0} preguntas)</h4>
+                                 <div className="kt-scroller" style={{ maxHeight:'200px', overflowY:'auto', background:'var(--kt-input-bg)', border:'1px solid var(--kt-border-soft)', borderRadius:'8px', padding:'12px', display:'flex', flexDirection:'column', gap:'10px' }}>
+                                   {g.contenido?.evaluacion && Array.isArray(g.contenido.evaluacion) ? (
+                                     g.contenido.evaluacion.map((q, qIdx) => (
+                                       <div key={qIdx} style={{ fontSize:'13px', color:'var(--kt-text)', lineHeight: 1.4 }}>
+                                         <strong>P{qIdx+1}:</strong> {q.pregunta || q.texto}
+                                       </div>
+                                     ))
+                                   ) : (
+                                     <div style={{ fontSize:'13px', color:'var(--kt-muted)' }}>No hay preguntas disponibles</div>
+                                   )}
+                                 </div>
+                               </div>
+                             )}
+
+                             {hasSlides && (
+                               <div>
+                                 <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'14px', color:'var(--kt-heading)', margin:'0 0 8px' }}>Diapositivas ({g.contenido?.diapositivas?.length || 0} láminas)</h4>
+                                 <div className="kt-scroller" style={{ maxHeight:'200px', overflowY:'auto', background:'var(--kt-input-bg)', border:'1px solid var(--kt-border-soft)', borderRadius:'8px', padding:'12px', display:'flex', flexDirection:'column', gap:'6px' }}>
+                                   {g.contenido?.diapositivas && Array.isArray(g.contenido.diapositivas) ? (
+                                     g.contenido.diapositivas.map((s, sIdx) => (
+                                       <div key={sIdx} style={{ fontSize:'13px', color:'var(--kt-text)', lineHeight: 1.4 }}>
+                                         <strong>L{sIdx+1}:</strong> {s.titulo}
+                                       </div>
+                                     ))
+                                   ) : (
+                                     <div style={{ fontSize:'13px', color:'var(--kt-muted)' }}>No hay diapositivas disponibles</div>
+                                   )}
+                                 </div>
+                               </div>
+                             )}
+
+                           </div>
+                         )}
+
+                       </div>
+                     </div>
+                   );
+                 })
+              )}
+
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
   );
 }

@@ -208,8 +208,15 @@ export default function Dashboard() {
       notify('error', 'Falta el archivo', 'Selecciona un archivo para cargar el temario.');
       return;
     }
+
     if ((tab === 'web' || tab === 'drive') && !editId && !url.trim()) {
       notify('error', 'Falta la URL', 'Ingresa una URL para cargar el temario.');
+      return;
+    }
+
+    const gradoAcademico = buildGradoAcademico();
+    if (!gradoAcademico) {
+      notify('error', 'Falta el grado académico', 'Selecciona un grado académico.');
       return;
     }
 
@@ -229,7 +236,6 @@ export default function Dashboard() {
     setModalOpen(false);
     setGenerating(true);
 
-    const gradoAcademico = buildGradoAcademico();
     const origenMap = { file: 'PDF', web: 'Enlace Web', drive: 'Google Drive', manual: 'Manual' };
     const payload = {
       titulo,
@@ -472,13 +478,13 @@ export default function Dashboard() {
               <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/dashboard' ? '#10B981' : 'inherit' }}><FolderDot size={20} /></span>
               <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/dashboard' ? 700 : 600, fontSize:'14px' }}>Mis Temarios</span>
             </Link>
-            <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/contenidos' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/contenidos' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/contenidos' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/contenidos' ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
-            </Link>
             <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
               <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
               <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
+            </Link>
+            <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/contenidos' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/contenidos' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/contenidos' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/contenidos' ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
             </Link>
           </nav>
 
@@ -787,32 +793,33 @@ export default function Dashboard() {
             </div>
 
             <div style={{ marginTop:'16px' }}>
-                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>GRADO ACADÉMICO</div>
-                <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', marginBottom: gradosSeleccionados.includes(gradoOtroKey) ? '10px' : '16px' }}>
-                  {[...gradoOptions, gradoOtroKey].map(option => {
-                    const selected = gradosSeleccionados.includes(option);
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => toggleGrado(option)}
-                        style={{ height:'36px', padding:'0 13px', border:`1.5px solid ${selected ? 'rgba(16,185,129,.55)' : 'var(--kt-input-border)'}`, borderRadius:'999px', background:selected ? 'rgba(16,185,129,.14)' : 'var(--kt-input-bg)', color:selected ? '#10B981' : 'var(--kt-heading)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'12.5px', transition:'background .18s,border-color .18s,color .18s' }}
-                      >
-                        {option}
-                      </button>
-                    );
-                  })}
-                </div>
-                {gradosSeleccionados.includes(gradoOtroKey) && (
-                  <input value={gradoOtro} onChange={e => setGradoOtro(e.target.value)} placeholder="Ej. Diplomado de programación" style={{ width:'100%', height:'46px', padding:'0 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', marginBottom:'16px' }} />
-                )}
-              {(tab === 'manual' || editId) && (
-                <>
-                  <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>DESCRIPCIÓN (OPCIONAL)</div>
-                  <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3} placeholder="Objetivo general del temario…" style={{ width:'100%', padding:'12px 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', resize:'vertical' }}></textarea>
-                </>
-              )}
+              <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>GRADO ACADÉMICO *</div>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', marginBottom: gradosSeleccionados.includes(gradoOtroKey) ? '10px' : '16px' }}>
+                {[...gradoOptions, gradoOtroKey].map(option => {
+                  const selected = gradosSeleccionados.includes(option);
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => toggleGrado(option)}
+                      style={{ height:'36px', padding:'0 13px', border:`1.5px solid ${selected ? 'rgba(16,185,129,.55)' : 'var(--kt-input-border)'}`, borderRadius:'999px', background:selected ? 'rgba(16,185,129,.14)' : 'var(--kt-input-bg)', color:selected ? '#10B981' : 'var(--kt-heading)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'12.5px', transition:'background .18s,border-color .18s,color .18s' }}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
               </div>
+              {gradosSeleccionados.includes(gradoOtroKey) && (
+                <input value={gradoOtro} onChange={e => setGradoOtro(e.target.value)} placeholder="Ej. Diplomado de programación" style={{ width:'100%', height:'46px', padding:'0 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', marginBottom:'16px' }} />
+              )}
+            </div>
+
+            {(tab === 'manual' || editId) && (
+              <div style={{ marginTop:'16px' }}>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>DESCRIPCIÓN (OPCIONAL)</div>
+                <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3} placeholder="Objetivo general del temario…" style={{ width:'100%', padding:'12px 14px', border:'1.5px solid var(--kt-input-border)', borderRadius:'11px', background:'var(--kt-input-bg)', color:'var(--kt-heading)', fontWeight:500, fontSize:'14px', resize:'vertical' }}></textarea>
+              </div>
+            )}
 
             <div style={{ marginTop:'16px' }}>
               <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'8px' }}>SUBTEMAS A GENERAR</div>
