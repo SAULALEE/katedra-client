@@ -10,9 +10,8 @@ export const PIEZAS = [
 ];
 
 export const MODELOS = [
-  { id: 'flash', label: 'Tutor', hint: 'Rápido y económico, ideal para tareas sencillas' },
-  { id: 'pro', label: 'Maestro', hint: 'Profundidad equilibrada y mayor razonamiento analítico' },
-  { id: 'max', label: 'Catedrático', hint: 'El modelo más potente de Katedra, ideal para problemas matemáticos y lógica' }
+  { id: 'basico', label: 'Básico', hint: 'Rápido y económico, ideal para tareas sencillas' },
+  { id: 'avanzado', label: 'Avanzado', hint: 'Mayor profundidad y razonamiento analítico' }
 ];
 
 /** Maps a response tier key to its display name. */
@@ -35,7 +34,7 @@ export const useGenerator = () => {
   const initialTemarioId = searchParams.get('temarioId') || '';
   const [temarioId, setTemarioIdState] = useState(initialTemarioId);
   const [piezas, setPiezas] = useState([]);
-  const [modelo, setModelo] = useState('flash');
+  const [modelo, setModelo] = useState('basico');
 
   // Existing material of the selected temario (null = nothing generated yet)
   const [contenidoExistente, setContenidoExistente] = useState(null);

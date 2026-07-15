@@ -579,7 +579,7 @@ export default function Generator() {
                       <Settings size={18} style={{ color:'var(--kt-muted)' }}/> Configuración
                     </h2>
                     <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', marginTop:'2px' }}>
-                      {temarioSeleccionado?.titulo || 'Sin temario'} • {piezas.length} piezas • {MODELOS.find(m => m.id === modelo)?.label || 'Flash'}
+                      {temarioSeleccionado?.titulo || 'Sin temario'} • {piezas.length} piezas • {MODELOS.find(m => m.id === modelo)?.label || 'Básico'}
                     </div>
                   </div>
                 </div>

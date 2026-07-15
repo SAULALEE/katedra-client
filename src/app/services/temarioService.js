@@ -1,4 +1,4 @@
-import api from './api';
+import api from './api.js';
 
 
 /**
@@ -22,10 +22,38 @@ export const getTemarios = async () => {
  */
 export const crearTemarioRequest = async (temarioData) => {
   try {
-    const response = await api.post('/temarios', temarioData);
+    const { titulo, descripcion, gradoAcademico, asignatura } = temarioData;
+    const response = await api.post('/temarios', { titulo, descripcion, gradoAcademico, asignatura });
     return response.data;
   } catch (error) {
-    throw new Error('Error al guardar el temario', { cause: error });
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al guardar el temario', { cause: error });
+  }
+};
+
+export const getTemarioStats = async () => {
+  try {
+    const response = await api.get('/temarios/estadisticas');
+    return response.data;
+  } catch (error) {
+    throw new Error('Error al obtener estadísticas de temarios', { cause: error });
+  }
+};
+
+export const eliminarTemarioRequest = async (id) => {
+  try {
+    await api.delete(`/temarios/${id}`);
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Error al eliminar el temario', { cause: error });
+  }
+};
+
+export const actualizarTemarioRequest = async (id, temarioData) => {
+  try {
+    const { titulo, descripcion, gradoAcademico, asignatura } = temarioData;
+    const response = await api.put(`/temarios/${id}`, { titulo, descripcion, gradoAcademico, asignatura });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Error al actualizar el temario', { cause: error });
   }
 };
 export const cargarTemarioArchivoRequest = async ({ file, titulo, asignatura, gradoAcademico }) => {
@@ -39,27 +67,27 @@ export const cargarTemarioArchivoRequest = async ({ file, titulo, asignatura, gr
     const response = await api.post('/temarios/cargar/archivo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-    return response.data;
+    return response.data.temario || response.data;
   } catch (error) {
-    throw new Error('Error al cargar el archivo del temario', { cause: error });
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al cargar el archivo del temario', { cause: error });
   }
 };
 
 export const cargarTemarioUrlRequest = async ({ url, titulo, asignatura, gradoAcademico }) => {
   try {
     const response = await api.post('/temarios/cargar/url', { url, titulo, asignatura, gradoAcademico });
-    return response.data;
+    return response.data.temario || response.data;
   } catch (error) {
-    throw new Error('Error al cargar el temario desde URL', { cause: error });
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al cargar el temario desde URL', { cause: error });
   }
 };
 
 export const cargarTemarioDriveRequest = async ({ url, titulo, asignatura, gradoAcademico }) => {
   try {
     const response = await api.post('/temarios/cargar/drive', { url, titulo, asignatura, gradoAcademico });
-    return response.data;
+    return response.data.temario || response.data;
   } catch (error) {
-    throw new Error('Error al cargar el temario desde Drive', { cause: error });
+    throw new Error(error.response?.data?.message || 'Error al cargar el temario desde Drive', { cause: error });
   }
 };
 
@@ -75,14 +103,14 @@ export const cargarTemarioDriveRequest = async ({ url, titulo, asignatura, grado
  * @param {string} id - the temario UUID
  * @param {object} options
  * @param {string[]} options.piezas - subset of ['teoria','evaluacion','diapositivas']
- * @param {string} options.modelo - 'flash' (Tutor) | 'pro' (Maestro) | 'max' (Catedrático)
+ * @param {string} options.modelo - 'basico' | 'avanzado'
  */
 export const generarMaterialParaTemario = async (id, { piezas, modelo }) => {
   try {
     const response = await api.post(`/temarios/${id}/generar-material`, { piezas, modelo });
     return response.data;
   } catch (error) {
-    throw new Error('Error al generar material con IA', { cause: error });
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al generar material con IA', { cause: error });
   }
 };
 

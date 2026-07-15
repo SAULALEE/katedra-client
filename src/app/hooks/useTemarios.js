@@ -10,9 +10,13 @@ export const useTemarios = () => {
     courses,
     loading,
     error,
+    aiCalls,
     fetchCourses,
+    fetchStats,
     crearTemario,
-    cargarTemario
+    cargarTemario,
+    updateTemario,
+    deleteTemario
   } = useTemarioStore();
 
   // Load courses on component mount if empty
@@ -22,12 +26,19 @@ export const useTemarios = () => {
     }
   }, [courses.length, fetchCourses]);
 
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   return {
     courses,
     loading,
     error,
+    aiCalls,
     refetchCourses: fetchCourses,
     crearTemario,
-    cargarTemario
+    cargarTemario,
+    updateTemario,
+    deleteTemario
   };
 };

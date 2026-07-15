@@ -20,7 +20,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { courses, loading, error, crearTemario, cargarTemario, updateTemario, deleteTemario } = useTemarios();
+  const { courses, loading, error, aiCalls, crearTemario, cargarTemario, updateTemario, deleteTemario } = useTemarios();
 
   const [theme, setTheme] = useState('dark');
   const [collapsed, setCollapsed] = useState(false);
@@ -193,8 +193,12 @@ export default function Dashboard() {
   const handleDelete = async (e, id, name) => {
     e.stopPropagation();
     if (deleteTemario) {
-      await deleteTemario(id);
-      notify('error', 'Temario eliminado', `${name} fue removido.`);
+      const result = await deleteTemario(id);
+      if (result.success) {
+        notify('success', 'Temario eliminado', `${name} fue removido.`);
+      } else {
+        notify('error', 'No se pudo eliminar', result.error);
+      }
     }
   };
 
@@ -224,11 +228,23 @@ export default function Dashboard() {
 
     if (editId) {
       if (updateTemario) {
-        await updateTemario(editId, { titulo, asignatura, gradoAcademico: buildGradoAcademico(), temas: parseInt(subtemas) });
+        const result = await updateTemario(editId, {
+          titulo,
+          descripcion: desc,
+          asignatura,
+          gradoAcademico
+        });
+        setIsProcessing(false);
+        if (result.success) {
+          setModalOpen(false);
+          notify('success', 'Temario actualizado', `${titulo} fue modificado.`);
+        } else {
+          notify('error', 'No se pudo actualizar', result.error);
+        }
+        return;
       }
       setIsProcessing(false);
-      setModalOpen(false);
-      notify('success', 'Temario actualizado', `${titulo} fue modificado.`);
+      notify('error', 'No se pudo actualizar', 'El flujo de edición no está disponible.');
       return;
     }
 
@@ -247,24 +263,24 @@ export default function Dashboard() {
       detalleOrigen: tab === 'file' || tab === 'drive' ? fileName : tab === 'web' ? url : ''
     };
 
-    let saved = false;
+    let result = { success: false };
     if (tab === 'file' && cargarTemario) {
-      saved = await cargarTemario('archivo', { file: selectedFile, titulo, asignatura, gradoAcademico });
+      result = await cargarTemario('archivo', { file: selectedFile, titulo, asignatura, gradoAcademico });
     } else if (tab === 'web' && cargarTemario) {
-      saved = await cargarTemario('url', { url, titulo, asignatura, gradoAcademico });
+      result = await cargarTemario('url', { url, titulo, asignatura, gradoAcademico });
     } else if (tab === 'drive' && cargarTemario) {
-      saved = await cargarTemario('drive', { url, titulo, asignatura, gradoAcademico });
+      result = await cargarTemario('drive', { url, titulo, asignatura, gradoAcademico });
     } else if (crearTemario) {
-      saved = await crearTemario(payload);
+      result = await crearTemario(payload);
     }
     
     // Simulate generation time if needed, but crearTemario should await
     setGenerating(false);
     setIsProcessing(false);
-    if (saved) {
+    if (result.success) {
       notify('success', 'Temario generado', `${titulo} se estructuró con IA (${subtemas} módulos).`);
     } else {
-      notify('error', 'No se pudo crear', 'Revisa los datos e intenta nuevamente.');
+      notify('error', 'No se pudo crear', result.error || 'Revisa los datos e intenta nuevamente.');
     }
   };
 
@@ -612,7 +628,7 @@ export default function Dashboard() {
                     <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1.2px', textTransform:'uppercase', color:'var(--kt-label)' }}>Llamadas a IA</div>
                   </div>
                   <div style={{ display:'flex', alignItems:'baseline', gap:'8px' }}>
-                    <span style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'32px', letterSpacing:'-1.4px', color:'var(--kt-heading)' }}>116</span>
+                    <span style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'32px', letterSpacing:'-1.4px', color:'var(--kt-heading)' }}>{aiCalls}</span>
                   </div>
                   <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', alignSelf:'flex-start', padding:'3px 9px', borderRadius:'8px', background:'rgba(245,158,11,.14)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#B45309' }}>✦ Ilimitado Premium</div>
                 </div>
