@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTemarios } from '../hooks/useTemarios';
+import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
+import { agruparTemariosPorAsignatura } from '../utils/asignaturas';
 import { 
   Users as UsersIcon, 
   FolderDot, 
@@ -32,6 +34,7 @@ export default function Dashboard() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [toasts, setToasts] = useState([]);
+  const [asignaturaActiva, setAsignaturaActiva] = useState(null);
 
   // Form fields
   const [titulo, setTitulo] = useState('');
@@ -289,6 +292,10 @@ export default function Dashboard() {
     return Math.round((done / total) * 100);
   };
 
+  const asignaturas = agruparTemariosPorAsignatura(courses);
+  const asignaturaSeleccionada = asignaturas.find(({ nombre }) => nombre === asignaturaActiva);
+  const temariosVisibles = asignaturaSeleccionada?.temarios || [];
+
   return (
     <>
       <style>{`
@@ -486,10 +493,12 @@ export default function Dashboard() {
           <div className="kt-menutitle" style={{ padding:'6px 22px 10px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1.4px', textTransform:'uppercase', color:'var(--kt-label)', overflow:'hidden' }}>Menú Principal</div>
 
           <nav style={{ display:'flex', flexDirection:'column', gap:'4px', padding:'0 12px' }}>
-            <Link to="/usuarios" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/usuarios' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/usuarios' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/usuarios' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/usuarios' ? '#10B981' : 'inherit' }}><UsersIcon size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/usuarios' ? 700 : 600, fontSize:'14px' }}>Usuarios</span>
-            </Link>
+            {isAdmin(user) && (
+              <Link to="/usuarios" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/usuarios' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/usuarios' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/usuarios' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+                <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/usuarios' ? '#10B981' : 'inherit' }}><UsersIcon size={20} /></span>
+                <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/usuarios' ? 700 : 600, fontSize:'14px' }}>Usuarios</span>
+              </Link>
+            )}
             <Link to="/dashboard" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/dashboard' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/dashboard' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/dashboard' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
               <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/dashboard' ? '#10B981' : 'inherit' }}><FolderDot size={20} /></span>
               <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/dashboard' ? 700 : 600, fontSize:'14px' }}>Mis Temarios</span>
@@ -521,7 +530,7 @@ export default function Dashboard() {
                   {user?.nombre || user?.email || 'Saul Martinez'}
                 </div>
                 <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                  {user?.rol === 'ROLE_ADMIN' ? 'Administrador' : 'Docente'}
+                  {formatRoleDisplay(user?.rol)}
                 </div>
               </div>
             </div>
@@ -636,8 +645,17 @@ export default function Dashboard() {
 
               {/* SECTION HEADING */}
               <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'16px' }}>
-                <h2 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'17px', letterSpacing:'-.5px', color:'var(--kt-heading)', margin:0 }}>Biblioteca de Temarios</h2>
-                <span style={{ padding:'3px 10px', borderRadius:'20px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'var(--kt-muted)' }}>{courses.length}</span>
+                {asignaturaSeleccionada && (
+                  <button className="kt-iconbtn" onClick={() => setAsignaturaActiva(null)} aria-label="Volver a asignaturas" style={{ width:'32px', height:'32px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer' }}>
+                    <ChevronLeft size={17} />
+                  </button>
+                )}
+                <h2 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'17px', letterSpacing:'-.5px', color:'var(--kt-heading)', margin:0 }}>
+                  {asignaturaSeleccionada ? asignaturaSeleccionada.nombre : 'Biblioteca de Asignaturas'}
+                </h2>
+                <span style={{ padding:'3px 10px', borderRadius:'20px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'var(--kt-muted)' }}>
+                  {asignaturaSeleccionada ? temariosVisibles.length : asignaturas.length}
+                </span>
               </div>
 
               {/* CARD GRID */}
@@ -659,7 +677,25 @@ export default function Dashboard() {
                    <div style={{ padding:'40px', textAlign:'center', color:'var(--kt-muted)' }}>Cargando temarios...</div>
                 )}
 
-                {courses.map(c => {
+                {!asignaturaSeleccionada && asignaturas.map((grupo) => (
+                  <div key={grupo.nombre} className="kt-scard" data-status="Activo" style={{ display:'flex', flexDirection:'column', padding:'20px', minHeight:'230px', background:'var(--kt-card-bg)', border:'1px solid var(--kt-panel-border)', borderRadius:'16px', backdropFilter:'blur(12px)' }}>
+                    <div className="kt-accentbar" style={{ position:'absolute', top:0, left:0, right:0, height:'4px' }}></div>
+                    <div style={{ display:'flex', alignItems:'flex-start', gap:'12px', marginBottom:'16px' }}>
+                      <div className="kt-cardicon" style={{ width:'42px', height:'42px', flex:'none', borderRadius:'12px', display:'grid', placeItems:'center' }}><FolderDot size={21} /></div>
+                      <span className="kt-statuspill" style={{ marginLeft:'auto', display:'inline-flex', alignItems:'center', gap:'6px', padding:'5px 11px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.4px' }}>
+                        <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'currentColor' }}></span>Asignatura
+                      </span>
+                    </div>
+                    <div style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'17px', letterSpacing:'-.5px', color:'var(--kt-heading)', lineHeight:1.25 }}>{grupo.nombre}</div>
+                    <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', marginTop:'3px' }}>{grupo.temarios.length} {grupo.temarios.length === 1 ? 'temario' : 'temarios'}</div>
+                    <div style={{ marginTop:'auto', display:'flex', alignItems:'center', paddingTop:'14px', borderTop:'1px solid var(--kt-border-soft)' }}>
+                      <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12px', color:'var(--kt-faint)' }}>{grupo.totalTemas} subtemas</span>
+                      <button className="kt-scard-open" onClick={() => setAsignaturaActiva(grupo.nombre)} style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'6px', height:'32px', padding:'0 13px', border:'none', borderRadius:'9px', background:'rgba(var(--sc-rgb),.14)', color:'var(--sc)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', transition:'gap .2s' }}>Abrir <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+                    </div>
+                  </div>
+                ))}
+
+                {asignaturaSeleccionada && temariosVisibles.map(c => {
                   const done = c.done || c.temas || 6;
                   const total = c.temas || 6;
                   const pct = calculatePct(done, total);

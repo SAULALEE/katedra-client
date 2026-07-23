@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { getDefaultRoute } from '../utils/roleUtils';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const { handleOAuthCallback, error } = useAuth();
+  const { handleOAuthCallback, user, error } = useAuth();
 
   useEffect(() => {
     const success = handleOAuthCallback();
 
     if (success) {
-      navigate('/dashboard', { replace: true });
+      navigate(getDefaultRoute(user), { replace: true });
       return;
     }
 
@@ -18,7 +19,7 @@ export default function AuthCallback() {
       replace: true,
       state: { message: error || 'No se pudo completar el inicio de sesion social.' }
     });
-  }, [handleOAuthCallback, navigate, error]);
+  }, [handleOAuthCallback, user, navigate, error]);
 
   return (
     <div className="w-full min-h-screen bg-canvas text-ink flex items-center justify-center">

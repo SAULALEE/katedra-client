@@ -18,7 +18,7 @@ const normalizeAuthResponse = (data = {}) => {
   const nombre = usuario.nombre || usuario.name || data.nombre || 'Usuario Katedra';
   const email = usuario.email || data.email || '';
   const id = usuario.id || data.id || email || `auth-${Date.now()}`;
-  const rol = usuario.rol || usuario.role || data.rol || data.role || 'ROLE_USER';
+  const rol = usuario.rol || usuario.role || data.rol || data.role || 'ROLE_PROFESOR';
 
   return {
     user: {
@@ -73,7 +73,7 @@ export const buildSessionFromToken = (token) => {
     payload?.authorities?.[0] ||
     payload?.roles?.[0] ||
     payload?.usuario?.rol ||
-    'ROLE_USER';
+    'ROLE_PROFESOR';
   const id =
     payload?.id ||
     payload?.userId ||

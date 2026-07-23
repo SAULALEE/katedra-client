@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getContenidoTemario, enviarMensajeAsistente } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAuth } from '../hooks/useAuth';
+import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
@@ -385,10 +386,12 @@ export default function ContentViewer() {
           </div>
           <div className="kt-menutitle" style={{padding:'6px 22px 10px',fontFamily:"'Manrope'",fontWeight:700,fontSize:'10px',letterSpacing:'1.4px',textTransform:'uppercase',color:'var(--kt-label)',transition:'opacity .2s'}}>Menú Principal</div>
           <nav style={{display:'flex',flexDirection:'column',gap:'4px',padding:'0 12px'}}>
-            <Link to="/usuarios" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
-              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><UsersIcon size={19} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Usuarios</span>
-            </Link>
+            {isAdmin(user) && (
+              <Link to="/usuarios" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
+                <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><UsersIcon size={19} /></span>
+                <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Usuarios</span>
+              </Link>
+            )}
             <Link to="/dashboard" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
               <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><FolderDot size={19} /></span>
               <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Mis Temarios</span>
@@ -416,7 +419,7 @@ export default function ContentViewer() {
               <div style={{width:'38px',height:'38px',flex:'none',borderRadius:'11px',background:'linear-gradient(150deg,#38BDF8,#2563EB)',display:'grid',placeItems:'center',fontFamily:"'Manrope'",fontWeight:800,fontSize:'13px',color:'#fff'}}>{getInitial(user?.nombre || user?.email || 'Docente')}</div>
               <div className="kt-sidelabel" style={{minWidth:0}}>
                 <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',color:'var(--kt-heading)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{user?.nombre || user?.email || 'Docente'}</div>
-                <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'11px',color:'var(--kt-muted)'}}>{user?.rol === 'ROLE_ADMIN' ? 'Administrador' : 'Docente'}</div>
+                <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'11px',color:'var(--kt-muted)'}}>{formatRoleDisplay(user?.rol)}</div>
               </div>
             </div>
             <button onClick={async () => { await logout(); navigate('/login'); }} className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'11px',padding:'11px 12px',borderRadius:'11px',border:'1px solid rgba(244,63,94,.22)',background:'rgba(244,63,94,.08)',color:'#FB7185',cursor:'pointer'}}>

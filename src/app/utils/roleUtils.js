@@ -20,11 +20,20 @@ export const isAdmin = (user) => {
   return false;
 };
 
+export const isProfesor = (user) => {
+  return !isAdmin(user);
+};
+
+export const getDefaultRoute = (user) => {
+  return isAdmin(user) ? '/usuarios' : '/dashboard';
+};
+
 export const formatRoleDisplay = (roleCode) => {
   const roleMap = {
     'ROLE_ADMIN': 'Administrador',
-    'ROLE_PROFESOR': 'Profesor',
-    'ROLE_USER': 'Usuario Normal'
+    'ROLE_PROFESOR': 'Profesor'
   };
-  return roleMap[roleCode] || 'Usuario';
+  return roleMap[roleCode] || 'Profesor';
 };
+
+

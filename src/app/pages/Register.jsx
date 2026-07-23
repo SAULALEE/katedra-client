@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { getDefaultRoute } from '../utils/roleUtils';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, isAuthenticated, loading, error, clearError } = useAuth();
+  const { register, isAuthenticated, user, loading, error, clearError } = useAuth();
 
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export default function Register() {
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => { clearError(); }, [clearError]);
-  useEffect(() => { if (isAuthenticated) navigate('/dashboard'); }, [isAuthenticated, navigate]);
+  useEffect(() => { if (isAuthenticated) navigate(getDefaultRoute(user)); }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +46,7 @@ export default function Register() {
 
     const success = await register(email, password, nombre);
     if (success) {
-      navigate('/dashboard');
+      navigate(getDefaultRoute(user));
     }
   };
 

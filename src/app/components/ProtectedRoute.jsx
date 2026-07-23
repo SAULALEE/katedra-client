@@ -1,13 +1,13 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { isAdmin } from '../utils/roleUtils';
+import { isAdmin, getDefaultRoute } from '../utils/roleUtils';
 
 /**
  * Route protection wrapper component.
- * Verifies global authentication state and redirects to login if unauthenticated.
+ * Verifies global authentication state and redirects to the user's role home route if unauthorized.
  */
-export default function ProtectedRoute({ children, adminOnly = false }) {
+export default function ProtectedRoute({ children, allowedRoles, adminOnly = false }) {
   const { user, isAuthenticated, loading } = useAuth();
 
   // If still restoring session or loading credentials
@@ -27,9 +27,13 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && !isAdmin(user)) {
-    return <Navigate to="/dashboard" replace />;
+  const effectiveAllowedRoles = allowedRoles || (adminOnly ? ['ROLE_ADMIN'] : ['ROLE_PROFESOR']);
+  const userRole = isAdmin(user) ? 'ROLE_ADMIN' : 'ROLE_PROFESOR';
+
+  if (!effectiveAllowedRoles.includes(userRole)) {
+    return <Navigate to={getDefaultRoute(user)} replace />;
   }
 
   return children;
 }
+
