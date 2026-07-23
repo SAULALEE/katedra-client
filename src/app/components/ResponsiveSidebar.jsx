@@ -50,7 +50,7 @@ export default function ResponsiveSidebar() {
         </svg>
       )
     }
-  ].filter((item) => item.path !== '/usuarios' || isAdmin(user));
+  ].filter((item) => isAdmin(user) ? item.path === '/usuarios' : item.path !== '/usuarios');
 
   const handleNavigation = (path) => {
     navigate(path);

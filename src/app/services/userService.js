@@ -2,7 +2,7 @@ import api from './api';
 
 const normalizeUser = (user) => ({
   ...user,
-  rol: user.rol || user.role || 'ROLE_USER',
+  rol: user.rol || user.role || 'ROLE_PROFESOR',
   fechaRegistro: user.fechaRegistro || user.createdAt || null,
   estado: user.estado || null
 });

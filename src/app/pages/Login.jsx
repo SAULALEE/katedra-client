@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { getDefaultRoute } from '../utils/roleUtils';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, loading, error, clearError } = useAuth();
+  const { login, isAuthenticated, user, loading, error, clearError } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,7 +15,7 @@ export default function Login() {
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => { clearError(); }, [clearError]);
-  useEffect(() => { if (isAuthenticated) navigate('/dashboard'); }, [isAuthenticated, navigate]);
+  useEffect(() => { if (isAuthenticated) navigate(getDefaultRoute(user)); }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +26,7 @@ export default function Login() {
       return;
     }
     const success = await login(email, password);
-    if (success) navigate('/dashboard');
+    if (success) navigate(getDefaultRoute(user));
   };
 
   return (

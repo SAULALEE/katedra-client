@@ -47,11 +47,11 @@ function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/error" element={<AuthError />} />
 
-        {/* Protected Dashboard Routes */}
+        {/* Protected Academic Routes (ROLE_PROFESOR) */}
         <Route 
           path="/dashboard" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ROLE_PROFESOR']}>
               <Dashboard />
             </ProtectedRoute>
           } 
@@ -59,7 +59,7 @@ function App() {
         <Route 
           path="/generador" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ROLE_PROFESOR']}>
               <Generator />
             </ProtectedRoute>
           } 
@@ -67,7 +67,7 @@ function App() {
         <Route 
           path="/usuarios" 
           element={
-            <ProtectedRoute adminOnly>
+            <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
               <Users />
             </ProtectedRoute>
           } 
@@ -75,7 +75,7 @@ function App() {
         <Route 
           path="/contenido/:id" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ROLE_PROFESOR']}>
               <ContentViewer />
             </ProtectedRoute>
           } 
@@ -83,7 +83,7 @@ function App() {
         <Route 
           path="/contenidos" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ROLE_PROFESOR']}>
               <GeneratedContents />
             </ProtectedRoute>
           } 
