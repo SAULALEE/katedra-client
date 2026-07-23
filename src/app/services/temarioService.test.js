@@ -114,12 +114,12 @@ test('generación envía los modelos flash y pro junto con los conteos seleccion
   }
 });
 
-test('selector de generación ofrece únicamente Básico (flash) y Avanzado (pro)', async () => {
+test('selector de generación ofrece únicamente Tutor (flash) y Catedrático (pro)', async () => {
   const source = await readFile(new URL('../hooks/useGenerator.js', import.meta.url), 'utf8');
   const modelosSource = source.slice(source.indexOf('export const MODELOS'), source.indexOf('export const MODELO_LABELS'));
 
-  assert.match(modelosSource, /id: 'flash', label: 'Básico'/);
-  assert.match(modelosSource, /id: 'pro', label: 'Avanzado'/);
+  assert.match(modelosSource, /id: 'flash', label: 'Tutor'/);
+  assert.match(modelosSource, /id: 'pro', label: 'Catedrático'/);
   assert.doesNotMatch(modelosSource, /id: '(basico|avanzado|max)'/);
 });
 

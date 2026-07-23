@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getContenidoTemario, enviarMensajeAsistente } from '../services/temarioService';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import { getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAuth } from '../hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
@@ -21,27 +21,18 @@ import {
   FileBox,
   MonitorPlay,
   Copy,
-  Download,
-  MessageSquare,
-  Send,
-  Loader2
+  Download
 } from 'lucide-react';
-
-const ASSISTANT_QUICK_ACTIONS = [
-  { id: 'ACORTAR', label: 'Acortar' },
-  { id: 'EXTENDER', label: 'Extender' },
-  { id: 'SIMPLIFICAR', label: 'Simplificar' },
-  { id: 'AGREGAR_EJEMPLO', label: 'Agregar Ejemplo' },
-  { id: 'CORREGIR_REDACCION', label: 'Corregir Redacción' }
-];
 
 export default function ContentViewer() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { courses } = useTemarios();
   const { logout, user } = useAuth();
   
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
+  React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -60,14 +51,6 @@ export default function ContentViewer() {
   const [checkedAnswers, setCheckedAnswers] = useState({});
   const [examChecked, setExamChecked] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-
-  const [assistantOpen, setAssistantOpen] = useState(false);
-  const [assistantMessage, setAssistantMessage] = useState('');
-  const [assistantLoading, setAssistantLoading] = useState(false);
-  // Status-only chat log: the edited theory shows in the panel above, never here.
-  // Each entry: { id, role: 'user' | 'assistant', kind: 'pending' | 'success' | 'error', text }
-  const [assistantMessages, setAssistantMessages] = useState([]);
-  const assistantMessageIdRef = useRef(0);
 
   const course = courses.find(c => c.id === id) || { titulo: 'Temario Generado', asignatura: 'Cargando...' };
 
@@ -160,52 +143,6 @@ export default function ContentViewer() {
     notify('success', 'Copiado', 'El contenido fue copiado al portapapeles.');
   };
 
-  const appendAssistantMessage = (msg) => {
-    assistantMessageIdRef.current += 1;
-    const entry = { id: assistantMessageIdRef.current, ...msg };
-    setAssistantMessages(prev => [...prev, entry]);
-    return entry.id;
-  };
-
-  const updatePendingMessage = (pendingId, patch) => {
-    setAssistantMessages(prev => prev.map(m => (m.id === pendingId ? { ...m, ...patch } : m)));
-  };
-
-  const handleAssistantAction = async (action, text = '') => {
-    const actionLabel = ASSISTANT_QUICK_ACTIONS.find(a => a.id === action)?.label || text;
-    appendAssistantMessage({ role: 'user', kind: 'sent', text: actionLabel });
-    const pendingId = appendAssistantMessage({ role: 'assistant', kind: 'pending', text: 'Generando contenido...' });
-
-    setAssistantLoading(true);
-    try {
-      // No modelo sent: corrections always run on the backend's fast tier so every
-      // response stays within its 10s budget, regardless of what tier generated the theory.
-      const res = await enviarMensajeAsistente({
-        temarioId: id,
-        action,
-        message: text
-      });
-      if (res.corregido) {
-        const data = await getContenidoTemario(id);
-        setContent(data);
-        updatePendingMessage(pendingId, { kind: 'success', text: 'Contenido generado con éxito' });
-        notify('success', 'Teoría actualizada', 'El asistente modificó el contenido con éxito.');
-      } else {
-        const refusalText = res.content || 'El asistente no modificó el texto.';
-        updatePendingMessage(pendingId, { kind: 'error', text: refusalText });
-        notify('warn', 'Atención', refusalText);
-      }
-    } catch (error) {
-      console.error('Error al hablar con el asistente', error);
-      const errorText = error.message || 'No se pudo procesar la solicitud';
-      updatePendingMessage(pendingId, { kind: 'error', text: errorText });
-      notify('error', 'Error', errorText);
-    } finally {
-      setAssistantLoading(false);
-      if (action === 'FREE_CHAT') setAssistantMessage('');
-    }
-  };
-
   const getEvaluationMarkdown = () => {
     if (!content || !content.evaluacion) return '';
     return content.evaluacion.map((q, qIndex) => {
@@ -267,7 +204,6 @@ export default function ContentViewer() {
   @keyframes ktToastOut{to{transform:translateX(130%) scale(.92);opacity:0}}
   @keyframes ktBlink{0%,100%{opacity:1}50%{opacity:0}}
   @keyframes ktFadeUp{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
-  @keyframes ktSpin{100%{transform:rotate(360deg)}}
 
   .kt-nav:hover{background:var(--kt-chip-hover) !important}
   .kt-primary:hover{transform:translateY(-2px);box-shadow:0 16px 34px -12px rgba(16,185,129,.7)}
@@ -375,53 +311,63 @@ export default function ContentViewer() {
         </div>
 
         {/* SIDEBAR */}
-        <aside className="kt-sidebar" style={{position:'relative',zIndex:10,flex:'none',display:'flex',flexDirection:'column',background:'var(--kt-sidebar-bg)',backdropFilter:'blur(14px)',borderRight:'1px solid var(--kt-border)',transition:'width .28s cubic-bezier(.4,0,.2,1)'}}>
-          <div style={{display:'flex',alignItems:'center',gap:'11px',padding:'22px 20px 20px'}}>
-            <div style={{width:'36px',height:'36px',flex:'none',borderRadius:'10px',background:'linear-gradient(150deg,#10B981,#059669)',display:'grid',placeItems:'center',boxShadow:'0 6px 16px -5px rgba(16,185,129,.6)'}}><span style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'19px',color:'#fff',letterSpacing:'-1px'}}>K</span></div>
-            <span className="kt-sidelabel" style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'19px',letterSpacing:'-.8px',color:'var(--kt-heading)'}}>Katedra</span>
-            <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{marginLeft:'auto',width:'28px',height:'28px',display:'grid',placeItems:'center',border:'none',background:'var(--kt-chip-bg)',borderRadius:'8px',color:'var(--kt-muted)',cursor:'pointer'}}>
-              <ChevronLeft className="kt-collapse-icon" size={15} style={{transition:'transform .25s'}} />
-            </button>
+        <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .32s cubic-bezier(.4,0,.2,1)', overflow:'visible' }}>
+          <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{ position:'absolute', right:'-14px', top:'26px', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'1px solid var(--kt-border)', background:'var(--kt-panel-bg)', borderRadius:'50%', color:'var(--kt-muted)', cursor:'pointer', zIndex:50, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' }}>
+            <ChevronLeft className="kt-collapse-icon" size={16} style={{ transition:'transform .3s' }} />
+          </button>
+          
+          <div className="kt-brand-header" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'22px 20px 20px', position: 'relative', overflow: 'hidden' }}>
+            <div className="kt-brand-logo" style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', display:'grid', placeItems:'center', boxShadow:'0 6px 16px -5px rgba(16,185,129,.6)' }}>
+              <span style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'19px', color:'#fff', letterSpacing:'-1px' }}>K</span>
+            </div>
+            <span className="kt-sidelabel" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.8px', color:'var(--kt-heading)' }}>Katedra</span>
           </div>
-          <div className="kt-menutitle" style={{padding:'6px 22px 10px',fontFamily:"'Manrope'",fontWeight:700,fontSize:'10px',letterSpacing:'1.4px',textTransform:'uppercase',color:'var(--kt-label)',transition:'opacity .2s'}}>Menú Principal</div>
-          <nav style={{display:'flex',flexDirection:'column',gap:'4px',padding:'0 12px'}}>
-            <Link to="/usuarios" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
-              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><UsersIcon size={19} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Usuarios</span>
+
+          <div className="kt-menutitle" style={{ padding:'6px 22px 10px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1.4px', textTransform:'uppercase', color:'var(--kt-label)', overflow:'hidden' }}>Menú Principal</div>
+
+          <nav style={{ display:'flex', flexDirection:'column', gap:'4px', padding:'0 12px' }}>
+            <Link to="/usuarios" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/usuarios' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/usuarios' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/usuarios' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/usuarios' ? '#10B981' : 'inherit' }}><UsersIcon size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/usuarios' ? 700 : 600, fontSize:'14px' }}>Usuarios</span>
             </Link>
-            <Link to="/dashboard" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
-              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><FolderDot size={19} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Mis Temarios</span>
+            <Link to="/dashboard" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/dashboard' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/dashboard' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/dashboard' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/dashboard' ? '#10B981' : 'inherit' }}><FolderDot size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/dashboard' ? 700 : 600, fontSize:'14px' }}>Mis Temarios</span>
             </Link>
-            <Link to="/generador" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',color:'var(--kt-muted)',border:'1px solid transparent'}}>
-              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center'}}><Wand2 size={19} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'14px'}}>Generador</span>
+            <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
             </Link>
-            <Link to="/contenidos" className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'13px',padding:'11px 12px',borderRadius:'11px',textDecoration:'none',background:'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))',border:'1px solid rgba(16,185,129,.28)',color:'var(--kt-heading)'}}>
-              <span style={{flex:'none',width:'20px',display:'grid',placeItems:'center',color:'#10B981'}}><Sparkles size={19} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px'}}>Contenidos Generados</span>
+            <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname.startsWith('/contenido') ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname.startsWith('/contenido') ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname.startsWith('/contenido') ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname.startsWith('/contenido') ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname.startsWith('/contenido') ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
             </Link>
           </nav>
-          <div style={{marginTop:'auto',padding:'16px 14px 18px',display:'flex',flexDirection:'column',gap:'12px'}}>
-            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="kt-navrow" style={{display:'flex',alignItems:'center',gap:'11px',padding:'10px 12px',borderRadius:'12px',background:'var(--kt-chip-bg)',border:'1px solid var(--kt-chip-border)',cursor:'pointer',textAlign:'left',width:'100%'}}>
-              <span className="kt-theme-icon-moon" style={{flex:'none',color:'var(--kt-muted)'}}><Moon size={17} /></span>
-              <span className="kt-theme-icon-sun" style={{flex:'none',color:'#F59E0B'}}><Sun size={17} /></span>
-              <span className="kt-sidelabel kt-theme-label-dark" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'13px',color:'var(--kt-text)'}}>Oscuro</span>
-              <span className="kt-sidelabel kt-theme-label-light" style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'13px',color:'var(--kt-text)'}}>Claro</span>
-              <span className="kt-sidelabel kt-theme-track" style={{marginLeft:'auto',width:'38px',height:'22px',borderRadius:'20px',position:'relative',flex:'none',transition:'background .25s'}}>
-                <span className="kt-theme-knob" style={{position:'absolute',top:'2px',left:'2px',width:'18px',height:'18px',borderRadius:'50%',background:'#fff',transition:'transform .25s'}}></span>
+
+          <div style={{ marginTop:'auto', padding:'16px 14px 18px', display:'flex', flexDirection:'column', gap:'12px' }}>
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'10px 12px', borderRadius:'12px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', cursor:'pointer', textAlign:'left', width:'100%' }}>
+              {theme === 'dark' ? <Sun size={18} color="#F59E0B" style={{ flex:'none' }} /> : <Moon size={18} style={{ flex:'none', color:'var(--kt-muted)' }} />}
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px', color:'var(--kt-text)' }}>{theme === 'dark' ? 'Claro' : 'Oscuro'}</span>
+              <span className="kt-sidelabel" style={{ marginLeft:'auto', width:'38px', height:'22px', borderRadius:'20px', position:'relative', flex:'none', transition:'background .25s', background: theme === 'dark' ? '#10B981' : '#CBD5E1' }}>
+                <span style={{ position:'absolute', top:'2px', left:'2px', width:'18px', height:'18px', borderRadius:'50%', background:'#fff', transition:'transform .25s', transform: theme === 'dark' ? 'translateX(16px)' : 'translateX(0)' }}></span>
               </span>
             </button>
-            <div className="kt-navrow" style={{display:'flex',alignItems:'center',gap:'11px',padding:'6px 8px'}}>
-              <div style={{width:'38px',height:'38px',flex:'none',borderRadius:'11px',background:'linear-gradient(150deg,#38BDF8,#2563EB)',display:'grid',placeItems:'center',fontFamily:"'Manrope'",fontWeight:800,fontSize:'13px',color:'#fff'}}>{getInitial(user?.nombre || user?.email || 'Docente')}</div>
-              <div className="kt-sidelabel" style={{minWidth:0}}>
-                <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',color:'var(--kt-heading)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{user?.nombre || user?.email || 'Docente'}</div>
-                <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'11px',color:'var(--kt-muted)'}}>{user?.rol === 'ROLE_ADMIN' ? 'Administrador' : 'Docente'}</div>
+            <div className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'6px 8px', overflow:'hidden' }}>
+              <div style={{ width:'38px', height:'38px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,#38BDF8,#2563EB)', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>
+                {getInitial(user?.nombre || user?.email || 'Docente')}
+              </div>
+              <div className="kt-sidelabel" style={{ minWidth:0 }}>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {user?.nombre || user?.email || 'Saul Martinez'}
+                </div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {user?.rol === 'ROLE_ADMIN' ? 'Administrador' : 'Docente'}
+                </div>
               </div>
             </div>
-            <button onClick={async () => { await logout(); navigate('/login'); }} className="kt-nav kt-navrow" style={{display:'flex',alignItems:'center',gap:'11px',padding:'11px 12px',borderRadius:'11px',border:'1px solid rgba(244,63,94,.22)',background:'rgba(244,63,94,.08)',color:'#FB7185',cursor:'pointer'}}>
-              <span style={{flex:'none'}}><LogOut size={17} /></span>
-              <span className="kt-sidelabel" style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'12.5px',letterSpacing:'.3px'}}>CERRAR SESIÓN</span>
+            <button onClick={async () => { await logout(); navigate('/login'); }} className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'11px 12px', borderRadius:'11px', border:'1px solid rgba(244,63,94,.22)', background:'rgba(244,63,94,.08)', color:'#FB7185', cursor:'pointer' }}>
+              <span style={{ flex:'none' }}><LogOut size={18} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', letterSpacing:'.3px' }}>CERRAR SESIÓN</span>
             </button>
           </div>
         </aside>
@@ -584,73 +530,6 @@ export default function ContentViewer() {
                         </div>
                       </div>
 
-                      {/* Asistente UI */}
-                      <div style={{marginTop:'24px'}}>
-                        <button onClick={() => setAssistantOpen(!assistantOpen)} className="kt-ghostbtn" style={{display:'flex',alignItems:'center',gap:'8px',padding:'10px 16px',border:'1px solid var(--kt-chip-border)',background:'var(--kt-chip-bg)',borderRadius:'12px',color:'var(--kt-text)',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px'}}>
-                          <MessageSquare size={18} />
-                          {assistantOpen ? 'Ocultar Asistente' : 'Asistente de Corrección'}
-                        </button>
-
-                        {assistantOpen && (
-                          <div style={{marginTop:'16px',background:'var(--kt-card-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'16px',padding:'24px',boxShadow:'var(--kt-shadow-panel)'}}>
-                            <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'16px',color:'var(--kt-heading)',marginBottom:'16px'}}>Acciones Rápidas</div>
-                            <div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginBottom:'24px'}}>
-                              {ASSISTANT_QUICK_ACTIONS.map(action => (
-                                <button 
-                                  key={action.id}
-                                  onClick={() => handleAssistantAction(action.id)}
-                                  disabled={assistantLoading}
-                                  style={{padding:'8px 14px',borderRadius:'8px',border:'1px solid var(--kt-chip-border)',background:'var(--kt-chip-bg)',color:'var(--kt-text)',cursor:assistantLoading ? 'not-allowed' : 'pointer',fontFamily:"'Manrope'",fontWeight:600,fontSize:'13px',opacity:assistantLoading ? 0.6 : 1}}
-                                >
-                                  {action.label}
-                                </button>
-                              ))}
-                            </div>
-
-                            <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'16px',color:'var(--kt-heading)',marginBottom:'12px'}}>Petición Personalizada (Free Chat)</div>
-                            <div style={{display:'flex',gap:'12px'}}>
-                              <input 
-                                type="text"
-                                value={assistantMessage}
-                                onChange={e => setAssistantMessage(e.target.value)}
-                                placeholder="Ej. Reescribe el segundo párrafo para que sea más formal..."
-                                disabled={assistantLoading}
-                                style={{flex:1,padding:'12px 16px',borderRadius:'10px',border:'1px solid var(--kt-input-border)',background:'var(--kt-input-bg)',color:'var(--kt-text)',fontFamily:"'Manrope'",fontSize:'14px'}}
-                              />
-                              <button 
-                                onClick={() => handleAssistantAction('FREE_CHAT', assistantMessage)}
-                                disabled={assistantLoading || !assistantMessage.trim()}
-                                className="kt-primary"
-                                style={{display:'flex',alignItems:'center',gap:'8px',padding:'0 20px',borderRadius:'10px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',border:'none',cursor:(assistantLoading || !assistantMessage.trim()) ? 'not-allowed' : 'pointer',fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px',opacity:(assistantLoading || !assistantMessage.trim()) ? 0.6 : 1}}
-                              >
-                                {assistantLoading ? <Loader2 size={18} style={{animation:'ktSpin 1s infinite linear'}} /> : <Send size={18} />}
-                                Enviar
-                              </button>
-                            </div>
-
-                            {assistantMessages.length > 0 && (
-                              <div style={{marginTop:'20px',display:'flex',flexDirection:'column',gap:'10px',maxHeight:'260px',overflowY:'auto',paddingRight:'4px'}}>
-                                {assistantMessages.map(msg => {
-                                  const isUser = msg.role === 'user';
-                                  const iconColor = msg.kind === 'success' ? '#10B981' : msg.kind === 'error' ? '#D97706' : 'var(--kt-muted)';
-                                  return (
-                                    <div key={msg.id} style={{display:'flex',justifyContent: isUser ? 'flex-end' : 'flex-start'}}>
-                                      <div style={{display:'flex',alignItems:'center',gap:'8px',maxWidth:'80%',padding:'9px 13px',borderRadius:'12px',background: isUser ? 'rgba(16,185,129,.12)' : 'var(--kt-chip-bg)',border:'1px solid', borderColor: isUser ? 'rgba(16,185,129,.25)' : 'var(--kt-chip-border)'}}>
-                                        {!isUser && msg.kind === 'pending' && <Loader2 size={14} style={{animation:'ktSpin 1s infinite linear',flex:'none',color:iconColor}} />}
-                                        {!isUser && msg.kind === 'success' && <CheckCircle2 size={14} style={{flex:'none',color:iconColor}} />}
-                                        {!isUser && msg.kind === 'error' && <AlertCircle size={14} style={{flex:'none',color:iconColor}} />}
-                                        <span style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'13px',color: isUser ? 'var(--kt-heading)' : 'var(--kt-text)'}}>
-                                          {isUser ? `Tú: ${msg.text}` : msg.text}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                     {/* ========================= EVALUACIÓN ========================= */}

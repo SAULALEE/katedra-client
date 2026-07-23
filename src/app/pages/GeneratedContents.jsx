@@ -22,7 +22,8 @@ export default function GeneratedContents() {
   const { user, logout } = useAuth();
   const { courses, loading } = useTemarios();
 
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
+  React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
   const [zoom, setZoom] = useState(100);
 
@@ -30,33 +31,53 @@ export default function GeneratedContents() {
   const [expandedGenId, setExpandedGenId] = useState(null);
 
   useEffect(() => {
-    let list = JSON.parse(localStorage.getItem('katedra_generations') || '[]');
-    if (list.length === 0 && courses.length > 0) {
-      list = courses.map((c, idx) => ({
-        id: 'gen_' + c.id + '_' + idx,
-        temarioId: c.id,
-        temarioTitulo: c.titulo || c.nombre,
-        asignatura: c.asignatura || c.curso || 'Materia',
-        modelo: 'pro',
-        piezas: ['teoria', 'evaluacion'],
-        contenido: c.contenido || {},
-        createdAt: c.createdAt || new Date(Date.now() - idx * 86400000).toISOString()
-      }));
-      localStorage.setItem('katedra_generations', JSON.stringify(list));
-    }
-    setGenerations(list);
+    const loadLogs = () => {
+      let list = JSON.parse(localStorage.getItem('katedra_activity_log') || '[]');
+      if (list.length === 0) {
+        const oldGens = JSON.parse(localStorage.getItem('katedra_generations') || '[]');
+        if (oldGens.length > 0) {
+          list = oldGens.map(g => ({
+            ...g,
+            action: 'GENERADO',
+            piezasGeneradas: g.piezas || ['teoria', 'evaluacion', 'diapositivas'],
+            modeloUsado: g.modelo || 'pro'
+          }));
+        } else if (courses.length > 0) {
+          list = courses.map((c, idx) => ({
+            id: 'act_' + c.id + '_' + idx,
+            action: 'CREADO',
+            temarioId: c.id,
+            temarioTitulo: c.titulo || c.nombre,
+            asignatura: c.asignatura || c.curso || 'Materia',
+            createdAt: c.createdAt || new Date(Date.now() - idx * 86400000).toISOString()
+          }));
+        }
+        localStorage.setItem('katedra_activity_log', JSON.stringify(list));
+      }
+      setGenerations(list);
+    };
+
+    loadLogs();
+    
+    const handleStorage = (e) => {
+      if (e.key === 'katedra_activity_log') {
+        loadLogs();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, [courses]);
 
   const handleDelete = (id) => {
     const updated = generations.filter(g => g.id !== id);
     setGenerations(updated);
-    localStorage.setItem('katedra_generations', JSON.stringify(updated));
+    localStorage.setItem('katedra_activity_log', JSON.stringify(updated));
     if (expandedGenId === id) setExpandedGenId(null);
   };
 
   const handleDeleteAll = () => {
     setGenerations([]);
-    localStorage.removeItem('katedra_generations');
+    localStorage.removeItem('katedra_activity_log');
     setExpandedGenId(null);
   };
 
@@ -356,17 +377,35 @@ export default function GeneratedContents() {
                  <div style={{ padding:'40px 60px', color:'var(--kt-faint)', fontFamily:"'Manrope'", fontSize:'14px' }}>No hay contenidos generados todavía.</div>
               ) : (
                  generations.map((g, idx) => {
-                   const hasTeoria = !!(g.contenido?.teoria || (g.piezas && g.piezas.includes('teoria')));
-                   const hasQuizzes = !!(g.contenido?.evaluacion || (g.piezas && g.piezas.includes('evaluacion')));
-                   const hasSlides = !!(g.contenido?.diapositivas || (g.piezas && g.piezas.includes('diapositivas')));
-
-                   let completedPieces = 0;
-                   if (hasTeoria) completedPieces++;
-                   if (hasQuizzes) completedPieces++;
-                   if (hasSlides) completedPieces++;
-                   
-                   const pct = Math.round((completedPieces / 3) * 100);
                    const isExpanded = expandedGenId === g.id;
+                   const isGenerado = g.action === 'GENERADO';
+                   
+                   // Determine icon and color based on action
+                   let actionLabel = 'Modificado';
+                   let ActionIcon = FolderDot;
+                   let actionColor = 'var(--kt-heading)';
+                   let iconBg = 'var(--kt-chip-bg)';
+                   let iconBorder = 'var(--kt-chip-border)';
+                   
+                   if (g.action === 'CREADO') {
+                     actionLabel = 'Temario Creado';
+                     ActionIcon = FolderDot;
+                   } else if (g.action === 'EDITADO') {
+                     actionLabel = 'Temario Editado';
+                     ActionIcon = Settings;
+                   } else if (g.action === 'ELIMINADO') {
+                     actionLabel = 'Temario Eliminado';
+                     ActionIcon = Trash2;
+                     actionColor = '#F43F5E';
+                     iconBg = 'rgba(244,63,94,.1)';
+                     iconBorder = 'rgba(244,63,94,.2)';
+                   } else if (g.action === 'GENERADO') {
+                     actionLabel = `Contenido Generado (${g.modeloUsado?.toUpperCase() || 'IA'})`;
+                     ActionIcon = Sparkles;
+                     actionColor = '#38BDF8';
+                     iconBg = 'rgba(56,189,248,.1)';
+                     iconBorder = 'rgba(56,189,248,.2)';
+                   }
                    
                    return (
                      <div key={g.id} style={{ position:'relative', paddingLeft:'74px', marginBottom:'32px', display:'flex', flexDirection:'column', gap:'12px' }}>
@@ -377,15 +416,15 @@ export default function GeneratedContents() {
                        </div>
 
                        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                         <span style={{ fontFamily:"'Manrope'", fontWeight:800, fontSize:'12px', letterSpacing:'1px', color:'var(--kt-muted)', textTransform:'uppercase' }}>{g.createdAt ? new Date(g.createdAt).toLocaleDateString('es-ES', { month:'long', day:'numeric', year:'numeric' }) : 'Reciente'}</span>
-                         <span style={{ padding:'3px 10px', borderRadius:'20px', background:'rgba(16,185,129,.12)', border:'1px solid rgba(16,185,129,.2)', fontFamily:"'Manrope'", fontWeight:800, fontSize:'9.5px', letterSpacing:'1.2px', textTransform:'uppercase', color:'#10B981' }}>Generado con IA ({g.modelo?.toUpperCase()})</span>
+                         <span style={{ fontFamily:"'Manrope'", fontWeight:800, fontSize:'12px', letterSpacing:'1px', color:'var(--kt-muted)', textTransform:'uppercase' }}>{g.createdAt ? new Date(g.createdAt).toLocaleDateString('es-ES', { month:'long', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Reciente'}</span>
+                         <span style={{ padding:'3px 10px', borderRadius:'20px', background:'rgba(16,185,129,.12)', border:'1px solid rgba(16,185,129,.2)', fontFamily:"'Manrope'", fontWeight:800, fontSize:'9.5px', letterSpacing:'1.2px', textTransform:'uppercase', color:'#10B981' }}>{actionLabel}</span>
                        </div>
 
-                       <div className="kt-scard" data-status={pct === 100 ? 'Completado' : 'En proceso'} style={{ display:'flex', flexDirection:'column', background:'var(--kt-card-bg)', border:'1px solid var(--kt-panel-border)', borderRadius:'16px', padding:'24px', backdropFilter:'blur(12px)', cursor:'pointer' }} onClick={() => setExpandedGenId(isExpanded ? null : g.id)}>
+                       <div className="kt-scard" style={{ display:'flex', flexDirection:'column', background:'var(--kt-card-bg)', border:'1px solid var(--kt-panel-border)', borderRadius:'16px', padding:'24px', backdropFilter:'blur(12px)' }}>
                          
                          <div style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
-                           <div style={{ width:'52px', height:'52px', flex:'none', borderRadius:'14px', background:'var(--kt-chip-bg)', display:'grid', placeItems:'center', color:'var(--kt-heading)', border:'1px solid var(--kt-chip-border)' }}>
-                             <FolderDot size={24} strokeWidth={1.5} />
+                           <div style={{ width:'52px', height:'52px', flex:'none', borderRadius:'14px', background:iconBg, display:'grid', placeItems:'center', color:actionColor, border:`1px solid ${iconBorder}` }}>
+                             <ActionIcon size={24} strokeWidth={1.5} />
                            </div>
                            
                            <div style={{ flex:1, minWidth:0 }}>
@@ -393,14 +432,16 @@ export default function GeneratedContents() {
                              <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-muted)', margin:0 }}>{g.asignatura}</p>
                            </div>
 
-                           <div style={{ flex:'none', display:'flex', alignItems:'center', gap:'10px' }} onClick={(e) => e.stopPropagation()}>
-                             <button 
-                               onClick={() => navigate(`/contenido/${g.temarioId}`)}
-                               style={{ display:'flex', alignItems:'center', gap:'6px', height:'32px', padding:'0 12px', border:'1px solid var(--kt-chip-border)', borderRadius:'8px', background:'var(--kt-chip-bg)', color:'var(--kt-heading)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', transition:'background .2s' }}
-                             >
-                               <BookOpen size={13} />
-                               Ver Temario
-                             </button>
+                           <div style={{ flex:'none', display:'flex', alignItems:'center', gap:'10px' }}>
+                             {g.action !== 'ELIMINADO' && (
+                               <button 
+                                 onClick={() => navigate(`/contenido/${g.temarioId}`)}
+                                 style={{ display:'flex', alignItems:'center', gap:'6px', height:'32px', padding:'0 12px', border:'1px solid var(--kt-chip-border)', borderRadius:'8px', background:'var(--kt-chip-bg)', color:'var(--kt-heading)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', transition:'background .2s' }}
+                               >
+                                 <BookOpen size={13} />
+                                 Ver Temario
+                               </button>
+                             )}
                              <button 
                                onClick={() => handleDelete(g.id)}
                                aria-label="Eliminar versión"
@@ -411,74 +452,14 @@ export default function GeneratedContents() {
                            </div>
                          </div>
 
-                         <div style={{ marginTop:'20px', paddingTop:'16px', borderTop:'1px solid var(--kt-border-soft)', display:'flex', alignItems:'center', gap:'20px', flexWrap:'wrap' }}>
-                           
-                           <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                             <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12px', color:'var(--kt-faint)' }}>Recursos Generados:</span>
+                         {isGenerado && g.piezasGeneradas && (
+                           <div style={{ marginTop:'20px', paddingTop:'16px', borderTop:'1px solid var(--kt-border-soft)', display:'flex', alignItems:'center', gap:'20px' }}>
+                             <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12px', color:'var(--kt-faint)' }}>Piezas generadas:</span>
                              <div style={{ display:'flex', gap:'6px' }}>
-                               {hasTeoria && <span style={{ padding:'4px 10px', borderRadius:'8px', background:'rgba(16,185,129,.1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#10B981' }}>Teoría</span>}
-                               {hasQuizzes && <span style={{ padding:'4px 10px', borderRadius:'8px', background:'rgba(16,185,129,.1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#10B981' }}>Quizzes</span>}
-                               {hasSlides && <span style={{ padding:'4px 10px', borderRadius:'8px', background:'rgba(16,185,129,.1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#10B981' }}>Diapositivas</span>}
-                               {!hasTeoria && !hasQuizzes && !hasSlides && <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12px', color:'var(--kt-muted)' }}>Ninguno todavía</span>}
+                               {g.piezasGeneradas.map((pieza, pIdx) => (
+                                 <span key={pIdx} style={{ padding:'4px 10px', borderRadius:'8px', background:'rgba(56,189,248,.1)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11px', color:'#38BDF8', textTransform:'capitalize' }}>{pieza}</span>
+                               ))}
                              </div>
-                           </div>
-
-                           <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'10px', width:'200px' }}>
-                             <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11px', color:'var(--kt-faint)' }}>{pct}% Generación de la IA</div>
-                             <div style={{ flex:1, height:'4px', borderRadius:'4px', background:'var(--kt-chip-bg)', overflow:'hidden' }}>
-                               <div style={{ height:'100%', width:`${pct}%`, background: pct === 100 ? '#10B981' : '#38BDF8', borderRadius:'4px', transition:'width .4s ease' }}></div>
-                             </div>
-                           </div>
-                           
-                         </div>
-
-                         {/* Version Contents Expansion */}
-                         {isExpanded && (
-                           <div style={{ marginTop:'20px', paddingTop:'20px', borderTop:'1px solid var(--kt-border-soft)', display:'flex', flexDirection:'column', gap:'16px' }} onClick={(e) => e.stopPropagation()}>
-                             
-                             {hasTeoria && (
-                               <div>
-                                 <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'14px', color:'var(--kt-heading)', margin:'0 0 8px' }}>Teoría Docente</h4>
-                                 <div className="kt-scroller" style={{ maxHeight:'200px', overflowY:'auto', background:'var(--kt-input-bg)', border:'1px solid var(--kt-border-soft)', borderRadius:'8px', padding:'12px', fontFamily:"'Manrope'", fontSize:'13px', color:'var(--kt-text)', whiteSpace:'pre-wrap', lineHeight: 1.5 }}>
-                                   {g.contenido?.teoria || 'No generada'}
-                                 </div>
-                               </div>
-                             )}
-
-                             {hasQuizzes && (
-                               <div>
-                                 <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'14px', color:'var(--kt-heading)', margin:'0 0 8px' }}>Examen / Evaluación ({g.contenido?.evaluacion?.length || 0} preguntas)</h4>
-                                 <div className="kt-scroller" style={{ maxHeight:'200px', overflowY:'auto', background:'var(--kt-input-bg)', border:'1px solid var(--kt-border-soft)', borderRadius:'8px', padding:'12px', display:'flex', flexDirection:'column', gap:'10px' }}>
-                                   {g.contenido?.evaluacion && Array.isArray(g.contenido.evaluacion) ? (
-                                     g.contenido.evaluacion.map((q, qIdx) => (
-                                       <div key={qIdx} style={{ fontSize:'13px', color:'var(--kt-text)', lineHeight: 1.4 }}>
-                                         <strong>P{qIdx+1}:</strong> {q.pregunta || q.texto}
-                                       </div>
-                                     ))
-                                   ) : (
-                                     <div style={{ fontSize:'13px', color:'var(--kt-muted)' }}>No hay preguntas disponibles</div>
-                                   )}
-                                 </div>
-                               </div>
-                             )}
-
-                             {hasSlides && (
-                               <div>
-                                 <h4 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'14px', color:'var(--kt-heading)', margin:'0 0 8px' }}>Diapositivas ({g.contenido?.diapositivas?.length || 0} láminas)</h4>
-                                 <div className="kt-scroller" style={{ maxHeight:'200px', overflowY:'auto', background:'var(--kt-input-bg)', border:'1px solid var(--kt-border-soft)', borderRadius:'8px', padding:'12px', display:'flex', flexDirection:'column', gap:'6px' }}>
-                                   {g.contenido?.diapositivas && Array.isArray(g.contenido.diapositivas) ? (
-                                     g.contenido.diapositivas.map((s, sIdx) => (
-                                       <div key={sIdx} style={{ fontSize:'13px', color:'var(--kt-text)', lineHeight: 1.4 }}>
-                                         <strong>L{sIdx+1}:</strong> {s.titulo}
-                                       </div>
-                                     ))
-                                   ) : (
-                                     <div style={{ fontSize:'13px', color:'var(--kt-muted)' }}>No hay diapositivas disponibles</div>
-                                   )}
-                                 </div>
-                               </div>
-                             )}
-
                            </div>
                          )}
 

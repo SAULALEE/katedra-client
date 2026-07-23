@@ -22,7 +22,8 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const { courses, loading, error, aiCalls, crearTemario, cargarTemario, updateTemario, deleteTemario } = useTemarios();
 
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
+  React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);

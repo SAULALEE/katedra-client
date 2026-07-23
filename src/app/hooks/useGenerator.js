@@ -10,8 +10,8 @@ export const PIEZAS = [
 ];
 
 export const MODELOS = [
-  { id: 'flash', label: 'Básico', hint: 'Tutor — rápido y directo, ideal para respuestas ágiles' },
-  { id: 'pro', label: 'Avanzado', hint: 'Catedrático — máxima profundidad y rigor académico' }
+  { id: 'flash', label: 'Tutor', hint: 'Rápido y directo, ideal para respuestas ágiles' },
+  { id: 'pro', label: 'Catedrático', hint: 'Máxima profundidad y rigor académico' }
 ];
 
 /** Maps a response tier key to its display name. */
@@ -129,6 +129,14 @@ export const useGenerator = () => {
     setPiezas(prev => prev.includes(piezaId) ? prev.filter(p => p !== piezaId) : [...prev, piezaId]);
   }, []);
 
+  const selectAllPiezas = useCallback(() => {
+    setPiezas(PIEZAS.map(p => p.id));
+  }, []);
+
+  const deselectAllPiezas = useCallback(() => {
+    setPiezas([]);
+  }, []);
+
   const piezaYaGenerada = useCallback(
     (piezaId) => pieceExists(generatedData || contenidoExistente, piezaId),
     [generatedData, contenidoExistente]
@@ -172,12 +180,20 @@ export const useGenerator = () => {
       if (Object.keys(fallidas).length > 0) {
         console.error('Fallos de generación IA:', fallidas);
       }
+      import('../store/temarioStore').then(m => m.logActivity('GENERADO', temarioSeleccionado || { id: temarioId, titulo: 'Temario' }, {
+        piezasGeneradas: piezas.filter(p => !fallidas[p]),
+        modeloUsado: modelo,
+        fallidas
+      })).catch(err => console.error('Error logging generation:', err));
+      
       setPiezasFallidas(fallidas);
       const firstGenerated = PIEZAS.find(p => piezas.includes(p.id) && !fallidas[p.id]);
       setActiveTab((firstGenerated || PIEZAS.find(p => pieceExists(data, p.id)) || PIEZAS[0]).id);
+      return true;
     } catch (error) {
       console.error('AI Generation failed:', error);
       setGenError('No se pudo generar el material. Intenta de nuevo.');
+      return false;
     } finally {
       setIsGenerating(false);
       clearInterval(stepInterval);
@@ -195,7 +211,7 @@ export const useGenerator = () => {
     courses,
     temarioId, setTemarioId: selectTemario,
     temarioSeleccionado,
-    piezas, togglePieza,
+    piezas, togglePieza, selectAllPiezas, deselectAllPiezas,
     modelo, setModelo,
     limitesModelo: MODELO_LIMITES[modelo],
     // Raw setters: the input is left uncontrolled-range while typing (including blank),

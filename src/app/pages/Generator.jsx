@@ -3,7 +3,6 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useGenerator, PIEZAS, MODELOS } from '../hooks/useGenerator';
-import { enviarMensajeAsistente } from '../services/temarioService';
 import { useAuth } from '../hooks/useAuth';
 import { ResponseCountField } from '../components/ResponseCountField';
 import {
@@ -26,9 +25,8 @@ import {
   RefreshCw,
   BookOpen,
   Cpu,
-  MessageSquare,
-  Send,
-  X
+  Download,
+  ChevronDown
 } from 'lucide-react';
 
 // Reusable SVG Icons for exports
@@ -38,6 +36,46 @@ const IconMSForms = () => (
     <rect x="4" y="4" width="16" height="16" rx="2" fill="#00828A" fillOpacity="0.1"/>
     <rect x="4" y="4" width="16" height="16" rx="2" stroke="#00828A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M8 12L11 15L16 9" stroke="#00828A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconGoogleForms = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#7248B9" fillOpacity="0.1"/>
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9 10H15M9 14H15" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconDoc = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#2563EB" fillOpacity="0.1"/>
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9 13H15M9 17H12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconMD = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="6" width="16" height="12" rx="2" fill="#4B5563" fillOpacity="0.1"/>
+    <rect x="4" y="6" width="16" height="12" rx="2" stroke="#4B5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M7 14L9 10L11 14M13 14V10M13 14L15 12M13 14L17 14" stroke="#4B5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconPDF = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#DC2626" fillOpacity="0.1"/>
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9 11V15M9 11H12C13.1046 11 14 11.8954 14 13C14 14.1046 13.1046 15 12 15H9M9 11V9" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconPPTX = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#EA580C" fillOpacity="0.1"/>
+    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9 10V16M9 10H13C14.1046 10 15 10.8954 15 12C15 13.1046 14.1046 14 13 14H9" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -58,7 +96,8 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
   }, []);
 
   const selectedOption = options.find(o => o.value === value);
-  const isSelectedMax = value === 'max';
+  const isSelectedPro = value === 'pro';
+  const isSelectedFlash = value === 'flash';
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%' }}>
@@ -67,22 +106,23 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
         onClick={() => setOpen(!open)}
         style={{
           width:'100%', height:'42px', padding:'8px 36px 8px 14px', 
-          border: open ? '1px solid #10B981' : (isSelectedMax ? '1px solid #10B981' : '1px solid var(--kt-input-border)'), 
-          borderRadius:'10px', background: isSelectedMax ? 'rgba(16,185,129,0.05)' : 'var(--kt-input-bg)', 
-          color: isSelectedMax ? '#10B981' : (selectedOption ? 'var(--kt-heading)' : 'var(--kt-muted)'), 
-          fontFamily:"'Inter', sans-serif", fontWeight: isSelectedMax ? 700 : 600, fontSize:'13px', 
+          border: open ? '1px solid #10B981' : (value ? '1px solid var(--kt-chip-border)' : '1px solid var(--kt-input-border)'), 
+          borderRadius:'10px', background: value ? 'var(--kt-chip-bg)' : 'var(--kt-input-bg)', 
+          color: value ? 'var(--kt-heading)' : 'var(--kt-muted)', 
+          fontFamily:"'Inter', sans-serif", fontWeight: value ? 700 : 600, fontSize:'13px', 
           display:'flex', alignItems:'center', justifyContent:'space-between',
           boxShadow: open ? '0 0 0 3px rgba(16, 185, 129, 0.2)' : '0 2px 4px rgba(15, 23, 42, 0.03)',
           cursor:'pointer', transition: 'all 0.2s', textAlign:'left'
         }}
       >
         <div style={{ display:'flex', alignItems:'center', gap:'8px', overflow:'hidden' }}>
-          {isSelectedMax && <IconZap />}
-          <span style={{ whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+          {isSelectedFlash && <IconZap style={{ color: 'var(--kt-muted)' }} />}
+          {isSelectedPro && <Sparkles size={14} style={{ color: '#10B981', flexShrink: 0 }} />}
+          <span style={{ whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color: 'var(--kt-heading)' }}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
-        <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: isSelectedMax ? '#10B981' : 'var(--kt-muted)' }}>
+        <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--kt-muted)' }}>
            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition:'transform .2s' }}><path d="m6 9 6 6 6-6"/></svg>
         </div>
       </button>
@@ -97,8 +137,10 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
           {options.length === 0 ? (
              <div style={{ padding:'8px 12px', fontFamily:"'Manrope'", fontSize:'12px', color:'var(--kt-muted)', textAlign:'center' }}>Sin opciones</div>
           ) : options.map(opt => {
-            const isOptMax = opt.value === 'max';
+            const isOptPro = opt.value === 'pro';
+            const isOptFlash = opt.value === 'flash';
             const isSelected = value === opt.value;
+            
             return (
               <div 
                 key={opt.value}
@@ -106,33 +148,36 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
                 style={{
                   padding:'10px 12px', borderRadius:'8px', cursor:'pointer',
                   background: isSelected 
-                    ? 'rgba(16,185,129,.15)' 
-                    : (isOptMax ? 'rgba(16,185,129,.03)' : 'transparent'),
-                  border: isOptMax ? '1px dashed rgba(16,185,129,.3)' : '1px solid transparent',
+                    ? 'var(--kt-chip-bg)'
+                    : (isOptPro ? 'rgba(16, 185, 129, .02)' : 'transparent'),
+                  border: isSelected 
+                    ? '1px solid var(--kt-chip-border)' 
+                    : (isOptPro ? '1px solid rgba(16, 185, 129, .2)' : '1px solid transparent'),
                   color: isSelected 
-                    ? '#10B981' 
-                    : (isOptMax ? '#10B981' : 'var(--kt-text)'),
-                  fontFamily:"'Inter'", fontWeight: (isSelected || isOptMax) ? 700 : 500, fontSize:'13px',
+                    ? 'var(--kt-heading)' 
+                    : (isOptPro ? '#10B981' : 'var(--kt-text)'),
+                  fontFamily:"'Inter'", fontWeight: (isSelected || isOptPro) ? 700 : 500, fontSize:'13px',
                   transition:'background .15s',
                   marginBottom: '4px'
                 }}
                 onMouseEnter={(e) => { 
                   if (!isSelected) {
-                    e.currentTarget.style.background = isOptMax ? 'rgba(16,185,129,.1)' : 'var(--kt-chip-bg)'; 
+                    e.currentTarget.style.background = isOptPro ? 'rgba(16, 185, 129, .06)' : 'var(--kt-chip-bg)'; 
                   }
                 }}
                 onMouseLeave={(e) => { 
                   if (!isSelected) {
-                    e.currentTarget.style.background = isOptMax ? 'rgba(16,185,129,.03)' : 'transparent'; 
+                    e.currentTarget.style.background = isOptPro ? 'rgba(16, 185, 129, .02)' : 'transparent'; 
                   }
                 }}
               >
                 <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-                  {isOptMax && <IconZap />}
+                  {isOptFlash && <IconZap style={{ color: isSelected ? 'var(--kt-heading)' : 'inherit' }} />}
+                  {isOptPro && <Sparkles size={14} style={{ color: isSelected ? 'var(--kt-heading)' : '#10B981' }} />}
                   <span>{opt.label}</span>
-                  {isOptMax && <span style={{ fontSize:'9px', background:'#10B981', color:'#fff', padding:'1px 5px', borderRadius:'10px', transform: 'scale(0.95)', transformOrigin: 'left center', fontWeight:800, letterSpacing:'0.5px' }}>RECOMENDADO</span>}
+                  {isOptPro && <span style={{ fontSize:'9px', background:'#10B981', color:'#fff', padding:'1px 5px', borderRadius:'10px', transform: 'scale(0.95)', transformOrigin: 'left center', fontWeight:800, letterSpacing:'0.5px' }}>RECOMENDADO</span>}
                 </div>
-                {opt.hint && <div style={{ fontSize:'11px', color: isOptMax ? '#10B981' : 'var(--kt-muted)', marginTop:'2px', fontWeight:500, opacity: isOptMax ? 0.8 : 1 }}>{opt.hint}</div>}
+                {opt.hint && <div style={{ fontSize:'11px', color: isSelected ? 'var(--kt-muted)' : (isOptPro ? 'rgba(16, 185, 129, 0.8)' : 'var(--kt-muted)'), marginTop:'2px', fontWeight:500 }}>{opt.hint}</div>}
               </div>
             );
           })}
@@ -142,63 +187,58 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
   );
 };
 
-const IconPDF = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" fill="#E11D48" fillOpacity="0.1"/>
-    <path d="M14 2V8H20M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 15H15M9 11H15M9 19H11" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+const ExportDropdown = ({ options, onSelect }) => {
+  const [open, setOpen] = React.useState(false);
+  const menuRef = React.useRef(null);
+  
+  React.useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
-const IconPPTX = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 4H20C21.1046 4 22 4.89543 22 6V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4Z" fill="#EA580C" fillOpacity="0.1"/>
-    <path d="M4 4H20C21.1046 4 22 4.89543 22 6V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4Z" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M8 10C8 8.89543 8.89543 8 10 8H14C15.1046 8 16 8.89543 16 10C16 11.1046 15.1046 12 14 12H8V10ZM8 12V16" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+  return (
+    <div ref={menuRef} style={{ position:'relative' }}>
+      <button 
+        onClick={() => setOpen(!open)}
+        style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 16px', borderRadius:'10px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', color:'var(--kt-heading)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer', transition:'all .2s' }}
+      >
+        <Download size={14} /> Exportar con <ChevronDown size={14} style={{ transform: open ? 'rotate(180deg)' : 'none', transition:'transform .2s' }} />
+      </button>
+      
+      {open && (
+        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, background:'var(--kt-panel-bg)', border:'1px solid var(--kt-border)', borderRadius:'12px', padding:'6px', boxShadow:'0 10px 30px -10px rgba(0,0,0,0.15)', minWidth:'180px', zIndex:100, display:'flex', flexDirection:'column', gap:'2px' }}>
+          {options.map((opt, i) => (
+            <button 
+              key={i}
+              onClick={() => { onSelect(opt); setOpen(false); }}
+              style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px', borderRadius:'8px', background:'transparent', border:'none', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px', cursor:'pointer', textAlign:'left', transition:'background .2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.background='var(--kt-bg1)'}
+              onMouseLeave={(e) => e.currentTarget.style.background='transparent'}
+            >
+              <span style={{ color: opt.color, display:'flex' }}>{opt.icon}</span>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function Generator() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
+  React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [assistantOpen, setAssistantOpen] = useState(true);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLog, setChatLog] = useState([{ role: 'ai', text: '¡Hola! Soy tu asistente de contenido. Puedo reescribir, resumir o ampliar cualquier sección del temario. ¿Qué te gustaría ajustar?' }]);
   const [configCollapsed, setConfigCollapsed] = useState(false);
-  
-  const [assistantModel, setAssistantModel] = useState('flash');
-  const [assistantLoading, setAssistantLoading] = useState(false);
-
-  const handleSendAssistant = async (textToSend) => {
-    const text = textToSend || chatInput;
-    if (!text.trim() || assistantLoading) return;
-
-    // Add user message to log
-    const updatedLog = [...chatLog, { role: 'user', text }];
-    setChatLog(updatedLog);
-    if (!textToSend) setChatInput('');
-    setAssistantLoading(true);
-
-    try {
-      const res = await enviarMensajeAsistente({
-        temarioId: temarioId || '',
-        action: 'FREE_CHAT', // default to free chat now that custom action dropdown is removed
-        message: text,
-        modelo: assistantModel
-      });
-
-      setChatLog([...updatedLog, { role: 'ai', text: res.content }]);
-    } catch (err) {
-      setChatLog([...updatedLog, { role: 'ai', text: `Error: ${err.message || 'No se pudo obtener respuesta del asistente.'}` }]);
-    } finally {
-      setAssistantLoading(false);
-    }
-  };
+  const [showGenConfirmModal, setShowGenConfirmModal] = useState(false);
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
@@ -206,7 +246,7 @@ export default function Generator() {
     courses,
     temarioId, setTemarioId,
     temarioSeleccionado,
-    piezas, togglePieza,
+    piezas, togglePieza, selectAllPiezas, deselectAllPiezas,
     modelo, setModelo,
     limitesModelo,
     numeroDiapositivas, setNumeroDiapositivas,
@@ -236,7 +276,6 @@ export default function Generator() {
     if (Array.isArray(value)) return value.length > 0;
     return false;
   };
-  const hasAnyGeneratedContent = pieceHasContent('teoria') || pieceHasContent('evaluacion') || pieceHasContent('diapositivas');
   const canGenerate = temarioId && piezas.length > 0 && !isGenerating;
 
   useEffect(() => {
@@ -263,6 +302,34 @@ export default function Generator() {
 
   const notify = (kind, title, msg) => {
     setNotifications(prev => [{ id: Date.now() + Math.random(), kind, title, msg, ts: Date.now() }, ...prev].slice(0, 20));
+  };
+
+  const triggerGeneration = async () => {
+    notify('success', 'Generación Iniciada', 'La IA está creando el contenido...');
+    const ok = await handleGenerate();
+    if (ok) {
+      const details = [];
+      if (piezas.includes('teoria')) {
+        const count = resolverConteo(numeroParrafos, limitesModelo.parrafos);
+        details.push(`${count} párrafo${count !== 1 ? 's' : ''} de teoría`);
+      }
+      if (piezas.includes('evaluacion')) {
+        const count = resolverConteo(numeroPreguntas, limitesModelo.preguntas);
+        details.push(`${count} pregunta${count !== 1 ? 's' : ''} de evaluación`);
+      }
+      if (piezas.includes('diapositivas')) {
+        const count = resolverConteo(numeroDiapositivas, limitesModelo.diapositivas);
+        details.push(`${count} diapositiva${count !== 1 ? 's' : ''}`);
+      }
+
+      let summary = 'Material generado exitosamente: ';
+      if (details.length === 1) summary += details[0] + '.';
+      else if (details.length === 2) summary += details[0] + ' y ' + details[1] + '.';
+      else if (details.length === 3) summary += details[0] + ', ' + details[1] + ' y ' + details[2] + '.';
+      else summary = 'Contenido generado correctamente.';
+
+      notify('success', 'Generación Completada', summary);
+    }
   };
 
   const unreadCount = notifications.length;
@@ -331,10 +398,12 @@ export default function Generator() {
   .kt-primary:active{transform:translateY(0)}
 
   /* sidebar collapse (manual, works at any width) */
-  .kt-sidebar{width:256px}
+  .kt-sidebar{width:256px; transition: width .32s cubic-bezier(.4,0,.2,1) !important;}
   [data-root][data-kt-collapsed="true"] .kt-sidebar{width:76px}
-  [data-root][data-kt-collapsed="true"] .kt-sidelabel{display:none}
-  [data-root][data-kt-collapsed="true"] .kt-menutitle{opacity:0}
+  .kt-sidelabel{transition: opacity .25s ease, max-width .25s ease, margin .25s ease; opacity:1; max-width: 180px; min-width: 0; overflow: hidden; white-space: nowrap; display: inline-block;}
+  [data-root][data-kt-collapsed="true"] .kt-sidelabel{display: none !important;}
+  .kt-menutitle{transition: opacity .25s ease, max-height .25s ease; opacity: 1; max-height: 20px; overflow: hidden; white-space: nowrap;}
+  [data-root][data-kt-collapsed="true"] .kt-menutitle{display: none !important;}
   [data-root][data-kt-collapsed="true"] .kt-navrow{justify-content:center}
   [data-root][data-kt-collapsed="true"] .kt-collapse-icon{transform:rotate(180deg)}
 
@@ -517,7 +586,7 @@ export default function Generator() {
         </aside>
 
         {/* MAIN */}
-        <main style={{ position:'relative', zIndex:5, flex:1, minWidth:0, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <main style={{ position:'relative', zIndex:5, flex:1, minWidth:0, display:'flex', flexDirection:'column', overflowY:'auto' }}>
           <header className="kt-main-pad" style={{ display:'flex', alignItems:'center', gap:'18px', padding:'26px 32px', borderBottom:'1px solid var(--kt-border-soft)' }}>
             <div style={{ minWidth:0 }}>
               <h1 className="kt-headtitle" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'27px', lineHeight:1.15, letterSpacing:'-1.2px', color:'var(--kt-heading)', margin:0 }}>Generador de Contenido</h1>
@@ -525,14 +594,6 @@ export default function Generator() {
             </div>
             
             <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'12px' }}>
-              <button 
-                onClick={() => setAssistantOpen(!assistantOpen)}
-                className="kt-ghostbtn"
-                style={{ display:'flex', alignItems:'center', gap:'8px', height:'42px', padding:'0 15px', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'11px', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', transition:'all .2s' }}
-              >
-                <MessageSquare size={17} style={{ color: assistantOpen ? '#10B981' : 'currentColor' }} />
-                Asistente IA
-              </button>
               {/* notifications */}
               <div style={{ position:'relative' }}>
                 <button onClick={() => setNotifOpen(!notifOpen)} aria-label="Notificaciones" style={{ position:'relative', width:'42px', height:'42px', display:'grid', placeItems:'center', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'11px', color:'var(--kt-muted)', cursor:'pointer' }}>
@@ -570,8 +631,8 @@ export default function Generator() {
             </div>
           </header>
 
-          <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-            <div className="kt-main-pad" style={{ flex:1, overflow:'hidden', padding:'24px', display:'flex', flexDirection:'column', gap:'24px' }}>
+          <div style={{ display: 'flex', position: 'relative' }}>
+            <div className="kt-main-pad" style={{ flex:1, padding:'24px', display:'flex', flexDirection:'column', gap:'24px' }}>
             
             {/* LEFT CONFIGURATION PANEL */}
             <section style={{ width:'100%', flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-panel-bg)', backdropFilter:'blur(12px)', border:'1px solid var(--kt-panel-border)', borderRadius:'18px', overflow:'visible', boxShadow:'var(--kt-shadow-panel)', transition:'all .3s ease', zIndex: 50 }}>
@@ -604,8 +665,12 @@ export default function Generator() {
                   <button
                     className="kt-primary"
                     onClick={() => {
-                      handleGenerate();
-                      notify('success', 'Generación Iniciada', 'La IA está creando el contenido...');
+                      const hasExistingContent = !!(contenidoExistente || generatedData || piezas.some(id => piezaYaGenerada(id)));
+                      if (hasExistingContent) {
+                        setShowGenConfirmModal(true);
+                      } else {
+                        triggerGeneration();
+                      }
                     }}
                     disabled={!canGenerate}
                     style={{ height:'36px', padding:'0 18px', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', border:'none', borderRadius:'9px', background: !canGenerate ? 'var(--kt-chip-border)' : 'linear-gradient(150deg,#10B981,#059669)', color: !canGenerate ? 'var(--kt-muted)' : '#fff', cursor: !canGenerate ? 'not-allowed' : 'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', boxShadow: !canGenerate ? 'none' : '0 6px 16px -6px rgba(16,185,129,.7)', transition:'all .2s' }}
@@ -644,9 +709,26 @@ export default function Generator() {
 
                 {/* 2. Piece checkboxes with integrated count selectors */}
                 <div>
-                  <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
-                    <CheckSquare size={13} style={{ color:'var(--kt-muted)' }} /> Material a generar
-                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px' }}>
+                    <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)' }}>
+                      <CheckSquare size={13} style={{ color:'var(--kt-muted)' }} /> Material a generar
+                    </label>
+                    {piezas.length === PIEZAS.length ? (
+                      <span 
+                        onClick={deselectAllPiezas} 
+                        style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: '11px', color: 'var(--kt-muted)', cursor: 'pointer', transition: 'color 0.2s' }}
+                      >
+                        Desmarcar todo
+                      </span>
+                    ) : (
+                      <span 
+                        onClick={selectAllPiezas} 
+                        style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: '11px', color: '#10B981', cursor: 'pointer', transition: 'color 0.2s' }}
+                      >
+                        Seleccionar todo
+                      </span>
+                    )}
+                  </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
                     {PIEZAS.map(pieza => {
                       const selected = piezas.includes(pieza.id);
@@ -788,7 +870,7 @@ export default function Generator() {
             </section>
 
             {/* RIGHT PREVIEW PANEL */}
-            <section style={{ flex:1, minWidth:0, display:'flex', flexDirection:'column', background:'var(--kt-panel-bg)', backdropFilter:'blur(12px)', border:'1px solid var(--kt-panel-border)', borderRadius:'18px', overflow:'hidden', boxShadow:'var(--kt-shadow-panel)' }}>
+            <section style={{ display:'flex', flexDirection:'column', background:'var(--kt-panel-bg)', backdropFilter:'blur(12px)', border:'1px solid var(--kt-panel-border)', borderRadius:'18px', overflow:'visible', boxShadow:'var(--kt-shadow-panel)' }}>
               
               {/* Tabs header */}
               <div style={{ display:'flex', overflowX:'auto', borderBottom:'1px solid var(--kt-border-soft)' }}>
@@ -819,7 +901,7 @@ export default function Generator() {
               </div>
 
               {/* Content Viewer Area */}
-              <div className="kt-scroller" style={{ flex:1, overflowY:'auto', padding:'32px' }}>
+              <div style={{ padding:'32px' }}>
                 {(isGenerating || !displayData) && (
                   <div style={{ position: 'relative', height:'100%', display:'flex', flexDirection:'column', gap:'20px', pointerEvents:'none' }}>
                     <div style={{ animation: isGenerating ? 'ktPulse 1.5s infinite ease-in-out' : 'none' }}>
@@ -885,9 +967,14 @@ export default function Generator() {
                     {activeTab === 'teoria' && (
                       <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
                         <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                          <button onClick={() => notify('success','Exportado','Teoría exportada en PDF.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer', transition:'background .2s' }}>
-                            <IconPDF /> Exportar PDF
-                          </button>
+                          <ExportDropdown 
+                            options={[
+                              { label: 'DOC', icon: <IconDoc />, color: '#2563EB' },
+                              { label: 'PDF', icon: <IconPDF />, color: '#DC2626' },
+                              { label: 'Markdown', icon: <IconMD />, color: '#4B5563' }
+                            ]}
+                            onSelect={(opt) => notify('success','Exportado',`Teoría exportada a ${opt.label}.`)}
+                          />
                         </div>
                         <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'40px', boxShadow:'var(--kt-shadow-panel)' }}>
                           <h1 style={{ fontFamily:"'Inter'", fontWeight:700, fontSize:'28px', color:'var(--kt-heading)', margin:'0 0 8px' }}>{temarioSeleccionado?.titulo || 'Módulo Teórico'}</h1>
@@ -904,10 +991,16 @@ export default function Generator() {
                     {/* 2. Evaluacion */}
                     {activeTab === 'evaluacion' && (
                       <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
-                         <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px' }}>
-                           <button onClick={() => notify('success','Exportado','Cuestionario exportado a MS Forms.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(0,130,138,.2)', background:'rgba(0,130,138,.05)', color:'#00828A', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
-                             <IconMSForms /> MS Forms
-                           </button>
+                        <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                          <ExportDropdown 
+                            options={[
+                              { label: 'DOC', icon: <IconDoc />, color: '#2563EB' },
+                              { label: 'PDF', icon: <IconPDF />, color: '#DC2626' },
+                              { label: 'Markdown', icon: <IconMD />, color: '#4B5563' },
+                              { label: 'Google Forms', icon: <IconGoogleForms />, color: '#7248B9' }
+                            ]}
+                            onSelect={(opt) => notify('success','Exportado',`Evaluación exportada a ${opt.label}.`)}
+                          />
                         </div>
                         
                         <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
@@ -927,10 +1020,9 @@ export default function Generator() {
                                       <button
                                         key={optIndex}
                                         onClick={() => setCheckedAnswers({...checkedAnswers, [qIndex]: optIndex})}
-                                        disabled={isAnswered}
                                         style={{
-                                          width:'100%', textAlign:'left', padding:'16px 20px', borderRadius:'12px', cursor: isAnswered ? 'not-allowed' : 'pointer',
-                                          background: isSelected ? 'rgba(16,185,129,.1)' : (isAnswered ? 'var(--kt-chip-bg)' : 'var(--kt-bg2)'),
+                                          width:'100%', textAlign:'left', padding:'16px 20px', borderRadius:'12px', cursor: 'pointer',
+                                          background: isSelected ? 'rgba(16,185,129,.1)' : 'var(--kt-bg2)',
                                           border: isSelected ? '2px solid #10B981' : '2px solid transparent',
                                           color: isSelected ? '#10B981' : (isAnswered ? 'var(--kt-muted)' : 'var(--kt-text)'),
                                           fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px', transition:'all .2s',
@@ -971,76 +1063,142 @@ export default function Generator() {
                       const slide = slides[slideIdx];
                       return (
                       <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
-                         <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px' }}>
-                           <button onClick={() => notify('success','Exportado','Diapositivas exportadas a PPTX.')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', border:'1px solid rgba(234,88,12,.2)', background:'rgba(234,88,12,.05)', color:'#EA580C', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
-                             <IconPPTX /> PPTX
-                           </button>
+                        {/* Slide Exports */}
+                        <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                          <ExportDropdown 
+                            options={[
+                              { label: 'PPTX', icon: <IconPPTX />, color: '#EA580C' },
+                              { label: 'PDF', icon: <IconPDF />, color: '#DC2626' }
+                            ]}
+                            onSelect={(opt) => notify('success','Exportado',`Diapositivas exportadas a ${opt.label}.`)}
+                          />
                         </div>
 
-                        <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'32px', boxShadow:'var(--kt-shadow-panel)', display:'flex', flexDirection:'column', alignItems:'center' }}>
-                          {/* 16:9 Canvas */}
-                          <div style={{ width:'100%', maxWidth:'800px', aspectRatio:'16/9', background:'var(--kt-card-bg)', border:'1px solid var(--kt-border)', borderRadius:'12px', boxShadow:'0 20px 50px -20px rgba(0,0,0,.3)', position:'relative', overflow:'hidden', padding:'8% 10%', display:'flex', flexDirection:'column' }}>
-                             <div style={{position:'absolute',top:0,left:0,right:0,height:'6px',background:'linear-gradient(90deg,#0284C7,#38BDF8)'}}></div>
-                             
-                             {slideIdx === 0 ? (
-                               <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'18px'}}>
-                                 <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'3px',color:'#38BDF8',textTransform:'uppercase'}}>{temarioSeleccionado?.asignatura || 'Asignatura'}</div>
-                                 <h2 style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'48px',letterSpacing:'-1.8px',lineHeight:1.1,color:'var(--kt-heading)',margin:0}}>{temarioSeleccionado?.titulo || 'Temario'}</h2>
-                                 {slide.titulo && slide.titulo !== temarioSeleccionado?.titulo && (
-                                   <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'26px',letterSpacing:'-.8px',color:'var(--kt-text)',margin:0}}>{slide.titulo}</h3>
-                                 )}
-                                 {slide.puntos?.length > 0 && (
-                                   <div style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'15px',color:'var(--kt-muted)'}}>
-                                     {slide.puntos.slice(0, 2).join(' · ')}
-                                   </div>
-                                 )}
-                               </div>
-                             ) : (
-                               <>
-                                 <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#38BDF8',textTransform:'uppercase',marginBottom:'auto'}}>{String(slideIdx + 1).padStart(2, '0')} · {temarioSeleccionado?.asignatura || 'Asignatura'}</div>
-                                 <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',letterSpacing:'.5px',color:'var(--kt-muted)',marginBottom:'6px'}}>{temarioSeleccionado?.titulo || 'Temario'}</div>
-                                 <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'34px',letterSpacing:'-1.2px',color:'var(--kt-heading)',margin:'0 0 22px'}}>{slide.titulo}</h3>
-                                 <div style={{display:'flex',flexDirection:'column',gap:'13px',marginBottom:'auto'}}>
-                                   {slide.puntos.map((pt, pIdx) => (
-                                     <div key={pIdx} style={{display:'flex',alignItems:'center',gap:'12px',fontFamily:"'Manrope'",fontWeight:600,fontSize:'17px',color:'var(--kt-text)'}}>
-                                       <span style={{color:'#38BDF8'}}><CheckCircle2 size={18} /></span>{pt}
-                                     </div>
-                                   ))}
-                                 </div>
-                               </>
-                             )}
-
-                             <div style={{position:'absolute',bottom:'20px',left:0,right:0,display:'flex',alignItems:'center',justifyContent:'center',gap:'9px',opacity:.45,pointerEvents:'none'}}>
-                               <span style={{width:'20px',height:'20px',borderRadius:'5px',background:'#10B981',display:'grid',placeItems:'center',fontFamily:"'Inter'",fontWeight:700,fontSize:'11px',color:'#fff'}}>K</span>
-                               <span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'10px',letterSpacing:'2.5px',color:'var(--kt-muted)',textTransform:'uppercase'}}>Creado por Katedra</span>
-                             </div>
+                        <div style={{ maxWidth:'760px', width:'100%', margin:'0 auto', background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'18px',boxShadow:'var(--kt-shadow-panel)',padding:'22px',backdropFilter:'blur(12px)'}}>
+                          <div style={{position:'relative',borderRadius:'14px',overflow:'hidden',background:'var(--kt-bg1)',aspectRatio:'16/9',boxShadow:'0 20px 50px -24px rgba(0,0,0,.6)', border:'1px solid var(--kt-border)'}}>
+                            <div style={{display:'flex',height:'100%',transform:`translateX(-${currentSlideIndex * 100}%)`,transition:'transform .45s cubic-bezier(.4,0,.2,1)'}}>
+                              {slides.map((slideItem, idx) => (
+                                <div key={idx} style={{flex:'none',width:'100%',height:'100%',position:'relative',padding:'8% 9%',display:'flex',flexDirection:'column',background:'var(--kt-card-bg)'}}>
+                                  <div style={{position:'absolute',top:0,left:0,right:0,height:'6px',background:'linear-gradient(90deg,#0284C7,#38BDF8)'}}></div>
+                                  {idx === 0 ? (
+                                    <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'18px'}}>
+                                      <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'3px',color:'#38BDF8',textTransform:'uppercase'}}>{temarioSeleccionado?.asignatura || 'Asignatura'}</div>
+                                      <h2 style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'48px',letterSpacing:'-1.8px',lineHeight:1.1,color:'var(--kt-heading)',margin:0}}>{temarioSeleccionado?.titulo || 'Temario'}</h2>
+                                      {slideItem.titulo && slideItem.titulo !== temarioSeleccionado?.titulo && (
+                                        <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'26px',letterSpacing:'-.8px',color:'var(--kt-text)',margin:0}}>{slideItem.titulo}</h3>
+                                      )}
+                                      {slideItem.puntos?.length > 0 && (
+                                        <div style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'15px',color:'var(--kt-muted)'}}>
+                                          {slideItem.puntos.slice(0, 2).join(' · ')}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#38BDF8',textTransform:'uppercase',marginBottom:'auto'}}>{String(idx + 1).padStart(2, '0')} · {temarioSeleccionado?.asignatura || 'Asignatura'}</div>
+                                      <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',letterSpacing:'.5px',color:'var(--kt-muted)',marginBottom:'6px'}}>{temarioSeleccionado?.titulo || 'Temario'}</div>
+                                      <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'34px',letterSpacing:'-1.2px',color:'var(--kt-heading)',margin:'0 0 22px'}}>{slideItem.titulo}</h3>
+                                      <div style={{display:'flex',flexDirection:'column',gap:'13px',marginBottom:'auto'}}>
+                                        {slideItem.puntos.map((pt, pIdx) => (
+                                          <div key={pIdx} style={{display:'flex',alignItems:'center',gap:'12px',fontFamily:"'Manrope'",fontWeight:600,fontSize:'17px',color:'var(--kt-text)'}}>
+                                            <span style={{color:'#38BDF8'}}><CheckCircle2 size={18} /></span>{pt}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </>
+                                  )}
+                                  <div style={{position:'absolute',bottom:'56px',left:0,right:0,display:'flex',alignItems:'center',justifyContent:'center',gap:'9px',opacity:.45,pointerEvents:'none'}}>
+                                    <span style={{width:'20px',height:'20px',borderRadius:'5px',background:'#10B981',display:'grid',placeItems:'center',fontFamily:"'Inter'",fontWeight:700,fontSize:'11px',color:'#fff'}}>K</span>
+                                    <span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'10px',letterSpacing:'2.5px',color:'var(--kt-muted)',textTransform:'uppercase'}}>Creado por Katedra</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Navigation Controls Overlay */}
+                            <div style={{position:'absolute', bottom:'20px', left:'50%', transform:'translateX(-50%)', display:'flex', alignItems:'center', gap:'12px', background:'var(--kt-panel-bg)', padding:'6px 12px', borderRadius:'20px', border:'1px solid var(--kt-border)', backdropFilter:'blur(8px)'}}>
+                              <button 
+                                onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
+                                disabled={currentSlideIndex === 0}
+                                style={{background:'none', border:'none', color:'var(--kt-text)', cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer', opacity: currentSlideIndex === 0 ? 0.5 : 1}}
+                              >
+                                <ChevronLeft size={20} />
+                              </button>
+                              <span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'12px',color:'var(--kt-heading)'}}>
+                                {currentSlideIndex + 1} / {slides.length || 1}
+                              </span>
+                              <button 
+                                onClick={() => setCurrentSlideIndex(Math.min((slides.length || 1) - 1, currentSlideIndex + 1))}
+                                disabled={currentSlideIndex === (slides.length || 1) - 1}
+                                style={{background:'none', border:'none', color:'var(--kt-text)', cursor: currentSlideIndex === (slides.length || 1) - 1 ? 'not-allowed' : 'pointer', opacity: currentSlideIndex === (slides.length || 1) - 1 ? 0.5 : 1, transform:'rotate(180deg)'}}
+                              >
+                                <ChevronLeft size={20} />
+                              </button>
+                            </div>
                           </div>
 
-                          {/* Controls */}
-                          <div style={{ display:'flex', alignItems:'center', gap:'20px', marginTop:'28px' }}>
-                             <button
-                               onClick={() => setCurrentSlideIndex(Math.max(0, slideIdx - 1))}
-                               disabled={slideIdx === 0}
-                               style={{ width:'40px', height:'40px', borderRadius:'50%', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', color:'var(--kt-text)', display:'grid', placeItems:'center', cursor: slideIdx === 0 ? 'not-allowed' : 'pointer', opacity: slideIdx === 0 ? 0.4 : 1, transition:'all .2s' }}
-                             >
-                               <ChevronLeft size={20} />
-                             </button>
-                             <div style={{ display:'flex', gap:'6px' }}>
-                               {slides.map((_, idx) => (
-                                 <button
-                                   key={idx}
-                                   onClick={() => setCurrentSlideIndex(idx)}
-                                   style={{ height:'6px', borderRadius:'10px', border:'none', background: slideIdx === idx ? '#10B981' : 'var(--kt-chip-border)', width: slideIdx === idx ? '24px' : '6px', transition:'all .3s', cursor:'pointer', padding:0 }}
-                                 ></button>
-                               ))}
-                             </div>
-                             <button
-                               onClick={() => setCurrentSlideIndex(Math.min(slides.length - 1, slideIdx + 1))}
-                               disabled={slideIdx === slides.length - 1}
-                               style={{ width:'40px', height:'40px', borderRadius:'50%', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', color:'var(--kt-text)', display:'grid', placeItems:'center', cursor: slideIdx === slides.length - 1 ? 'not-allowed' : 'pointer', opacity: slideIdx === slides.length - 1 ? 0.4 : 1, transition:'all .2s' }}
-                             >
-                               <ChevronLeft size={20} style={{ transform:'rotate(180deg)' }} />
-                             </button>
+                          {/* Dots Navigation */}
+                          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',marginTop:'16px'}}>
+                            {slides.map((_, idx) => (
+                              <button 
+                                key={idx}
+                                onClick={() => setCurrentSlideIndex(idx)}
+                                aria-label={`Lámina ${idx + 1}`}
+                                style={{
+                                  height:'7px',
+                                  width: currentSlideIndex === idx ? '24px' : '7px',
+                                  border:'none',
+                                  borderRadius:'20px',
+                                  background: currentSlideIndex === idx ? 'var(--kt-code-fg)' : 'var(--kt-chip-border)',
+                                  cursor:'pointer',
+                                  padding:0,
+                                  transition:'width .25s,background .25s'
+                                }}
+                              ></button>
+                            ))}
+                          </div>
+
+                          {/* Thumbnail Rail */}
+                          <div style={{display:'flex',gap:'12px',marginTop:'18px',paddingTop:'18px',borderTop:'1px solid var(--kt-border-soft)',overflowX:'auto'}}>
+                            {slides.map((slideItem, idx) => {
+                              const isSelected = currentSlideIndex === idx;
+                              const accents = [
+                                'linear-gradient(90deg,#0284C7,#38BDF8)',
+                                'linear-gradient(90deg,#10B981,#34D399)',
+                                'linear-gradient(90deg,#F59E0B,#FCD34D)',
+                                'linear-gradient(90deg,#8B5CF6,#A78BFA)',
+                                'linear-gradient(90deg,#EC4899,#F472B6)',
+                              ];
+                              const colorBg = accents[idx % accents.length];
+                              return (
+                                <button
+                                  key={idx}
+                                  onClick={() => setCurrentSlideIndex(idx)}
+                                  style={{
+                                    flex:'none',
+                                    width:'120px',
+                                    height:'68px',
+                                    borderRadius:'8px',
+                                    padding:0,
+                                    cursor:'pointer',
+                                    border: isSelected ? '2px solid #38BDF8' : '1px solid var(--kt-border)',
+                                    background:'var(--kt-card-bg)',
+                                    overflow:'hidden',
+                                    display:'flex',
+                                    flexDirection:'column',
+                                    opacity: isSelected ? 1 : 0.65,
+                                    transition:'all .2s'
+                                  }}
+                                >
+                                  <div style={{height:'4px',background:colorBg,width:'100%'}}></div>
+                                  <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'4px'}}>
+                                    <span style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'9px',color:'var(--kt-heading)',textAlign:'center',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',lineHeight:1.3}}>
+                                      {idx === 0 ? temarioSeleccionado?.titulo : slideItem.titulo}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
@@ -1057,138 +1215,34 @@ export default function Generator() {
           </div>
         </main>
 
-        {/* AI ASSISTANT SIDEBAR */}
-        <aside 
-          style={{
-            width: assistantOpen ? '256px' : '0', 
-            flex: 'none', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            background: 'var(--kt-panel-bg)', 
-            backdropFilter: 'blur(14px)', 
-            borderLeft: assistantOpen ? '1px solid var(--kt-border)' : '1px solid transparent',
-            transition: 'width .34s cubic-bezier(.4,0,.2,1), border-color .34s',
-            position: 'relative', 
-            zIndex: 10,
-            overflow: 'hidden'
-          }}
-        >
-          <div style={{ width: '256px', height: '100%', display: 'flex', flexDirection: 'column', flex: 'none' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'11px', padding:'18px 18px 16px', borderBottom:'1px solid var(--kt-border-soft)' }}>
-              <span style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', background:'linear-gradient(150deg,#10B981,#059669)', display:'grid', placeItems:'center', color:'#fff', boxShadow:'0 6px 16px -6px rgba(16,185,129,.6)' }}>
-                <Sparkles size={18} />
-              </span>
-              <div style={{ minWidth:0, marginRight:'auto' }}>
-                <div style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'15px', letterSpacing:'-.3px', color:'var(--kt-heading)' }}>Asistente IA</div>
-                <div style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Manrope'", fontWeight:600, fontSize:'11px', color:'var(--kt-muted)' }}>
-                  <span style={{ width:'6px', height:'6px', borderRadius:'50%', background: hasAnyGeneratedContent ? '#10B981' : 'var(--kt-muted)', boxShadow: hasAnyGeneratedContent ? '0 0 8px #10B981' : 'none' }}></span>
-                  {hasAnyGeneratedContent ? 'En línea · edita tu contenido' : 'Inactivo · genera contenido primero'}
-                </div>
+        {/* GENERATION CONFIRMATION MODAL */}
+        <div style={{ position:'fixed', inset:0, zIndex:80, display:'flex', alignItems:'center', justifyContent:'center', padding:'24px', opacity: showGenConfirmModal ? 1 : 0, pointerEvents: showGenConfirmModal ? 'auto' : 'none', transition:'opacity .22s ease' }}>
+          <div onClick={() => setShowGenConfirmModal(false)} style={{ position:'absolute', inset:0, background:'var(--kt-modal-backdrop)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}></div>
+          <div style={{ position:'relative', width:'100%', maxWidth:'420px', background:'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2))', border:'1px solid var(--kt-modal-border)', borderRadius:'20px', boxShadow:'var(--kt-shadow-modal)', padding:'28px', transform: showGenConfirmModal ? 'scale(1) translateY(0)' : 'scale(.94) translateY(10px)', transition:'transform .3s cubic-bezier(.34,1.56,.64,1)' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', gap:'13px', marginBottom:'18px' }}>
+              <div style={{ width:'40px', height:'40px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,rgba(245,158,11,.2),rgba(245,158,11,.08))', border:'1px solid rgba(245,158,11,.3)', display:'grid', placeItems:'center', color:'#F59E0B' }}>
+                <AlertCircle size={20} />
               </div>
-              <button onClick={() => setAssistantOpen(false)} aria-label="Cerrar" style={{ flex:'none', width:'30px', height:'30px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer' }}>
-                <X size={16} />
-              </button>
-            </div>
-
-            <div style={{ flex:1, overflow:'auto', padding:'18px 16px', display:'flex', flexDirection:'column', gap:'14px', opacity: hasAnyGeneratedContent ? 1 : 0.5 }}>
-              {!hasAnyGeneratedContent ? (
-                <div style={{ 
-                  textAlign: 'center', margin: 'auto 0', padding: '20px', 
-                  fontFamily: "'Manrope'", fontWeight: 500, fontSize: '13px', color: 'var(--kt-muted)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'
-                }}>
-                  <Sparkles size={24} style={{ color: 'var(--kt-muted)', opacity: 0.6 }} />
-                  El asistente se habilitará cuando generes la teoría, ejercicios o diapositivas desde el panel principal.
-                </div>
-              ) : (
-                chatLog.map((msg, i) => (
-                  <div key={i} style={{ display:'flex', gap:'10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
-                    {msg.role === 'ai' && (
-                      <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'rgba(16,185,129,.14)', color:'#10B981', display:'grid', placeItems:'center', flex:'none' }}>
-                        <Sparkles size={14} />
-                      </div>
-                    )}
-                    <div style={{ 
-                      background: msg.role === 'user' ? 'var(--kt-chip-bg)' : 'rgba(16,185,129,.06)', 
-                      border: `1px solid ${msg.role === 'user' ? 'var(--kt-chip-border)' : 'rgba(16,185,129,.15)'}`,
-                      padding: '12px 14px', borderRadius: '12px',
-                      fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', lineHeight:1.5, color: 'var(--kt-text)',
-                      borderTopRightRadius: msg.role === 'user' ? '4px' : '12px',
-                      borderTopLeftRadius: msg.role === 'ai' ? '4px' : '12px',
-                      maxWidth: '85%'
-                    }}>
-                      {msg.text}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div style={{ padding:'12px 16px 18px', borderTop:'1px solid var(--kt-border-soft)', display:'flex', flexDirection:'column', gap:'12px' }}>
-              {/* MODELOS DE IA */}
               <div>
-                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'9px', letterSpacing:'.8px', textTransform:'uppercase', color:'var(--kt-label)', marginBottom:'6px' }}>Modelo de IA</div>
-                <div style={{ display:'flex', gap:'5px' }}>
-                  {[
-                    { id: 'flash', label: 'Tutor' },
-                    { id: 'pro', label: 'Catedrático' }
-                  ].map(m => (
-                    <button 
-                      key={m.id} 
-                      onClick={() => setAssistantModel(m.id)} 
-                      style={{ 
-                        flex: 1, padding:'6px 4px', borderRadius:'8px', fontSize:'11px', fontFamily:"'Manrope'", fontWeight:700,
-                        border: `1.5px solid ${assistantModel === m.id ? '#10B981' : 'var(--kt-chip-border)'}`,
-                        background: assistantModel === m.id ? 'rgba(16,185,129,.08)' : 'var(--kt-chip-bg)',
-                        color: assistantModel === m.id ? '#10B981' : 'var(--kt-text)',
-                        cursor: 'pointer', transition: 'all .15s'
-                      }}
-                    >
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
+                <h3 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.6px', color:'var(--kt-heading)', margin:0 }}>¿Generar nuevo contenido?</h3>
+                <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', margin:'2px 0 0' }}>Se creará nuevo material para este temario</p>
               </div>
+            </div>
+            
+            <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'14px', color:'var(--kt-text)', marginBottom:'24px', lineHeight:1.5 }}>
+              ¿Estás seguro de que deseas generar contenido? Tu trabajo anterior no guardado no se conservará.
+            </p>
 
-              {/* TEXT INPUT AREA */}
-              <div style={{ 
-                display:'flex', alignItems:'flex-end', gap:'9px', padding:'8px 8px 8px 14px', 
-                border:'1.5px solid var(--kt-input-border)', 
-                background: hasAnyGeneratedContent ? 'var(--kt-input-bg)' : 'var(--kt-panel-bg)', 
-                borderRadius:'14px',
-                opacity: hasAnyGeneratedContent ? 1 : 0.6
-              }}>
-                <textarea 
-                  rows={1} 
-                  value={chatInput} 
-                  onChange={e => setChatInput(e.target.value)} 
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey && hasAnyGeneratedContent) {
-                      e.preventDefault();
-                      handleSendAssistant();
-                    }
-                  }}
-                  placeholder={!hasAnyGeneratedContent ? "Chat inactivo" : assistantLoading ? "Esperando..." : "Pide un cambio a la IA…"} 
-                  disabled={assistantLoading || !hasAnyGeneratedContent}
-                  style={{ flex:1, border:'none', background:'none', resize:'none', color:'var(--kt-heading)', fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', lineHeight:1.5, maxHeight:'100px', padding:'6px 0', outline:'none' }} 
-                />
-                <button 
-                  onClick={() => handleSendAssistant()}
-                  disabled={assistantLoading || !chatInput.trim() || !hasAnyGeneratedContent}
-                  style={{ 
-                    flex:'none', width:'38px', height:'38px', display:'grid', placeItems:'center', border:'none', borderRadius:'10px', 
-                    background:(assistantLoading || !chatInput.trim() || !hasAnyGeneratedContent) ? 'var(--kt-chip-bg)' : 'linear-gradient(150deg,#10B981,#059669)', 
-                    color:(assistantLoading || !chatInput.trim() || !hasAnyGeneratedContent) ? 'var(--kt-muted)' : '#fff', 
-                    cursor:(assistantLoading || !chatInput.trim() || !hasAnyGeneratedContent) ? 'default' : 'pointer', 
-                    boxShadow:(assistantLoading || !chatInput.trim() || !hasAnyGeneratedContent) ? 'none' : '0 8px 18px -8px rgba(16,185,129,.7)' 
-                  }}
-                >
-                  <Send size={16} />
-                </button>
-              </div>
+            <div style={{ display:'flex', gap:'12px' }}>
+              <button onClick={() => setShowGenConfirmModal(false)} style={{ flex:1, height:'44px', border:'1px solid var(--kt-input-border)', background:'none', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', borderRadius:'11px' }}>Cancelar</button>
+              <button onClick={() => {
+                setShowGenConfirmModal(false);
+                triggerGeneration();
+              }} style={{ flex:1, height:'44px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13.5px', boxShadow:'0 12px 26px -12px rgba(16,185,129,.7)' }}>Sí, Generar</button>
             </div>
           </div>
-        </aside>
+        </div>
+
       </div>
     </>
   );
