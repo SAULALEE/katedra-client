@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { useGenerator, PIEZAS, MODELOS } from '../hooks/useGenerator';
 import { enviarMensajeAsistente } from '../services/temarioService';
 import { useAuth } from '../hooks/useAuth';
+import { ResponseCountField } from '../components/ResponseCountField';
 import {
   Users as UsersIcon,
   FolderDot,
@@ -211,6 +212,7 @@ export default function Generator() {
     numeroDiapositivas, setNumeroDiapositivas,
     numeroParrafos, setNumeroParrafos,
     numeroPreguntas, setNumeroPreguntas,
+    resolverConteo,
     piezaYaGenerada,
     contenidoExistente,
     loadingContenido,
@@ -640,7 +642,7 @@ export default function Generator() {
                   )}
                 </div>
 
-                {/* 2. Piece checkboxes */}
+                {/* 2. Piece checkboxes with integrated count selectors */}
                 <div>
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
                     <CheckSquare size={13} style={{ color:'var(--kt-muted)' }} /> Material a generar
@@ -687,6 +689,51 @@ export default function Generator() {
                               )}
                             </div>
                           </div>
+
+                          {selected && (
+                            <div 
+                              onClick={(e) => e.stopPropagation()}
+                              style={{ 
+                                marginTop: '8px', 
+                                paddingTop: '6px', 
+                                borderTop: '1px solid rgba(16,185,129,0.18)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '8px'
+                              }}
+                            >
+                              <span style={{ fontFamily: "'Manrope'", fontWeight: 500, fontSize: '11px', color: 'var(--kt-muted)' }}>
+                                {pieza.id === 'teoria' && `Párrafos (${limitesModelo.parrafos.min}–${limitesModelo.parrafos.max}):`}
+                                {pieza.id === 'evaluacion' && `Preguntas (${limitesModelo.preguntas.min}–${limitesModelo.preguntas.max}):`}
+                                {pieza.id === 'diapositivas' && `Diapositivas (${limitesModelo.diapositivas.min}–${limitesModelo.diapositivas.max}):`}
+                              </span>
+                              {pieza.id === 'teoria' && (
+                                <ResponseCountField
+                                  value={numeroParrafos}
+                                  onChange={setNumeroParrafos}
+                                  min={limitesModelo.parrafos.min}
+                                  max={limitesModelo.parrafos.max}
+                                />
+                              )}
+                              {pieza.id === 'evaluacion' && (
+                                <ResponseCountField
+                                  value={numeroPreguntas}
+                                  onChange={setNumeroPreguntas}
+                                  min={limitesModelo.preguntas.min}
+                                  max={limitesModelo.preguntas.max}
+                                />
+                              )}
+                              {pieza.id === 'diapositivas' && (
+                                <ResponseCountField
+                                  value={numeroDiapositivas}
+                                  onChange={setNumeroDiapositivas}
+                                  min={limitesModelo.diapositivas.min}
+                                  max={limitesModelo.diapositivas.max}
+                                />
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -705,57 +752,6 @@ export default function Generator() {
                     options={MODELOS.map(m => ({ value: m.id, label: m.label, hint: m.hint }))}
                   />
                 </div>
-
-                {/* 4. Per-piece count selectors, bounded by the chosen model tier */}
-                {(piezas.includes('teoria') || piezas.includes('evaluacion') || piezas.includes('diapositivas')) && (
-                  <div style={{ gridColumn:'1 / -1', display:'flex', flexWrap:'wrap', gap:'20px' }}>
-                    {piezas.includes('teoria') && (
-                      <div style={{ minWidth:'160px' }}>
-                        <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
-                          Párrafos de teoría ({limitesModelo.parrafos.min}–{limitesModelo.parrafos.max})
-                        </label>
-                        <input
-                          type="number"
-                          min={limitesModelo.parrafos.min}
-                          max={limitesModelo.parrafos.max}
-                          value={numeroParrafos}
-                          onChange={(e) => { const v = Number(e.target.value); if (!Number.isNaN(v)) setNumeroParrafos(v); }}
-                          style={{ width:'100%', height:'36px', padding:'0 10px', borderRadius:'9px', border:'1px solid var(--kt-input-border)', background:'var(--kt-input-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}
-                        />
-                      </div>
-                    )}
-                    {piezas.includes('evaluacion') && (
-                      <div style={{ minWidth:'160px' }}>
-                        <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
-                          Preguntas de examen ({limitesModelo.preguntas.min}–{limitesModelo.preguntas.max})
-                        </label>
-                        <input
-                          type="number"
-                          min={limitesModelo.preguntas.min}
-                          max={limitesModelo.preguntas.max}
-                          value={numeroPreguntas}
-                          onChange={(e) => { const v = Number(e.target.value); if (!Number.isNaN(v)) setNumeroPreguntas(v); }}
-                          style={{ width:'100%', height:'36px', padding:'0 10px', borderRadius:'9px', border:'1px solid var(--kt-input-border)', background:'var(--kt-input-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}
-                        />
-                      </div>
-                    )}
-                    {piezas.includes('diapositivas') && (
-                      <div style={{ minWidth:'160px' }}>
-                        <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
-                          Diapositivas ({limitesModelo.diapositivas.min}–{limitesModelo.diapositivas.max})
-                        </label>
-                        <input
-                          type="number"
-                          min={limitesModelo.diapositivas.min}
-                          max={limitesModelo.diapositivas.max}
-                          value={numeroDiapositivas}
-                          onChange={(e) => { const v = Number(e.target.value); if (!Number.isNaN(v)) setNumeroDiapositivas(v); }}
-                          style={{ width:'100%', height:'36px', padding:'0 10px', borderRadius:'9px', border:'1px solid var(--kt-input-border)', background:'var(--kt-input-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {Object.keys(piezasFallidas).length > 0 && (
                   <div style={{ display:'flex', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(244,63,94,.1)', border:'1px solid rgba(244,63,94,.25)' }}>

@@ -36,6 +36,20 @@ export const MODELO_LIMITES = {
 
 const clamp = (value, { min, max }) => Math.min(Math.max(value, min), max);
 
+/**
+ * Resolves a (possibly in-progress) input value against a tier's [min, max, default]:
+ * blank/NaN falls back to the tier default, otherwise the number is clamped into range.
+ * Used to finalize a count on blur or right before submission — never while the user is
+ * still typing, since clamping mid-keystroke makes most multi-digit values unreachable
+ * (e.g. typing "12" in a 5-15 range passes through "1", which would get force-clamped to
+ * 5 before the second digit is even entered).
+ */
+const resolverConteo = (value, limite) => {
+  const num = Number(value);
+  if (value === '' || value == null || Number.isNaN(num)) return limite.default;
+  return clamp(num, limite);
+};
+
 /** True when the piece has real content in a ContenidoTemarioResponseDTO. */
 const pieceExists = (contenido, piezaId) => {
   if (!contenido) return false;
@@ -145,8 +159,13 @@ export const useGenerator = () => {
     }, 1600);
 
     try {
+      const limites = MODELO_LIMITES[modelo];
       const data = await generarMaterialParaTemario(temarioId, {
-        piezas, modelo, numeroDiapositivas, numeroParrafos, numeroPreguntas
+        piezas,
+        modelo,
+        numeroDiapositivas: resolverConteo(numeroDiapositivas, limites.diapositivas),
+        numeroParrafos: resolverConteo(numeroParrafos, limites.parrafos),
+        numeroPreguntas: resolverConteo(numeroPreguntas, limites.preguntas)
       });
       setGeneratedData(data);
       const fallidas = data.piezasFallidas || {};
@@ -179,9 +198,13 @@ export const useGenerator = () => {
     piezas, togglePieza,
     modelo, setModelo,
     limitesModelo: MODELO_LIMITES[modelo],
-    numeroDiapositivas, setNumeroDiapositivas: (v) => setNumeroDiapositivas(clamp(v, MODELO_LIMITES[modelo].diapositivas)),
-    numeroParrafos, setNumeroParrafos: (v) => setNumeroParrafos(clamp(v, MODELO_LIMITES[modelo].parrafos)),
-    numeroPreguntas, setNumeroPreguntas: (v) => setNumeroPreguntas(clamp(v, MODELO_LIMITES[modelo].preguntas)),
+    // Raw setters: the input is left uncontrolled-range while typing (including blank),
+    // so intermediate keystrokes are never force-corrected. Callers should clamp on blur
+    // via resolverConteo — handleGenerate already does this at submission time regardless.
+    numeroDiapositivas, setNumeroDiapositivas,
+    numeroParrafos, setNumeroParrafos,
+    numeroPreguntas, setNumeroPreguntas,
+    resolverConteo,
     piezaYaGenerada,
     contenidoExistente,
     loadingContenido,
