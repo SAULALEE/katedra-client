@@ -204,12 +204,10 @@ export default function GeneratedContents() {
         [data-tab-opt]{background:transparent;color:var(--kt-muted)}
         [data-root][data-kt-tab="file"] [data-tab-opt="file"],
         [data-root][data-kt-tab="web"] [data-tab-opt="web"],
-        [data-root][data-kt-tab="drive"] [data-tab-opt="drive"],
         [data-root][data-kt-tab="manual"] [data-tab-opt="manual"]{background:linear-gradient(150deg,#10B981,#059669);color:#fff;box-shadow:0 6px 16px -8px rgba(16,185,129,.7)}
         [data-tab-panel]{display:none}
         [data-root][data-kt-tab="file"] [data-tab-panel="file"],
         [data-root][data-kt-tab="web"] [data-tab-panel="web"],
-        [data-root][data-kt-tab="drive"] [data-tab-panel="drive"],
         [data-root][data-kt-tab="manual"] [data-tab-panel="manual"]{display:block}
         .kt-manual-only{display:none}
         [data-root][data-kt-tab="manual"] .kt-manual-only{display:block}

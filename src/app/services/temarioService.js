@@ -5,9 +5,9 @@ import api from './api.js';
  * Fetches all courses/temarios.
  * Restores from localStorage if available to support mockup persistence.
  */
-export const getTemarios = async () => {
+export const getTemarios = async (asignaturaId) => {
   try {
-    const response = await api.get('/temarios');
+    const response = await api.get('/temarios', asignaturaId ? { params: { asignaturaId } } : undefined);
     return response.data;
   } catch (error) {
     throw new Error('Error al obtener temarios', { cause: error });
@@ -15,18 +15,36 @@ export const getTemarios = async () => {
 };
 
 /**
- * Adds a new temario to the system (supporting links, drive, pdfs, etc.).
+ * Adds a new temario to the system (supporting links, files, etc.).
  * Fully prepared for backend ingestion.
  * 
- * @param {object} temarioData { titulo, asignatura, gradoAcademico, descripcion, temas, origen, detalleOrigen }
+ * @param {object} temarioData { titulo, asignaturaId, gradoAcademico, modelo, descripcion, temas, origen, detalleOrigen }
  */
 export const crearTemarioRequest = async (temarioData) => {
   try {
-    const { titulo, descripcion, gradoAcademico, asignatura } = temarioData;
-    const response = await api.post('/temarios', { titulo, descripcion, gradoAcademico, asignatura });
+    const { titulo, descripcion, gradoAcademico, asignaturaId, modelo } = temarioData;
+    const response = await api.post('/temarios', { titulo, descripcion, gradoAcademico, asignaturaId, modelo });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al guardar el temario', { cause: error });
+  }
+};
+
+export const getTemariosFavoritos = async () => {
+  try {
+    const response = await api.get('/temarios/favoritos');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al obtener favoritos', { cause: error });
+  }
+};
+
+export const actualizarFavoritoTemario = async (id, favorito) => {
+  try {
+    const response = await api.patch(`/temarios/${id}/favorito`, { favorito });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al actualizar favorito', { cause: error });
   }
 };
 
@@ -49,20 +67,21 @@ export const eliminarTemarioRequest = async (id) => {
 
 export const actualizarTemarioRequest = async (id, temarioData) => {
   try {
-    const { titulo, descripcion, gradoAcademico, asignatura } = temarioData;
-    const response = await api.put(`/temarios/${id}`, { titulo, descripcion, gradoAcademico, asignatura });
+    const { titulo, descripcion, gradoAcademico, asignaturaId } = temarioData;
+    const response = await api.put(`/temarios/${id}`, { titulo, descripcion, gradoAcademico, asignaturaId });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Error al actualizar el temario', { cause: error });
   }
 };
-export const cargarTemarioArchivoRequest = async ({ file, titulo, asignatura, gradoAcademico }) => {
+export const cargarTemarioArchivoRequest = async ({ file, titulo, asignaturaId, gradoAcademico, modelo }) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('titulo', titulo);
-    formData.append('asignatura', asignatura);
+    formData.append('asignaturaId', asignaturaId);
     formData.append('gradoAcademico', gradoAcademico);
+    formData.append('modelo', modelo);
 
     const response = await api.post('/temarios/cargar/archivo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -73,21 +92,12 @@ export const cargarTemarioArchivoRequest = async ({ file, titulo, asignatura, gr
   }
 };
 
-export const cargarTemarioUrlRequest = async ({ url, titulo, asignatura, gradoAcademico }) => {
+export const cargarTemarioUrlRequest = async ({ url, titulo, asignaturaId, gradoAcademico, modelo }) => {
   try {
-    const response = await api.post('/temarios/cargar/url', { url, titulo, asignatura, gradoAcademico });
+    const response = await api.post('/temarios/cargar/url', { url, titulo, asignaturaId, gradoAcademico, modelo });
     return response.data.temario || response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al cargar el temario desde URL', { cause: error });
-  }
-};
-
-export const cargarTemarioDriveRequest = async ({ url, titulo, asignatura, gradoAcademico }) => {
-  try {
-    const response = await api.post('/temarios/cargar/drive', { url, titulo, asignatura, gradoAcademico });
-    return response.data.temario || response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al cargar el temario desde Drive', { cause: error });
   }
 };
 
@@ -130,6 +140,15 @@ export const getContenidoTemario = async (id) => {
     return response.data;
   } catch (error) {
     throw new Error('Error al obtener el contenido del temario', { cause: error });
+  }
+};
+
+export const getFuenteTemario = async (id) => {
+  try {
+    const response = await api.get(`/temarios/${id}/fuente`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al obtener el contenido fuente', { cause: error });
   }
 };
 
