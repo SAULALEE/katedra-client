@@ -103,11 +103,18 @@ export const cargarTemarioDriveRequest = async ({ url, titulo, asignatura, grado
  * @param {string} id - the temario UUID
  * @param {object} options
  * @param {string[]} options.piezas - subset of ['teoria','evaluacion','diapositivas']
- * @param {string} options.modelo - 'basico' | 'avanzado'
+ * @param {string} options.modelo - 'flash' | 'pro'
+ * @param {number} [options.numeroDiapositivas] - within the selected tier's range; omitted/undefined uses the tier default
+ * @param {number} [options.numeroParrafos] - within the selected tier's range; omitted/undefined uses the tier default
+ * @param {number} [options.numeroPreguntas] - within the selected tier's range; omitted/undefined uses the tier default
  */
-export const generarMaterialParaTemario = async (id, { piezas, modelo }) => {
+export const generarMaterialParaTemario = async (
+  id, { piezas, modelo, numeroDiapositivas, numeroParrafos, numeroPreguntas }
+) => {
   try {
-    const response = await api.post(`/temarios/${id}/generar-material`, { piezas, modelo });
+    const response = await api.post(`/temarios/${id}/generar-material`, {
+      piezas, modelo, numeroDiapositivas, numeroParrafos, numeroPreguntas
+    });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al generar material con IA', { cause: error });

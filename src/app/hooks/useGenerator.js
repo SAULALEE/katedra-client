@@ -10,12 +10,31 @@ export const PIEZAS = [
 ];
 
 export const MODELOS = [
-  { id: 'basico', label: 'Básico', hint: 'Rápido y económico, ideal para tareas sencillas' },
-  { id: 'avanzado', label: 'Avanzado', hint: 'Mayor profundidad y razonamiento analítico' }
+  { id: 'flash', label: 'Básico', hint: 'Tutor — rápido y directo, ideal para respuestas ágiles' },
+  { id: 'pro', label: 'Avanzado', hint: 'Catedrático — máxima profundidad y rigor académico' }
 ];
 
 /** Maps a response tier key to its display name. */
 export const MODELO_LABELS = Object.fromEntries(MODELOS.map(m => [m.id, m.label]));
+
+/**
+ * Per-tier [min, max, default] for the user-selectable generation counts. Mirrors the
+ * backend's ModeloIA ranges — kept in sync manually since there is no shared schema.
+ */
+export const MODELO_LIMITES = {
+  flash: {
+    diapositivas: { min: 5, max: 10, default: 8 },
+    parrafos: { min: 5, max: 15, default: 10 },
+    preguntas: { min: 1, max: 10, default: 5 }
+  },
+  pro: {
+    diapositivas: { min: 10, max: 20, default: 15 },
+    parrafos: { min: 20, max: 40, default: 20 },
+    preguntas: { min: 15, max: 30, default: 20 }
+  }
+};
+
+const clamp = (value, { min, max }) => Math.min(Math.max(value, min), max);
 
 /** True when the piece has real content in a ContenidoTemarioResponseDTO. */
 const pieceExists = (contenido, piezaId) => {
@@ -34,7 +53,22 @@ export const useGenerator = () => {
   const initialTemarioId = searchParams.get('temarioId') || '';
   const [temarioId, setTemarioIdState] = useState(initialTemarioId);
   const [piezas, setPiezas] = useState([]);
-  const [modelo, setModelo] = useState('basico');
+  const [modelo, setModeloState] = useState('flash');
+  const [numeroDiapositivas, setNumeroDiapositivas] = useState(MODELO_LIMITES.flash.diapositivas.default);
+  const [numeroParrafos, setNumeroParrafos] = useState(MODELO_LIMITES.flash.parrafos.default);
+  const [numeroPreguntas, setNumeroPreguntas] = useState(MODELO_LIMITES.flash.preguntas.default);
+
+  // Switching tiers resets every count to the new tier's default, since a value valid
+  // under one tier's range (e.g. Avanzado's 20-40 párrafos) can fall outside the other's.
+  const setModelo = useCallback((nuevoModelo) => {
+    setModeloState(nuevoModelo);
+    const limites = MODELO_LIMITES[nuevoModelo];
+    if (limites) {
+      setNumeroDiapositivas(limites.diapositivas.default);
+      setNumeroParrafos(limites.parrafos.default);
+      setNumeroPreguntas(limites.preguntas.default);
+    }
+  }, []);
 
   // Existing material of the selected temario (null = nothing generated yet)
   const [contenidoExistente, setContenidoExistente] = useState(null);
@@ -111,7 +145,9 @@ export const useGenerator = () => {
     }, 1600);
 
     try {
-      const data = await generarMaterialParaTemario(temarioId, { piezas, modelo });
+      const data = await generarMaterialParaTemario(temarioId, {
+        piezas, modelo, numeroDiapositivas, numeroParrafos, numeroPreguntas
+      });
       setGeneratedData(data);
       const fallidas = data.piezasFallidas || {};
       if (Object.keys(fallidas).length > 0) {
@@ -142,6 +178,10 @@ export const useGenerator = () => {
     temarioSeleccionado,
     piezas, togglePieza,
     modelo, setModelo,
+    limitesModelo: MODELO_LIMITES[modelo],
+    numeroDiapositivas, setNumeroDiapositivas: (v) => setNumeroDiapositivas(clamp(v, MODELO_LIMITES[modelo].diapositivas)),
+    numeroParrafos, setNumeroParrafos: (v) => setNumeroParrafos(clamp(v, MODELO_LIMITES[modelo].parrafos)),
+    numeroPreguntas, setNumeroPreguntas: (v) => setNumeroPreguntas(clamp(v, MODELO_LIMITES[modelo].preguntas)),
     piezaYaGenerada,
     contenidoExistente,
     loadingContenido,

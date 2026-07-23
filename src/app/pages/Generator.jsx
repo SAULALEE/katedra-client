@@ -207,6 +207,10 @@ export default function Generator() {
     temarioSeleccionado,
     piezas, togglePieza,
     modelo, setModelo,
+    limitesModelo,
+    numeroDiapositivas, setNumeroDiapositivas,
+    numeroParrafos, setNumeroParrafos,
+    numeroPreguntas, setNumeroPreguntas,
     piezaYaGenerada,
     contenidoExistente,
     loadingContenido,
@@ -694,13 +698,64 @@ export default function Generator() {
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
                     <Cpu size={13} style={{ color:'var(--kt-muted)' }} /> Modelo de IA
                   </label>
-                  <CustomSelect 
-                    value={modelo} 
-                    onChange={setModelo} 
+                  <CustomSelect
+                    value={modelo}
+                    onChange={setModelo}
                     placeholder="— Selecciona modelo —"
-                    options={MODELOS.map(m => ({ value: m.id, label: m.label, hint: m.hint }))} 
+                    options={MODELOS.map(m => ({ value: m.id, label: m.label, hint: m.hint }))}
                   />
                 </div>
+
+                {/* 4. Per-piece count selectors, bounded by the chosen model tier */}
+                {(piezas.includes('teoria') || piezas.includes('evaluacion') || piezas.includes('diapositivas')) && (
+                  <div style={{ gridColumn:'1 / -1', display:'flex', flexWrap:'wrap', gap:'20px' }}>
+                    {piezas.includes('teoria') && (
+                      <div style={{ minWidth:'160px' }}>
+                        <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
+                          Párrafos de teoría ({limitesModelo.parrafos.min}–{limitesModelo.parrafos.max})
+                        </label>
+                        <input
+                          type="number"
+                          min={limitesModelo.parrafos.min}
+                          max={limitesModelo.parrafos.max}
+                          value={numeroParrafos}
+                          onChange={(e) => { const v = Number(e.target.value); if (!Number.isNaN(v)) setNumeroParrafos(v); }}
+                          style={{ width:'100%', height:'36px', padding:'0 10px', borderRadius:'9px', border:'1px solid var(--kt-input-border)', background:'var(--kt-input-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}
+                        />
+                      </div>
+                    )}
+                    {piezas.includes('evaluacion') && (
+                      <div style={{ minWidth:'160px' }}>
+                        <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
+                          Preguntas de examen ({limitesModelo.preguntas.min}–{limitesModelo.preguntas.max})
+                        </label>
+                        <input
+                          type="number"
+                          min={limitesModelo.preguntas.min}
+                          max={limitesModelo.preguntas.max}
+                          value={numeroPreguntas}
+                          onChange={(e) => { const v = Number(e.target.value); if (!Number.isNaN(v)) setNumeroPreguntas(v); }}
+                          style={{ width:'100%', height:'36px', padding:'0 10px', borderRadius:'9px', border:'1px solid var(--kt-input-border)', background:'var(--kt-input-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}
+                        />
+                      </div>
+                    )}
+                    {piezas.includes('diapositivas') && (
+                      <div style={{ minWidth:'160px' }}>
+                        <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
+                          Diapositivas ({limitesModelo.diapositivas.min}–{limitesModelo.diapositivas.max})
+                        </label>
+                        <input
+                          type="number"
+                          min={limitesModelo.diapositivas.min}
+                          max={limitesModelo.diapositivas.max}
+                          value={numeroDiapositivas}
+                          onChange={(e) => { const v = Number(e.target.value); if (!Number.isNaN(v)) setNumeroDiapositivas(v); }}
+                          style={{ width:'100%', height:'36px', padding:'0 10px', borderRadius:'9px', border:'1px solid var(--kt-input-border)', background:'var(--kt-input-bg)', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {Object.keys(piezasFallidas).length > 0 && (
                   <div style={{ display:'flex', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(244,63,94,.1)', border:'1px solid rgba(244,63,94,.25)' }}>
@@ -1080,8 +1135,7 @@ export default function Generator() {
                 <div style={{ display:'flex', gap:'5px' }}>
                   {[
                     { id: 'flash', label: 'Tutor' },
-                    { id: 'pro', label: 'Maestro' },
-                    { id: 'max', label: 'Catedrático' }
+                    { id: 'pro', label: 'Catedrático' }
                   ].map(m => (
                     <button 
                       key={m.id} 

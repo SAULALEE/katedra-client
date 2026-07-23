@@ -91,30 +91,36 @@ test('carga por URL envía el contrato exacto y devuelve el temario creado', asy
   assert.deepEqual(result, temario);
 });
 
-test('generación envía los modelos básico y avanzado', async () => {
-  for (const modelo of ['basico', 'avanzado']) {
+test('generación envía los modelos flash y pro junto con los conteos seleccionados', async () => {
+  for (const modelo of ['flash', 'pro']) {
     const contenido = { id: 'contenido-1', modelo, piezasFallidas: {} };
     const { result, config } = await withAdapter(contenido, () => generarMaterialParaTemario('temario-1', {
       piezas: ['teoria', 'evaluacion', 'diapositivas'],
-      modelo
+      modelo,
+      numeroDiapositivas: 8,
+      numeroParrafos: 10,
+      numeroPreguntas: 5
     }));
 
     assert.equal(config.url, '/temarios/temario-1/generar-material');
     assert.deepEqual(JSON.parse(config.data), {
       piezas: ['teoria', 'evaluacion', 'diapositivas'],
-      modelo
+      modelo,
+      numeroDiapositivas: 8,
+      numeroParrafos: 10,
+      numeroPreguntas: 5
     });
     assert.deepEqual(result, contenido);
   }
 });
 
-test('selector de generación ofrece únicamente Básico y Avanzado', async () => {
+test('selector de generación ofrece únicamente Básico (flash) y Avanzado (pro)', async () => {
   const source = await readFile(new URL('../hooks/useGenerator.js', import.meta.url), 'utf8');
   const modelosSource = source.slice(source.indexOf('export const MODELOS'), source.indexOf('export const MODELO_LABELS'));
 
-  assert.match(modelosSource, /id: 'basico', label: 'Básico'/);
-  assert.match(modelosSource, /id: 'avanzado', label: 'Avanzado'/);
-  assert.doesNotMatch(modelosSource, /id: '(flash|pro|max)'/);
+  assert.match(modelosSource, /id: 'flash', label: 'Básico'/);
+  assert.match(modelosSource, /id: 'pro', label: 'Avanzado'/);
+  assert.doesNotMatch(modelosSource, /id: '(basico|avanzado|max)'/);
 });
 
 test('selector de archivo acepta PDF, DOC, DOCX y Markdown', async () => {
