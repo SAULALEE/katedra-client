@@ -37,7 +37,7 @@ export default function Dashboard() {
   const { asignaturas, loading: asignaturasLoading, crearAsignatura, eliminarAsignatura } = useAsignaturas();
 
   const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
-  React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
+  useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);

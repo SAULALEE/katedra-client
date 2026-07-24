@@ -14,7 +14,8 @@ import {
   LogOut,
   Bell,
   Trash2,
-  BookOpen
+  BookOpen,
+  Settings
 } from 'lucide-react';
 
 export default function GeneratedContents() {
