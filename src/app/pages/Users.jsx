@@ -55,6 +55,8 @@ export default function Users() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsUser, setDetailsUser] = useState(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [credentialsCopied, setCredentialsCopied] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -157,6 +159,22 @@ export default function Users() {
     setDeleteConfirmUser(null);
   };
 
+  const handleCopyCredentials = async () => {
+    if (!createdCredentials) return;
+    try {
+      await navigator.clipboard.writeText(createdCredentials.temporaryPassword);
+      setCredentialsCopied(true);
+      setTimeout(() => setCredentialsCopied(false), 2000);
+    } catch {
+      // clipboard access can be denied by the browser; nothing to recover here
+    }
+  };
+
+  const closeCredentialsPanel = () => {
+    setCreatedCredentials(null);
+    setCredentialsCopied(false);
+  };
+
   const handleSubmit = async (e) => {
     if(e) e.preventDefault();
     setFormError('');
@@ -183,8 +201,14 @@ export default function Users() {
       success = await updateUser(editId, payload);
       if(success) notify('success', 'Cambios guardados', nombre + ' fue actualizado.');
     } else {
-      success = await createUser(payload);
-      if(success) notify('success', 'Docente registrado', nombre + ' se añadió al listado.');
+      const result = await createUser(payload);
+      success = Boolean(result);
+      if (result) {
+        notify('success', 'Administrador registrado', nombre + ' se añadió al listado.');
+        setCreatedCredentials({ email, temporaryPassword: result.temporaryPassword });
+      } else {
+        setFormError(error || 'No se pudo crear el usuario.');
+      }
     }
 
     setIsSubmitting(false);
@@ -677,11 +701,22 @@ export default function Users() {
               </div>
               <div>
                 <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>Rol de Sistema</label>
-                <div style={{ display:'flex', gap:'8px', padding:'4px', background:'var(--kt-input-bg)', border:'1px solid var(--kt-input-border)', borderRadius:'12px' }}>
-                  <button data-role-opt="Libre" onClick={() => setFormRole('Libre')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Libre</button>
-                  <button data-role-opt="Premium" onClick={() => setFormRole('Premium')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Premium</button>
-                  <button data-role-opt="Admin" onClick={() => setFormRole('Admin')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Admin</button>
-                </div>
+                {editId ? (
+                  <div style={{ display:'flex', gap:'8px', padding:'4px', background:'var(--kt-input-bg)', border:'1px solid var(--kt-input-border)', borderRadius:'12px' }}>
+                    <button data-role-opt="Libre" onClick={() => setFormRole('Libre')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Libre</button>
+                    <button data-role-opt="Premium" onClick={() => setFormRole('Premium')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Premium</button>
+                    <button data-role-opt="Admin" onClick={() => setFormRole('Admin')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Admin</button>
+                  </div>
+                ) : (
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px', height:'38px', padding:'0 14px', background:'rgba(56,189,248,.12)', border:'1px solid rgba(56,189,248,.3)', borderRadius:'12px', color:'#0369A1', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px' }}>
+                    Administrador
+                  </div>
+                )}
+                {!editId && (
+                  <p style={{ margin:'6px 0 0', fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)' }}>
+                    Este panel solo crea cuentas de administrador. Los docentes se registran ellos mismos.
+                  </p>
+                )}
               </div>
               <div>
                 <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>Estado de la Cuenta</label>
@@ -728,6 +763,40 @@ export default function Users() {
             <div style={{ display:'flex', gap:'12px' }}>
               <button onClick={() => setDeleteConfirmUser(null)} style={{ flex:1, height:'44px', border:'1px solid var(--kt-input-border)', background:'none', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', borderRadius:'11px' }}>Cancelar</button>
               <button onClick={confirmDelete} style={{ flex:1, height:'44px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#F43F5E,#BE123C)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13.5px', boxShadow:'0 12px 26px -12px rgba(244,63,94,.7)' }}>Sí, Eliminar</button>
+            </div>
+          </div>
+        </div>
+
+        {/* CREATED ADMIN CREDENTIALS MODAL */}
+        <div style={{ position:'absolute', inset:0, zIndex:90, display:'flex', alignItems:'center', justifyContent:'center', padding:'24px', opacity: createdCredentials ? 1 : 0, pointerEvents: createdCredentials ? 'auto' : 'none', transition:'opacity .22s ease' }}>
+          <div style={{ position:'absolute', inset:0, background:'var(--kt-modal-backdrop)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}></div>
+          <div style={{ position:'relative', width:'100%', maxWidth:'420px', background:'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2))', border:'1px solid var(--kt-modal-border)', borderRadius:'20px', boxShadow:'var(--kt-shadow-modal)', padding:'28px', transform: createdCredentials ? 'scale(1) translateY(0)' : 'scale(.94) translateY(10px)', transition:'transform .3s cubic-bezier(.34,1.56,.64,1)' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', gap:'13px', marginBottom:'20px' }}>
+              <div style={{ width:'40px', height:'40px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,rgba(16,185,129,.2),rgba(16,185,129,.08))', border:'1px solid rgba(16,185,129,.3)', display:'grid', placeItems:'center', color:'#10B981' }}><CheckCircle2 size={20} /></div>
+              <div>
+                <h3 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.6px', color:'var(--kt-heading)', margin:0 }}>Administrador creado</h3>
+                <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', margin:'2px 0 0' }}>Comparte esta contraseña temporal — no volverá a mostrarse.</p>
+              </div>
+            </div>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'5px' }}>CORREO</div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13.5px', color:'var(--kt-text)' }}>{createdCredentials?.email}</div>
+              </div>
+              <div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'5px' }}>CONTRASEÑA TEMPORAL</div>
+                <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                  <code style={{ flex:1, padding:'10px 12px', background:'var(--kt-input-bg)', border:'1px solid var(--kt-input-border)', borderRadius:'10px', fontFamily:"monospace", fontWeight:700, fontSize:'14px', color:'var(--kt-heading)', letterSpacing:'.5px', wordBreak:'break-all' }}>{createdCredentials?.temporaryPassword}</code>
+                  <button onClick={handleCopyCredentials} style={{ flex:'none', height:'40px', padding:'0 14px', border:'1px solid var(--kt-input-border)', borderRadius:'10px', background:'var(--kt-chip-bg)', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px' }}>
+                    {credentialsCopied ? 'Copiado' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display:'flex', justifyContent:'flex-end', marginTop:'24px' }}>
+              <button className="kt-primary" onClick={closeCredentialsPanel} style={{ height:'44px', padding:'0 22px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px' }}>Listo</button>
             </div>
           </div>
         </div>
