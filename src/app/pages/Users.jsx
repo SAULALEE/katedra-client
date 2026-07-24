@@ -194,7 +194,7 @@ export default function Users() {
     }
 
     setIsSubmitting(true);
-    const longRole = formRole === 'Admin' ? 'Administrador' : formRole === 'Premium' ? 'Docente Premium' : 'Docente Plan Libre';
+    const longRole = formRole === 'Admin' ? 'ROLE_ADMIN' : 'ROLE_PROFESOR';
     const payload = { nombre, email, rol: longRole, estado: formStatus };
     let success = false;
 
