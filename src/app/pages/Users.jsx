@@ -177,6 +177,7 @@ export default function Users() {
 
   const handleSubmit = async (e) => {
     if(e) e.preventDefault();
+    if (isSubmitting) return;
     setFormError('');
 
     if (!nombre.trim() || !email.trim()) {
@@ -737,7 +738,7 @@ export default function Users() {
 
             <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:'12px', marginTop:'26px' }}>
               <button onClick={() => setModalOpen(false)} style={{ height:'44px', padding:'0 18px', border:'none', background:'none', color:'var(--kt-muted)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'14px' }}>Cancelar</button>
-              <button className="kt-primary" onClick={handleSubmit} style={{ height:'44px', padding:'0 22px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow:'0 12px 26px -12px rgba(16,185,129,.7)', transition:'transform .18s,box-shadow .25s' }}>
+              <button className="kt-primary" onClick={handleSubmit} disabled={isSubmitting} style={{ height:'44px', padding:'0 22px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.75 : 1, fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow:'0 12px 26px -12px rgba(16,185,129,.7)', transition:'transform .18s,box-shadow .25s' }}>
                 <span className="kt-only-create">{isSubmitting ? 'Guardando...' : (editId ? 'Guardar Cambios' : 'Registrar Docente')}</span>
               </button>
             </div>
