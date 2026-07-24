@@ -16,6 +16,7 @@ export const useAuth = () => {
     loginWithGoogle,
     loginWithMicrosoft,
     register,
+    changePassword,
     logout,
     clearError,
     initAuth,
@@ -44,6 +45,7 @@ export const useAuth = () => {
     loginWithGoogle,
     loginWithMicrosoft,
     register,
+    changePassword,
     logout,
     clearError,
     handleOAuthCallback

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import {
   buildSessionFromToken,
+  changePasswordRequest,
   loginRequest,
   logoutRequest,
   registerRequest,
@@ -83,6 +84,31 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         isAuthenticated: false
       });
+      return false;
+    }
+  },
+
+  /**
+   * Changes the current user's password and clears the mustChangePassword flag.
+   */
+  changePassword: async (currentPassword, newPassword) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await changePasswordRequest(currentPassword, newPassword);
+      const updatedUser = { ...data.user, mustChangePassword: false };
+
+      localStorage.setItem('katedra_user', JSON.stringify(updatedUser));
+      localStorage.setItem('katedra_token', data.token);
+
+      set({
+        user: updatedUser,
+        token: data.token,
+        loading: false,
+        error: null
+      });
+      return true;
+    } catch (err) {
+      set({ error: err.message || 'Error al cambiar la contraseña', loading: false });
       return false;
     }
   },

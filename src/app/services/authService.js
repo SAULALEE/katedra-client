@@ -12,7 +12,7 @@ const getAvatarInitials = (nombre) => {
     .toUpperCase();
 };
 
-const normalizeAuthResponse = (data = {}) => {
+export const normalizeAuthResponse = (data = {}) => {
   const token = data.token || data.accessToken || data.jwt;
   const usuario = data.usuario || data.user || {};
   const nombre = usuario.nombre || usuario.name || data.nombre || 'Usuario Katedra';
@@ -26,7 +26,8 @@ const normalizeAuthResponse = (data = {}) => {
       email,
       nombre,
       rol,
-      avatarInitials: getAvatarInitials(nombre)
+      avatarInitials: getAvatarInitials(nombre),
+      mustChangePassword: Boolean(data.mustChangePassword)
     },
     token
   };
@@ -143,8 +144,27 @@ export const registerRequest = async (email, password, nombre) => {
 };
 
 /**
+ * Changes the password of the currently authenticated user.
+ *
+ * @param {string} currentPassword
+ * @param {string} newPassword
+ * @returns {Promise<object>} Returns mapped user details and a fresh JWT token.
+ */
+export const changePasswordRequest = async (currentPassword, newPassword) => {
+  try {
+    const response = await api.post('/usuarios/me/password', { currentPassword, newPassword });
+    return normalizeAuthResponse(response.data);
+  } catch (error) {
+    const errorMessage = error.response?.data?.message
+      || error.response?.data?.error
+      || 'Error al cambiar la contraseña.';
+    throw new Error(errorMessage, { cause: error });
+  }
+};
+
+/**
  * Performs a logout request on the backend if configured, and returns true.
- * 
+ *
  * @returns {Promise<boolean>}
  */
 export const logoutRequest = async () => {

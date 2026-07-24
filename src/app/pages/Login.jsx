@@ -17,7 +17,10 @@ export default function Login() {
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => { clearError(); }, [clearError]);
-  useEffect(() => { if (isAuthenticated) navigate(getDefaultRoute(user)); }, [isAuthenticated, user, navigate]);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    navigate(user?.mustChangePassword ? '/cambiar-password' : getDefaultRoute(user));
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
