@@ -12,8 +12,9 @@ export default function ResponsiveSidebar() {
   const { user, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useThemeStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [asignaturasOpen, setAsignaturasOpen] = useState(true);
 
-  const menuItems = [
+  const menuItems = isAdmin(user) ? [
     {
       name: 'Usuarios',
       path: '/usuarios',
@@ -22,35 +23,47 @@ export default function ResponsiveSidebar() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       )
-    },
+    }
+  ] : [
     {
-      name: 'Mis Temarios',
-      path: '/dashboard',
+      name: 'Mis Asignaturas',
+      path: '/dashboard?view=asignaturas',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
         </svg>
-      )
+      ),
+      subItems: [
+        {
+          name: 'Mis Favoritos',
+          path: '/dashboard?view=favoritos',
+          icon: (
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          )
+        }
+      ]
     },
     {
       name: 'Generador',
       path: '/generador',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5},
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      )
+    },
     {
       name: 'Contenidos Generados',
       path: '/contenidos',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      )
-    }, d="M12 4v16m8-8H4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
         </svg>
       )
     }
-  ].filter((item) => isAdmin(user) ? item.path === '/usuarios' : item.path !== '/usuarios');
+  ];
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -79,22 +92,62 @@ export default function ResponsiveSidebar() {
           <span className={`${KICKER} ml-2 mb-1`}>Menú Principal</span>
           <nav className="flex flex-col gap-1.5">
             {menuItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = location.pathname + location.search === item.path || (item.path.includes('/dashboard') && location.pathname === '/dashboard' && !location.search);
               return (
-                <button
-                  key={item.path}
-                  onClick={() => handleNavigation(item.path)}
-                  className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 cursor-pointer ${
-                    isActive
-                      ? 'bg-canvas border border-hairline shadow-soft text-ink'
-                      : 'bg-transparent border border-transparent text-ink-muted hover:bg-canvas hover:border-hairline hover:-translate-y-0.5 hover:shadow-soft hover:text-ink'
-                  }`}
-                >
-                  <span className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 transition-colors duration-300 ${isActive ? 'bg-blue-100 text-blue-600' : 'bg-surface-2 text-ink-muted group-hover:bg-blue-50'}`}>
-                    {item.icon}
-                  </span>
-                  <span>{item.name}</span>
-                </button>
+                <React.Fragment key={item.path}>
+                  <button
+                    onClick={() => handleNavigation(item.path)}
+                    className={`w-full text-left flex items-center justify-between gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 cursor-pointer ${
+                      isActive
+                        ? 'bg-canvas border border-hairline shadow-soft text-ink'
+                        : 'bg-transparent border border-transparent text-ink-muted hover:bg-canvas hover:border-hairline hover:-translate-y-0.5 hover:shadow-soft hover:text-ink'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 transition-colors duration-300 ${isActive ? 'bg-blue-100 text-blue-600' : 'bg-surface-2 text-ink-muted group-hover:bg-blue-50'}`}>
+                        {item.icon}
+                      </span>
+                      <span>{item.name}</span>
+                    </div>
+                    {item.subItems && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAsignaturasOpen(!asignaturasOpen);
+                        }}
+                        className="p-1 hover:bg-surface-2 rounded-md transition-transform"
+                      >
+                        <svg className={`w-4 h-4 transform transition-transform duration-200 ${asignaturasOpen ? 'rotate-0' : '-rotate-90'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </span>
+                    )}
+                  </button>
+
+                  {item.subItems && asignaturasOpen && (
+                    <div className="flex flex-col gap-1 pl-6 ml-4 border-l-2 border-hairline">
+                      {item.subItems.map((sub) => {
+                        const isSubActive = location.pathname + location.search === sub.path;
+                        return (
+                          <button
+                            key={sub.path}
+                            onClick={() => handleNavigation(sub.path)}
+                            className={`w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer ${
+                              isSubActive
+                                ? 'bg-canvas border border-hairline shadow-soft text-ink font-bold'
+                                : 'bg-transparent border border-transparent text-ink-muted hover:bg-canvas hover:border-hairline hover:text-ink'
+                            }`}
+                          >
+                            <span className={`flex items-center justify-center w-6 h-6 rounded-lg shrink-0 ${isSubActive ? 'bg-blue-50 text-blue-600' : 'text-ink-muted'}`}>
+                              {sub.icon}
+                            </span>
+                            <span>{sub.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </React.Fragment>
               );
             })}
           </nav>

@@ -27,7 +27,8 @@ import {
   BookOpen,
   Cpu,
   Download,
-  ChevronDown
+  ChevronDown,
+  Heart
 } from 'lucide-react';
 
 // Reusable SVG Icons for exports
@@ -236,6 +237,7 @@ export default function Generator() {
   const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
   React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
+  const [asignaturasOpen, setAsignaturasOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [configCollapsed, setConfigCollapsed] = useState(false);
@@ -399,7 +401,7 @@ export default function Generator() {
   .kt-primary:active{transform:translateY(0)}
 
   /* sidebar collapse (manual, works at any width) */
-  .kt-sidebar{width:256px; transition: width .32s cubic-bezier(.4,0,.2,1) !important;}
+  .kt-sidebar{width:256px; transition: width .32s cubic-bezier(.4,0,.2,1) !important; user-select: none; -webkit-user-select: none;}
   [data-root][data-kt-collapsed="true"] .kt-sidebar{width:76px}
   .kt-sidelabel{transition: opacity .25s ease, max-width .25s ease, margin .25s ease; opacity:1; max-width: 180px; min-width: 0; overflow: hidden; white-space: nowrap; display: inline-block;}
   [data-root][data-kt-collapsed="true"] .kt-sidelabel{display: none !important;}
@@ -526,7 +528,7 @@ export default function Generator() {
 
         {/* SIDEBAR */}
         <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .32s cubic-bezier(.4,0,.2,1)', overflow:'visible' }}>
-          <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{ position:'absolute', right:'-14px', top:'26px', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'1px solid var(--kt-border)', background:'var(--kt-panel-bg)', borderRadius:'50%', color:'var(--kt-muted)', cursor:'pointer', zIndex:50, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' }}>
+          <button className="kt-collapsebtn" onClick={() => { const next = !collapsed; setCollapsed(next); if (next) setAsignaturasOpen(false); }} aria-label="Colapsar" style={{ position:'absolute', right:'-14px', top:'26px', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'1px solid var(--kt-border)', background:'var(--kt-panel-bg)', borderRadius:'50%', color:'var(--kt-muted)', cursor:'pointer', zIndex:50, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' }}>
             <ChevronLeft className="kt-collapse-icon" size={16} style={{ transition:'transform .3s' }} />
           </button>
           
@@ -546,10 +548,69 @@ export default function Generator() {
                 <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/usuarios' ? 700 : 600, fontSize:'14px' }}>Usuarios</span>
               </Link>
             )}
-            <Link to="/dashboard" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/dashboard' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/dashboard' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/dashboard' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/dashboard' ? '#10B981' : 'inherit' }}><FolderDot size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/dashboard' ? 700 : 600, fontSize:'14px' }}>Mis Temarios</span>
-            </Link>
+
+            {/* Módulo Principal: Mis Asignaturas */}
+            <div
+              onClick={() => navigate('/dashboard')}
+              className="kt-nav kt-navrow"
+              style={{
+                display:'flex',
+                alignItems:'center',
+                gap:'13px',
+                padding:'11px 12px',
+                borderRadius:'11px',
+                cursor:'pointer',
+                color: 'var(--kt-muted)'
+              }}
+            >
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><FolderDot size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px', flex: 1 }}>Mis Asignaturas</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAsignaturasOpen(!asignaturasOpen);
+                }}
+                aria-label="Contraer/Desplegar Mis Asignaturas"
+                className="kt-sidelabel"
+                style={{
+                  display:'grid',
+                  placeItems:'center',
+                  padding:'2px',
+                  borderRadius:'6px',
+                  cursor:'pointer',
+                  opacity: 0.85
+                }}
+              >
+                <ChevronDown size={16} style={{ transform: asignaturasOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s cubic-bezier(.4,0,.2,1)' }} />
+              </span>
+            </div>
+
+            {/* Submódulo de Mis Asignaturas (Únicamente Mis Favoritos) */}
+            {asignaturasOpen && (
+              <div style={{ display:'flex', flexDirection:'column', gap:'2px', paddingLeft:'12px', marginTop:'-1px', marginBottom:'4px', borderLeft:'2px solid var(--kt-border-soft)', marginLeft:'21px' }}>
+                <Link
+                  to="/dashboard?view=favoritos"
+                  className="kt-nav kt-navrow"
+                  style={{
+                    display:'flex',
+                    alignItems:'center',
+                    gap:'10px',
+                    padding:'8px 10px',
+                    borderRadius:'9px',
+                    textDecoration:'none',
+                    border: '1px solid transparent',
+                    background: 'transparent',
+                    color: 'var(--kt-muted)',
+                    width:'100%',
+                    textAlign:'left'
+                  }}
+                >
+                  <span style={{ flex:'none', width:'18px', display:'grid', placeItems:'center' }}><Heart size={16} /></span>
+                  <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}>Mis Favoritos</span>
+                </Link>
+              </div>
+            )}
+
             <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
               <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
               <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
