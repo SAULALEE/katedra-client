@@ -68,23 +68,14 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
-   * Attempts to register a new user and authenticate them.
+   * Registers a new user account. Does not authenticate the caller;
+   * they log in separately with their new credentials.
    */
   register: async (email, password, nombre) => {
     set({ loading: true, error: null });
     try {
-      const data = await registerRequest(email, password, nombre);
-      
-      localStorage.setItem('katedra_user', JSON.stringify(data.user));
-      localStorage.setItem('katedra_token', data.token);
-
-      set({
-        user: data.user,
-        token: data.token,
-        isAuthenticated: true,
-        loading: false,
-        error: null
-      });
+      await registerRequest(email, password, nombre);
+      set({ loading: false, error: null });
       return true;
     } catch (err) {
       set({

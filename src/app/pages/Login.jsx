@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getDefaultRoute } from '../utils/roleUtils';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const justRegistered = Boolean(location.state?.registered);
   const { login, isAuthenticated, user, loading, error, clearError } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -438,6 +440,12 @@ export default function Login() {
                 />
                 Mantener sesión iniciada
               </label>
+
+              {justRegistered && !validationError && !error && (
+                <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '10px', color: '#059669', fontFamily: "'Manrope', sans-serif", fontSize: '13px', fontWeight: 600, lineHeight: '1.4' }}>
+                  Cuenta creada. Inicia sesión con tus datos.
+                </div>
+              )}
 
               {/* Error messages */}
               {(validationError || error) && (
