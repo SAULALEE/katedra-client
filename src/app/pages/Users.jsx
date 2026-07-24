@@ -48,6 +48,7 @@ export default function Users() {
   const [asignaturasOpen, setAsignaturasOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [editRol, setEditRol] = useState(null);
   const [formRole, setFormRole] = useState('Premium');
   const [formStatus, setFormStatus] = useState('Activo');
   const [query, setQuery] = useState('');
@@ -133,6 +134,7 @@ export default function Users() {
 
   const handleEditClick = (u) => {
     setEditId(u.id);
+    setEditRol(u.rol);
     setNombre(u.nombre);
     setEmail(u.email);
     setFormRole(getRoleShort(u.rol));
@@ -194,8 +196,11 @@ export default function Users() {
     }
 
     setIsSubmitting(true);
-    const longRole = formRole === 'Admin' ? 'ROLE_ADMIN' : 'ROLE_PROFESOR';
-    const payload = { nombre, email, rol: longRole, estado: formStatus };
+    // Role is never edited from this form: for a new user it's always
+    // ROLE_ADMIN (this panel only creates admins); for an existing user it
+    // stays whatever it already was, shown here only for display.
+    const rolForPayload = editId ? editRol : 'ROLE_ADMIN';
+    const payload = { nombre, email, rol: rolForPayload, estado: formStatus };
     let success = false;
 
     if (editId) {
@@ -702,22 +707,14 @@ export default function Users() {
               </div>
               <div>
                 <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>Rol de Sistema</label>
-                {editId ? (
-                  <div style={{ display:'flex', gap:'8px', padding:'4px', background:'var(--kt-input-bg)', border:'1px solid var(--kt-input-border)', borderRadius:'12px' }}>
-                    <button data-role-opt="Libre" onClick={() => setFormRole('Libre')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Libre</button>
-                    <button data-role-opt="Premium" onClick={() => setFormRole('Premium')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Premium</button>
-                    <button data-role-opt="Admin" onClick={() => setFormRole('Admin')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Admin</button>
-                  </div>
-                ) : (
-                  <div style={{ display:'flex', alignItems:'center', gap:'8px', height:'38px', padding:'0 14px', background:'rgba(56,189,248,.12)', border:'1px solid rgba(56,189,248,.3)', borderRadius:'12px', color:'#0369A1', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px' }}>
-                    Administrador
-                  </div>
-                )}
-                {!editId && (
-                  <p style={{ margin:'6px 0 0', fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)' }}>
-                    Este panel solo crea cuentas de administrador. Los docentes se registran ellos mismos.
-                  </p>
-                )}
+                <div style={{ display:'flex', alignItems:'center', gap:'8px', height:'38px', padding:'0 14px', background:'rgba(56,189,248,.12)', border:'1px solid rgba(56,189,248,.3)', borderRadius:'12px', color:'#0369A1', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px' }}>
+                  {editId ? (getRoleShort(editRol) === 'Admin' ? 'Administrador' : 'Profesor') : 'Administrador'}
+                </div>
+                <p style={{ margin:'6px 0 0', fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)' }}>
+                  {editId
+                    ? 'El rol no se puede cambiar desde aquí.'
+                    : 'Este panel solo crea cuentas de administrador. Los docentes se registran ellos mismos.'}
+                </p>
               </div>
               <div>
                 <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>Estado de la Cuenta</label>
