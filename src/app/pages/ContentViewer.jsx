@@ -22,7 +22,9 @@ import {
   FileBox,
   MonitorPlay,
   Copy,
-  Download
+  Download,
+  Heart,
+  ChevronDown
 } from 'lucide-react';
 
 export default function ContentViewer() {
@@ -33,8 +35,9 @@ export default function ContentViewer() {
   const { logout, user } = useAuth();
   
   const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
-  React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
+  useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
+  const [asignaturasOpen, setAsignaturasOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [exportTarget, setExportTarget] = useState(null); 
@@ -139,6 +142,22 @@ export default function ContentViewer() {
   }, 0) : 0;
   const scoreTotal = content && content.evaluacion ? content.evaluacion.length : 0;
 
+  const hasContent = () => {
+    if (!content) return false;
+    const hasTeoria = content.teoria && content.teoria.trim().length > 0;
+    const hasEval = content.evaluacion && content.evaluacion.length > 0;
+    const hasSlides = content.diapositivas && content.diapositivas.length > 0;
+    return hasTeoria || hasEval || hasSlides;
+  };
+
+  const handleTabClick = (tabId) => {
+    if (!hasContent()) {
+      setContentNotFound(true);
+      return;
+    }
+    setActiveTab(tabId);
+  };
+
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     notify('success', 'Copiado', 'El contenido fue copiado al portapapeles.');
@@ -216,7 +235,7 @@ export default function ContentViewer() {
   .kt-thumb:hover{transform:translateY(-2px)}
 
   /* sidebar collapse */
-  .kt-sidebar{width:256px}
+  .kt-sidebar{width:256px; transition: width .32s cubic-bezier(.4,0,.2,1) !important; user-select: none; -webkit-user-select: none;}
   [data-root][data-kt-collapsed="true"] .kt-sidebar{width:76px}
   [data-root][data-kt-collapsed="true"] .kt-sidelabel{display:none}
   [data-root][data-kt-collapsed="true"] .kt-menutitle{opacity:0}
@@ -313,7 +332,7 @@ export default function ContentViewer() {
 
         {/* SIDEBAR */}
         <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .32s cubic-bezier(.4,0,.2,1)', overflow:'visible' }}>
-          <button className="kt-collapsebtn" onClick={() => setCollapsed(!collapsed)} aria-label="Colapsar" style={{ position:'absolute', right:'-14px', top:'26px', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'1px solid var(--kt-border)', background:'var(--kt-panel-bg)', borderRadius:'50%', color:'var(--kt-muted)', cursor:'pointer', zIndex:50, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' }}>
+          <button className="kt-collapsebtn" onClick={() => { const next = !collapsed; setCollapsed(next); if (next) setAsignaturasOpen(false); }} aria-label="Colapsar" style={{ position:'absolute', right:'-14px', top:'26px', width:'28px', height:'28px', display:'grid', placeItems:'center', border:'1px solid var(--kt-border)', background:'var(--kt-panel-bg)', borderRadius:'50%', color:'var(--kt-muted)', cursor:'pointer', zIndex:50, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' }}>
             <ChevronLeft className="kt-collapse-icon" size={16} style={{ transition:'transform .3s' }} />
           </button>
           
@@ -333,10 +352,70 @@ export default function ContentViewer() {
                 <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/usuarios' ? 700 : 600, fontSize:'14px' }}>Usuarios</span>
               </Link>
             )}
-            <Link to="/dashboard" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/dashboard' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/dashboard' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/dashboard' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/dashboard' ? '#10B981' : 'inherit' }}><FolderDot size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/dashboard' ? 700 : 600, fontSize:'14px' }}>Mis Temarios</span>
-            </Link>
+
+            <div
+              onClick={() => navigate('/dashboard?view=asignaturas')}
+              className="kt-nav kt-navrow"
+              style={{
+                display:'flex',
+                alignItems:'center',
+                gap:'13px',
+                padding:'11px 12px',
+                borderRadius:'11px',
+                cursor:'pointer',
+                background: 'transparent',
+                border: '1px solid transparent',
+                color: 'var(--kt-muted)'
+              }}
+            >
+              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><FolderDot size={20} /></span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px', flex: 1 }}>Mis Asignaturas</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAsignaturasOpen(!asignaturasOpen);
+                }}
+                aria-label="Contraer/Desplegar Mis Asignaturas"
+                className="kt-sidelabel"
+                style={{
+                  display:'grid',
+                  placeItems:'center',
+                  padding:'2px',
+                  borderRadius:'6px',
+                  cursor:'pointer',
+                  opacity: 0.85
+                }}
+              >
+                <ChevronDown size={16} style={{ transform: asignaturasOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s cubic-bezier(.4,0,.2,1)' }} />
+              </span>
+            </div>
+
+            {/* Submódulo de Mis Asignaturas (Únicamente Mis Favoritos) */}
+            {asignaturasOpen && (
+              <div style={{ display:'flex', flexDirection:'column', gap:'2px', paddingLeft:'12px', marginTop:'-1px', marginBottom:'4px', borderLeft:'2px solid var(--kt-border-soft)', marginLeft:'21px' }}>
+                <Link
+                  to="/dashboard?view=favoritos"
+                  className="kt-nav kt-navrow"
+                  style={{
+                    display:'flex',
+                    alignItems:'center',
+                    gap:'10px',
+                    padding:'8px 10px',
+                    borderRadius:'9px',
+                    textDecoration:'none',
+                    border: '1px solid transparent',
+                    background: 'transparent',
+                    color: 'var(--kt-muted)',
+                    width:'100%',
+                    textAlign:'left'
+                  }}
+                >
+                  <span style={{ flex:'none', width:'18px', display:'grid', placeItems:'center' }}><Heart size={16} /></span>
+                  <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}>Mis Favoritos</span>
+                </Link>
+              </div>
+            )}
+
             <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
               <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
               <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
@@ -356,7 +435,7 @@ export default function ContentViewer() {
               </span>
             </button>
             <div className="kt-navrow" style={{ display:'flex', alignItems:'center', gap:'11px', padding:'6px 8px', overflow:'hidden' }}>
-              <div style={{ width:'38px', height:'38px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,#38BDF8,#2563EB)', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>
+              <div style={{ width:'38px', height:'38px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,#0284C7,#0284C7)', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff' }}>
                 {getInitial(user?.nombre || user?.email || 'Docente')}
               </div>
               <div className="kt-sidelabel" style={{ minWidth:0 }}>
@@ -438,14 +517,14 @@ export default function ContentViewer() {
               </div>
             ) : contentNotFound ? (
               <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'20px',textAlign:'center',padding:'32px'}}>
-                <div style={{width:'64px',height:'64px',borderRadius:'20px',background:'rgba(16,185,129,.1)',color:'#10B981',display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid rgba(16,185,129,.2)'}}>
+                <div style={{width:'64px',height:'64px',borderRadius:'20px',background:'rgba(37,99,235,.1)',color:'#0284C7',display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid rgba(37,99,235,.2)'}}>
                   <Wand2 size={32} />
                 </div>
                 <div style={{display:'flex',flexDirection:'column',gap:'8px',maxWidth:'420px'}}>
-                  <p style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'20px',color:'var(--kt-heading)',margin:0}}>Material Aún No Generado</p>
+                  <p style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'20px',color:'var(--kt-heading)',margin:0}}>NO HAS GENERADO CONTENIDO</p>
                   <p style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'14px',color:'var(--kt-muted)',margin:0,lineHeight:1.6}}>Este temario todavía no tiene contenido estructurado. Ve al Generador para elegir qué piezas crear (teoría, examen o diapositivas) y con qué modelo de IA.</p>
                 </div>
-                <button onClick={() => navigate(`/generador?temarioId=${id}`)} style={{padding:'0 24px',height:'48px',borderRadius:'12px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',border:'none',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'14px',boxShadow:'0 12px 24px -10px rgba(16,185,129,.6)',marginTop:'10px',transition:'transform .2s, box-shadow .2s'}} className="kt-primary">
+                <button onClick={() => navigate(`/generador?temarioId=${id}`)} style={{padding:'0 24px',height:'48px',borderRadius:'12px',background:'linear-gradient(150deg,#0284C7,#1d4ed8)',color:'#fff',border:'none',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'14px',boxShadow:'0 12px 24px -10px rgba(37,99,235,.6)',marginTop:'10px',transition:'transform .2s, box-shadow .2s'}} className="kt-primary">
                   Ir al Generador de Material
                 </button>
               </div>
@@ -461,14 +540,14 @@ export default function ContentViewer() {
                 {/* tabs */}
                 <div className="kt-tabscroll kt-main-pad" style={{display:'flex',gap:'26px',padding:'18px 32px 0',borderBottom:'1px solid var(--kt-border-soft)'}}>
                   {[
-                    { id: 'teoria', label: 'Teoría Docente', icon: <FileText size={16} /> },
-                    { id: 'evaluacion', label: 'Evaluación', icon: <CheckCircle2 size={16} /> },
-                    { id: 'slides', label: 'Diapositivas', icon: <MonitorPlay size={16} /> }
+                    { id: 'teoria', label: 'Teoría Docente', icon: <FileText size={16} color="#0284C7" /> },
+                    { id: 'evaluacion', label: 'Evaluación', icon: <CheckCircle2 size={16} color="#0284C7" /> },
+                    { id: 'slides', label: 'Diapositivas', icon: <MonitorPlay size={16} color="#0284C7" /> }
                   ].map(tab => (
-                    <button 
+                    <button
                       key={tab.id}
-                      data-tabbtn={tab.id} 
-                      onClick={() => setActiveTab(tab.id)} 
+                      data-tabbtn={tab.id}
+                      onClick={() => handleTabClick(tab.id)}
                       style={{display:'flex',alignItems:'center',gap:'8px',padding:'0 2px 14px',border:'none',borderBottom:'2px solid transparent',background:'none',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:700,fontSize:'14px',whiteSpace:'nowrap'}}
                     >
                       {tab.icon}{tab.label}
@@ -483,7 +562,7 @@ export default function ContentViewer() {
                     {/* ========================= TEORÍA ========================= */}
                     <div data-tabpanel="teoria">
                       <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px'}}>
-                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(16,185,129,.14)',color:'#10B981',display:'grid',placeItems:'center'}}><FileText size={19} /></div>
+                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(37,99,235,.14)',color:'#0284C7',display:'grid',placeItems:'center'}}><FileText size={19} /></div>
                         <div style={{minWidth:0,marginRight:'auto'}}>
                           <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'15.5px',letterSpacing:'-.4px',color:'var(--kt-heading)'}}>Material Teórico</div>
                           <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'12px',color:'var(--kt-muted)'}}>Lectura de ~4 min</div>
@@ -696,11 +775,11 @@ export default function ContentViewer() {
                           <div style={{display:'flex',height:'100%',transform:`translateX(-${currentSlideIndex * 100}%)`,transition:'transform .45s cubic-bezier(.4,0,.2,1)'}}>
                             {content?.diapositivas?.map((slide, idx) => (
                               <div key={idx} style={{flex:'none',width:'100%',height:'100%',position:'relative',padding:'8% 9%',display:'flex',flexDirection:'column',background:'var(--kt-card-bg)'}}>
-                                <div style={{position:'absolute',top:0,left:0,right:0,height:'6px',background:'linear-gradient(90deg,#0284C7,#38BDF8)'}}></div>
+                                <div style={{position:'absolute',top:0,left:0,right:0,height:'6px',background:'linear-gradient(90deg,#0284C7,#0284C7)'}}></div>
                                 {idx === 0 ? (
                                   /* Cover slide: temario + topic title, large and centered */
                                   <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'18px'}}>
-                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'3px',color:'#38BDF8',textTransform:'uppercase'}}>{course.asignatura}</div>
+                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'3px',color:'#0284C7',textTransform:'uppercase'}}>{course.asignatura}</div>
                                     <h2 style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'48px',letterSpacing:'-1.8px',lineHeight:1.1,color:'var(--kt-heading)',margin:0}}>{course.titulo}</h2>
                                     {slide.titulo && slide.titulo !== course.titulo && (
                                       <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'26px',letterSpacing:'-.8px',color:'var(--kt-text)',margin:0}}>{slide.titulo}</h3>
@@ -714,13 +793,13 @@ export default function ContentViewer() {
                                 ) : (
                                   /* Content slide: discreet temario title above the slide title */
                                   <>
-                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#38BDF8',textTransform:'uppercase',marginBottom:'auto'}}>{String(idx + 1).padStart(2, '0')} · {course.asignatura}</div>
+                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#0284C7',textTransform:'uppercase',marginBottom:'auto'}}>{String(idx + 1).padStart(2, '0')} · {course.asignatura}</div>
                                     <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',letterSpacing:'.5px',color:'var(--kt-muted)',marginBottom:'6px'}}>{course.titulo}</div>
                                     <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'34px',letterSpacing:'-1.2px',color:'var(--kt-heading)',margin:'0 0 22px'}}>{slide.titulo}</h3>
                                     <div style={{display:'flex',flexDirection:'column',gap:'13px',marginBottom:'auto'}}>
                                       {slide.puntos.map((pt, pIdx) => (
                                         <div key={pIdx} style={{display:'flex',alignItems:'center',gap:'12px',fontFamily:"'Manrope'",fontWeight:600,fontSize:'17px',color:'var(--kt-text)'}}>
-                                          <span style={{color:'#38BDF8'}}><CheckCircle2 size={18} /></span>{pt}
+                                          <span style={{color:'#0284C7'}}><CheckCircle2 size={18} /></span>{pt}
                                         </div>
                                       ))}
                                     </div>
@@ -785,7 +864,7 @@ export default function ContentViewer() {
                           {content?.diapositivas?.map((slide, idx) => {
                             const isSelected = currentSlideIndex === idx;
                             const accents = [
-                              'linear-gradient(90deg,#0284C7,#38BDF8)',
+                              'linear-gradient(90deg,#0284C7,#0284C7)',
                               'linear-gradient(90deg,#10B981,#34D399)',
                               'linear-gradient(90deg,#F59E0B,#FBBF24)',
                               'linear-gradient(90deg,#7C3AED,#A78BFA)'

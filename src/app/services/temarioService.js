@@ -18,12 +18,12 @@ export const getTemarios = async (asignaturaId) => {
  * Adds a new temario to the system (supporting links, files, etc.).
  * Fully prepared for backend ingestion.
  * 
- * @param {object} temarioData { titulo, asignaturaId, gradoAcademico, modelo, descripcion, temas, origen, detalleOrigen }
+ * @param {object} temarioData { titulo, asignaturaId, gradoAcademico, modelo, descripcion, numeroModulos, origen, detalleOrigen }
  */
 export const crearTemarioRequest = async (temarioData) => {
   try {
-    const { titulo, descripcion, gradoAcademico, asignaturaId, modelo } = temarioData;
-    const response = await api.post('/temarios', { titulo, descripcion, gradoAcademico, asignaturaId, modeloGeneracion: modelo });
+    const { titulo, descripcion, gradoAcademico, asignaturaId, modelo, numeroModulos } = temarioData;
+    const response = await api.post('/temarios', { titulo, descripcion, gradoAcademico, asignaturaId, modeloGeneracion: modelo, numeroModulos });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al guardar el temario', { cause: error });
@@ -74,7 +74,7 @@ export const actualizarTemarioRequest = async (id, temarioData) => {
     throw new Error(error.response?.data?.message || 'Error al actualizar el temario', { cause: error });
   }
 };
-export const cargarTemarioArchivoRequest = async ({ file, titulo, asignaturaId, gradoAcademico, modelo }) => {
+export const cargarTemarioArchivoRequest = async ({ file, titulo, asignaturaId, gradoAcademico, modelo, numeroModulos }) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
@@ -82,6 +82,7 @@ export const cargarTemarioArchivoRequest = async ({ file, titulo, asignaturaId, 
     formData.append('asignaturaId', asignaturaId);
     formData.append('gradoAcademico', gradoAcademico);
     formData.append('modeloGeneracion', modelo);
+    if (numeroModulos != null) formData.append('numeroModulos', numeroModulos);
 
     const response = await api.post('/temarios/cargar/archivo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -92,9 +93,9 @@ export const cargarTemarioArchivoRequest = async ({ file, titulo, asignaturaId, 
   }
 };
 
-export const cargarTemarioUrlRequest = async ({ url, titulo, asignaturaId, gradoAcademico, modelo }) => {
+export const cargarTemarioUrlRequest = async ({ url, titulo, asignaturaId, gradoAcademico, modelo, numeroModulos }) => {
   try {
-    const response = await api.post('/temarios/cargar/url', { url, titulo, asignaturaId, gradoAcademico, modeloGeneracion: modelo });
+    const response = await api.post('/temarios/cargar/url', { url, titulo, asignaturaId, gradoAcademico, modeloGeneracion: modelo, numeroModulos });
     return response.data.temario || response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al cargar el temario desde URL', { cause: error });
