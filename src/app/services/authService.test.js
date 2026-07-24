@@ -14,3 +14,12 @@ test('changePasswordRequest llama a POST /usuarios/me/password', async () => {
   assert.match(source, /export const changePasswordRequest/);
   assert.match(source, /\/usuarios\/me\/password/);
 });
+
+test('login/register/changePassword distinguen errores de red de errores de credenciales', async () => {
+  const source = await readFile(new URL('./authService.js', import.meta.url), 'utf8');
+
+  assert.match(source, /No se pudo conectar con el servidor/);
+  assert.match(source, /resolveAuthErrorMessage\(error, 'Error de autenticación/);
+  assert.match(source, /resolveAuthErrorMessage\(error, 'Error al registrar la cuenta/);
+  assert.match(source, /resolveAuthErrorMessage\(error, 'Error al cambiar la contraseña/);
+});

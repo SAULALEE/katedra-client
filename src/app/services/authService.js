@@ -94,6 +94,18 @@ export const buildSessionFromToken = (token) => {
   };
 };
 
+/**
+ * Resolves a user-facing message for an auth-related request failure.
+ * Distinguishes "no response reached the server" (network/CORS/timeout) from
+ * an actual error response, since those need different guidance.
+ */
+const resolveAuthErrorMessage = (error, fallback) => {
+  if (!error.response) {
+    return 'No se pudo conectar con el servidor. Verifica tu conexión e intenta de nuevo.';
+  }
+  return error.response.data?.message || error.response.data?.error || fallback;
+};
+
 export const startGoogleLogin = () => {
   window.location.href = '/api/v1/auth/google';
 };
@@ -114,9 +126,7 @@ export const loginRequest = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
     return normalizeAuthResponse(response.data);
   } catch (error) {
-    const errorMessage = error.response?.data?.message 
-      || error.response?.data?.error 
-      || 'Error de autenticación. Por favor, compruebe sus credenciales.';
+    const errorMessage = resolveAuthErrorMessage(error, 'Error de autenticación. Por favor, compruebe sus credenciales.');
     throw new Error(errorMessage, { cause: error });
   }
 };
@@ -136,9 +146,7 @@ export const registerRequest = async (email, password, nombre) => {
     const response = await api.post(url, payload);
     return normalizeAuthResponse(response.data);
   } catch (error) {
-    const errorMessage = error.response?.data?.message 
-      || error.response?.data?.error 
-      || 'Error al registrar la cuenta. Por favor, intente de nuevo.';
+    const errorMessage = resolveAuthErrorMessage(error, 'Error al registrar la cuenta. Por favor, intente de nuevo.');
     throw new Error(errorMessage, { cause: error });
   }
 };
@@ -155,9 +163,7 @@ export const changePasswordRequest = async (currentPassword, newPassword) => {
     const response = await api.post('/usuarios/me/password', { currentPassword, newPassword });
     return normalizeAuthResponse(response.data);
   } catch (error) {
-    const errorMessage = error.response?.data?.message
-      || error.response?.data?.error
-      || 'Error al cambiar la contraseña.';
+    const errorMessage = resolveAuthErrorMessage(error, 'Error al cambiar la contraseña.');
     throw new Error(errorMessage, { cause: error });
   }
 };
