@@ -113,6 +113,22 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  /**
+   * Refresca el plan del usuario en sesión tras un cambio de suscripción.
+   *
+   * No hace falta un token nuevo: el claim `plan` del JWT es sólo decorativo y el backend
+   * lee siempre el plan de la base de datos. Se reescribe también en localStorage para
+   * que la insignia sobreviva a una recarga sin esperar a /suscripciones/me/uso.
+   */
+  actualizarPlan: (plan) => {
+    const { user } = get();
+    if (!user) return;
+
+    const actualizado = { ...user, plan };
+    localStorage.setItem('katedra_user', JSON.stringify(actualizado));
+    set({ user: actualizado });
+  },
+
   loginWithGoogle: () => {
     set({ error: null });
     startGoogleLogin();

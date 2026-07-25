@@ -20,7 +20,8 @@ export const useAuth = () => {
     logout,
     clearError,
     initAuth,
-    handleOAuthCallback
+    handleOAuthCallback,
+    actualizarPlan
   } = useAuthStore();
 
   // Run initial state restoration check
@@ -48,6 +49,7 @@ export const useAuth = () => {
     changePassword,
     logout,
     clearError,
-    handleOAuthCallback
+    handleOAuthCallback,
+    actualizarPlan
   };
 };
