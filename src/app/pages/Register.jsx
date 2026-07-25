@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { validateRegisterFields } from '../services/authService';
 import { getDefaultRoute } from '../utils/roleUtils';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, isAuthenticated, user, loading, error, clearError } = useAuth();
+  const { register, loginWithGoogle, isAuthenticated, user, loading, error, clearError } = useAuth();
 
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
@@ -24,18 +25,9 @@ export default function Register() {
     setValidationError('');
     clearError();
 
-    if (!nombre || !email || !password || !confirmPassword) {
-      setValidationError('Por favor, completa todos los campos.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setValidationError('Las contraseñas no coinciden.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setValidationError('La contraseña debe tener al menos 6 caracteres.');
+    const fieldError = validateRegisterFields(nombre, email, password, confirmPassword);
+    if (fieldError) {
+      setValidationError(fieldError);
       return;
     }
 
@@ -44,7 +36,7 @@ export default function Register() {
       return;
     }
 
-    const success = await register(email, password, nombre);
+    const success = await register(email.trim(), password, nombre.trim());
     if (success) {
       navigate(getDefaultRoute(user));
     }
@@ -385,13 +377,9 @@ export default function Register() {
 
               {/* OAuth */}
               <div style={{ display: 'flex', gap: '11px', marginBottom: '18px' }}>
-                <button type="button" className="kt-oauth-btn">
+                <button type="button" className="kt-oauth-btn" onClick={loginWithGoogle}>
                   <svg width="17" height="17" viewBox="0 0 18 18" style={{ marginRight: '2px' }}><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18Z"></path><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33Z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"></path></svg>
-                  Google
-                </button>
-                <button type="button" className="kt-oauth-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F172A" style={{ marginRight: '2px' }}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.7-1.13 1.83-1.01 2.93.12.01.24.01.37.01.91 0 2.01-.52 2.47-1.33z"></path></svg>
-                  Apple
+                  Registrarse con Google
                 </button>
               </div>
 
@@ -489,7 +477,7 @@ export default function Register() {
 
                 {/* Error messages */}
                 {(validationError || error) && (
-                  <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '10px', color: '#EF4444', fontFamily: "'Manrope', sans-serif", fontSize: '13px', fontWeight: 600, lineHeight: '1.4' }}>
+                  <div role="alert" style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '10px', color: '#EF4444', fontFamily: "'Manrope', sans-serif", fontSize: '13px', fontWeight: 600, lineHeight: '1.4' }}>
                     {validationError || error}
                   </div>
                 )}

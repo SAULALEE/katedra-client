@@ -1,12 +1,26 @@
 import { create } from 'zustand';
 import {
-  buildSessionFromToken,
+  isSessionWithinTolerance,
   loginRequest,
   logoutRequest,
+  parseOAuthCallback,
   registerRequest,
+  SESSION_LAST_ACTIVE_KEY,
   startGoogleLogin,
   startMicrosoftLogin
-} from '../services/authService';
+} from '../services/authService.js';
+
+const clearLocalSession = () => {
+  localStorage.removeItem('katedra_user');
+  localStorage.removeItem('katedra_token');
+  localStorage.removeItem(SESSION_LAST_ACTIVE_KEY);
+};
+
+const saveLocalSession = (session, now = Date.now()) => {
+  localStorage.setItem('katedra_user', JSON.stringify(session.user));
+  localStorage.setItem('katedra_token', session.token);
+  localStorage.setItem(SESSION_LAST_ACTIVE_KEY, String(now));
+};
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -18,36 +32,48 @@ export const useAuthStore = create((set, get) => ({
   /**
    * Initializes authentication state by restoring credentials from localStorage.
    */
-  initAuth: () => {
+  initAuth: (now = Date.now()) => {
     try {
       const storedUser = localStorage.getItem('katedra_user');
       const storedToken = localStorage.getItem('katedra_token');
+      const lastActive = localStorage.getItem(SESSION_LAST_ACTIVE_KEY);
 
-      if (storedUser && storedToken) {
+      if (
+        storedUser &&
+        storedToken &&
+        isSessionWithinTolerance(lastActive, now)
+      ) {
         set({
           user: JSON.parse(storedUser),
           token: storedToken,
           isAuthenticated: true,
           error: null
         });
+        return;
       }
+
+      clearLocalSession();
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        error: null
+      });
     } catch (e) {
       console.error('Failed to restore auth session from localStorage:', e);
-      localStorage.removeItem('katedra_user');
-      localStorage.removeItem('katedra_token');
+      clearLocalSession();
     }
   },
 
   /**
    * Attempts to authenticate user with email and password.
    */
-  login: async (email, password) => {
+  login: async (email, password, now = Date.now()) => {
     set({ loading: true, error: null });
     try {
       const data = await loginRequest(email, password);
       
-      localStorage.setItem('katedra_user', JSON.stringify(data.user));
-      localStorage.setItem('katedra_token', data.token);
+      saveLocalSession(data, now);
 
       set({
         user: data.user,
@@ -70,13 +96,12 @@ export const useAuthStore = create((set, get) => ({
   /**
    * Attempts to register a new user and authenticate them.
    */
-  register: async (email, password, nombre) => {
+  register: async (email, password, nombre, now = Date.now()) => {
     set({ loading: true, error: null });
     try {
       const data = await registerRequest(email, password, nombre);
       
-      localStorage.setItem('katedra_user', JSON.stringify(data.user));
-      localStorage.setItem('katedra_token', data.token);
+      saveLocalSession(data, now);
 
       set({
         user: data.user,
@@ -106,22 +131,28 @@ export const useAuthStore = create((set, get) => ({
     startMicrosoftLogin();
   },
 
-  handleOAuthCallback: () => {
+  handleOAuthCallback: (now = Date.now()) => {
     try {
-      const currentUrl = new URL(window.location.href);
-      const token = currentUrl.searchParams.get('token');
+      const currentState = get();
+      const callbackToken = new URL(window.location.href).searchParams.get('token');
 
-      if (!token) {
-        return false;
+      if (
+        !callbackToken &&
+        currentState.isAuthenticated &&
+        currentState.user &&
+        currentState.token
+      ) {
+        return {
+          user: currentState.user,
+          token: currentState.token
+        };
       }
 
-      const session = buildSessionFromToken(token);
+      const { session, cleanUrl } = parseOAuthCallback(window.location.href);
 
-      localStorage.setItem('katedra_user', JSON.stringify(session.user));
-      localStorage.setItem('katedra_token', session.token);
+      saveLocalSession(session, now);
 
-      currentUrl.searchParams.delete('token');
-      window.history.replaceState({}, document.title, `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+      window.history.replaceState({}, document.title, cleanUrl);
 
       set({
         user: session.user,
@@ -131,10 +162,9 @@ export const useAuthStore = create((set, get) => ({
         error: null
       });
 
-      return true;
+      return session;
     } catch (err) {
-      localStorage.removeItem('katedra_user');
-      localStorage.removeItem('katedra_token');
+      clearLocalSession();
       set({
         user: null,
         token: null,
@@ -142,7 +172,7 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         error: err.message || 'Error al procesar el inicio de sesión social'
       });
-      return false;
+      return null;
     }
   },
 
@@ -156,8 +186,7 @@ export const useAuthStore = create((set, get) => ({
     } catch (e) {
       console.error('API logout failed, performing local logout:', e);
     } finally {
-      localStorage.removeItem('katedra_user');
-      localStorage.removeItem('katedra_token');
+      clearLocalSession();
 
       set({
         user: null,
@@ -166,6 +195,12 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         error: null
       });
+    }
+  },
+
+  recordLastActivity: (now = Date.now()) => {
+    if (useAuthStore.getState().isAuthenticated) {
+      localStorage.setItem(SESSION_LAST_ACTIVE_KEY, String(now));
     }
   },
 

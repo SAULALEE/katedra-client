@@ -19,20 +19,28 @@ export const useAuth = () => {
     logout,
     clearError,
     initAuth,
-    handleOAuthCallback
+    handleOAuthCallback,
+    recordLastActivity
   } = useAuthStore();
 
   // Run initial state restoration check
   useEffect(() => {
     if (!isAuthenticated && !user) {
-      if (window.location.search.includes('token=')) {
-        handleOAuthCallback();
-        return;
-      }
-
       initAuth();
     }
-  }, [isAuthenticated, user, initAuth, handleOAuthCallback]);
+  }, [isAuthenticated, user, initAuth]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
+
+    const handleLeave = () => recordLastActivity();
+    window.addEventListener('pagehide', handleLeave);
+    window.addEventListener('beforeunload', handleLeave);
+    return () => {
+      window.removeEventListener('pagehide', handleLeave);
+      window.removeEventListener('beforeunload', handleLeave);
+    };
+  }, [isAuthenticated, recordLastActivity]);
 
   return {
     user,

@@ -1,4 +1,111 @@
-import api from './api';
+import api, { API_BASE_URL } from './api.js';
+
+export const SESSION_LAST_ACTIVE_KEY = 'katedra_last_active';
+export const SESSION_TOLERANCE_MS = 15 * 60 * 1000;
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export const isSessionWithinTolerance = (lastActive, now = Date.now()) => {
+  if (lastActive === null || lastActive === undefined || lastActive === '') {
+    return false;
+  }
+
+  const timestamp = Number(lastActive);
+  return Number.isFinite(timestamp) &&
+    now >= timestamp &&
+    now - timestamp < SESSION_TOLERANCE_MS;
+};
+
+export const validateLoginFields = (email, password) => {
+  if (!email?.trim() || !password) {
+    return 'Por favor, completa todos los campos.';
+  }
+  if (!EMAIL_PATTERN.test(email.trim())) {
+    return 'Ingresa un correo electrónico válido.';
+  }
+  return null;
+};
+
+export const validateRegisterFields = (nombre, email, password, confirmPassword) => {
+  if (!nombre?.trim() || !email?.trim() || !password || !confirmPassword) {
+    return 'Por favor, completa todos los campos.';
+  }
+  if (!EMAIL_PATTERN.test(email.trim())) {
+    return 'Ingresa un correo electrónico válido.';
+  }
+  if (password !== confirmPassword) {
+    return 'Las contraseñas no coinciden.';
+  }
+  if (password.length < 6) {
+    return 'La contraseña debe tener al menos 6 caracteres.';
+  }
+  return null;
+};
+
+const normalizeText = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const getValidationMessage = (errors) => {
+  if (Array.isArray(errors)) {
+    return errors.find((value) => typeof value === 'string') || null;
+  }
+  if (errors && typeof errors === 'object') {
+    for (const value of Object.values(errors)) {
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) {
+        const message = value.find((item) => typeof item === 'string');
+        if (message) return message;
+      }
+    }
+  }
+  return null;
+};
+
+export const getAuthErrorMessage = (error, flow) => {
+  const response = error?.response;
+  if (!response) {
+    return 'No se pudo conectar con Katedra. Revisa tu conexión e inténtalo de nuevo.';
+  }
+
+  const data = response.data;
+  const backendMessage =
+    (typeof data === 'string' ? data : null) ||
+    getValidationMessage(data?.errors) ||
+    data?.message ||
+    data?.detail;
+  const normalized = normalizeText(backendMessage);
+
+  if (flow === 'login') {
+    if (normalized.includes('login social')) {
+      return 'Esta cuenta utiliza Google. Continúa con Google para iniciar sesión.';
+    }
+    if (
+      response.status === 401 ||
+      normalized.includes('bad credentials') ||
+      normalized.includes('usuario no encontrado') ||
+      normalized.includes('credenciales')
+    ) {
+      return 'Correo o contraseña incorrectos.';
+    }
+  }
+
+  if (
+    flow === 'register' &&
+    normalized.includes('email') &&
+    normalized.includes('registrad')
+  ) {
+    return 'Este correo ya está registrado. Inicia sesión o utiliza otro correo.';
+  }
+
+  if (response.status >= 400 && response.status < 500 && backendMessage) {
+    return backendMessage;
+  }
+
+  return 'Katedra no pudo completar la solicitud. Inténtalo de nuevo más tarde.';
+};
 
 const getAvatarInitials = (nombre) => {
   if (!nombre) return 'U';
@@ -55,30 +162,34 @@ export const buildSessionFromToken = (token) => {
   }
 
   const payload = decodeJwtPayload(token);
+  if (!payload) {
+    throw new Error('JWT OAuth inválido');
+  }
+
   const nombre =
-    payload?.nombre ||
-    payload?.name ||
-    payload?.usuario?.nombre ||
-    payload?.given_name ||
+    payload.nombre ||
+    payload.name ||
+    payload.usuario?.nombre ||
+    payload.given_name ||
     'Usuario Katedra';
   const email =
-    payload?.email ||
-    payload?.preferred_username ||
-    payload?.upn ||
-    payload?.sub ||
+    payload.email ||
+    payload.preferred_username ||
+    payload.upn ||
+    payload.sub ||
     '';
   const rol =
-    payload?.rol ||
-    payload?.role ||
-    payload?.authorities?.[0] ||
-    payload?.roles?.[0] ||
-    payload?.usuario?.rol ||
+    payload.rol ||
+    payload.role ||
+    payload.authorities?.[0] ||
+    payload.roles?.[0] ||
+    payload.usuario?.rol ||
     'ROLE_PROFESOR';
   const id =
-    payload?.id ||
-    payload?.userId ||
-    payload?.usuarioId ||
-    payload?.sub ||
+    payload.id ||
+    payload.userId ||
+    payload.usuarioId ||
+    payload.sub ||
     `oauth-${Date.now()}`;
 
   return {
@@ -93,8 +204,31 @@ export const buildSessionFromToken = (token) => {
   };
 };
 
+export const parseOAuthCallback = (url) => {
+  const currentUrl = new URL(url);
+  const token = currentUrl.searchParams.get('token');
+  const session = buildSessionFromToken(token);
+
+  currentUrl.searchParams.delete('token');
+
+  return {
+    session,
+    cleanUrl: `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+  };
+};
+
+export const getGoogleOAuthUrl = () => `${API_BASE_URL}/auth/google`;
+
+export const getOAuthErrorMessage = (errorCode) => {
+  if (errorCode === 'local_account_exists') {
+    return 'Este correo ya está registrado con contraseña. Inicia sesión con correo y contraseña.';
+  }
+
+  return 'No se pudo completar el acceso con Google. Inténtalo de nuevo.';
+};
+
 export const startGoogleLogin = () => {
-  window.location.href = '/api/v1/auth/google';
+  window.location.assign(getGoogleOAuthUrl());
 };
 
 export const startMicrosoftLogin = () => {
@@ -113,10 +247,7 @@ export const loginRequest = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
     return normalizeAuthResponse(response.data);
   } catch (error) {
-    const errorMessage = error.response?.data?.message 
-      || error.response?.data?.error 
-      || 'Error de autenticación. Por favor, compruebe sus credenciales.';
-    throw new Error(errorMessage, { cause: error });
+    throw new Error(getAuthErrorMessage(error, 'login'), { cause: error });
   }
 };
 
@@ -135,10 +266,7 @@ export const registerRequest = async (email, password, nombre) => {
     const response = await api.post(url, payload);
     return normalizeAuthResponse(response.data);
   } catch (error) {
-    const errorMessage = error.response?.data?.message 
-      || error.response?.data?.error 
-      || 'Error al registrar la cuenta. Por favor, intente de nuevo.';
-    throw new Error(errorMessage, { cause: error });
+    throw new Error(getAuthErrorMessage(error, 'register'), { cause: error });
   }
 };
 
