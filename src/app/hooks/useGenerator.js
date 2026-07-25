@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { generarMaterialParaTemario, getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from './useTemarios';
+import { useAsignaturas } from './useAsignaturas';
 
 export const PIEZAS = [
   { id: 'teoria', label: 'Teoría Docente' },
@@ -62,10 +63,16 @@ const pieceExists = (contenido, piezaId) => {
 
 export const useGenerator = () => {
   const [searchParams] = useSearchParams();
-  const { courses } = useTemarios();
+  const location = useLocation();
+  const { courses, assignmentCourses, assignmentLoading, fetchCoursesByAsignatura } = useTemarios();
+  const { asignaturas, loading: asignaturasLoading } = useAsignaturas();
 
-  const initialTemarioId = searchParams.get('temarioId') || '';
+  const initialTemarioId = searchParams.get('temarioId') || location.state?.temarioId || '';
   const [temarioId, setTemarioIdState] = useState(initialTemarioId);
+  const [materiaId, setMateriaIdState] = useState('');
+  // True once the materia owning `initialTemarioId` has been resolved from `courses`
+  // (or immediately when there is no temario to preselect).
+  const [initialTemarioResolved, setInitialTemarioResolved] = useState(!initialTemarioId);
   const [piezas, setPiezas] = useState([]);
   const [modelo, setModeloState] = useState('flash');
   const [numeroDiapositivas, setNumeroDiapositivas] = useState(MODELO_LIMITES.flash.diapositivas.default);
@@ -111,6 +118,18 @@ export const useGenerator = () => {
     return () => { cancelled = true; };
   }, [temarioId]);
 
+  // A temario was preselected (via ?temarioId= or router state) before its materia was
+  // known — the config panel requires a materia first, so derive it from the full
+  // temarios list once loaded, then load that materia's temario options.
+  useEffect(() => {
+    if (initialTemarioResolved) return;
+    const match = courses.find(c => c.id === initialTemarioId);
+    if (!match) return;
+    setMateriaIdState(match.asignaturaId);
+    fetchCoursesByAsignatura(match.asignaturaId);
+    setInitialTemarioResolved(true);
+  }, [courses, initialTemarioId, initialTemarioResolved, fetchCoursesByAsignatura]);
+
   // Event-driven selection: resets generation state alongside the new temario
   const selectTemario = useCallback((id) => {
     setTemarioIdState(id);
@@ -123,7 +142,25 @@ export const useGenerator = () => {
     setCheckedAnswers({});
   }, []);
 
-  const temarioSeleccionado = courses.find(c => c.id === temarioId) || null;
+  // Selecting a materia resets the temario (and its generation state) and loads that
+  // materia's temarios — the temario selector stays empty/locked until this runs.
+  const selectMateria = useCallback((id) => {
+    setMateriaIdState(id);
+    setTemarioIdState('');
+    setLoadingContenido(false);
+    setGeneratedData(null);
+    setContenidoExistente(null);
+    setPiezas([]);
+    setPiezasFallidas({});
+    setGenError('');
+    setCheckedAnswers({});
+    if (id) fetchCoursesByAsignatura(id);
+  }, [fetchCoursesByAsignatura]);
+
+  const materiaSeleccionada = asignaturas.find(a => a.id === materiaId) || null;
+  const temarioSeleccionado = assignmentCourses.find(c => c.id === temarioId)
+    || courses.find(c => c.id === temarioId)
+    || null;
 
   const togglePieza = useCallback((piezaId) => {
     setPiezas(prev => prev.includes(piezaId) ? prev.filter(p => p !== piezaId) : [...prev, piezaId]);
@@ -180,12 +217,6 @@ export const useGenerator = () => {
       if (Object.keys(fallidas).length > 0) {
         console.error('Fallos de generación IA:', fallidas);
       }
-      import('../store/temarioStore').then(m => m.logActivity('GENERADO', temarioSeleccionado || { id: temarioId, titulo: 'Temario' }, {
-        piezasGeneradas: piezas.filter(p => !fallidas[p]),
-        modeloUsado: modelo,
-        fallidas
-      })).catch(err => console.error('Error logging generation:', err));
-      
       setPiezasFallidas(fallidas);
       const firstGenerated = PIEZAS.find(p => piezas.includes(p.id) && !fallidas[p.id]);
       setActiveTab((firstGenerated || PIEZAS.find(p => pieceExists(data, p.id)) || PIEZAS[0]).id);
@@ -208,7 +239,10 @@ export const useGenerator = () => {
   };
 
   return {
-    courses,
+    asignaturas, asignaturasLoading,
+    materiaId, setMateriaId: selectMateria,
+    materiaSeleccionada,
+    courses: assignmentCourses, temariosLoading: assignmentLoading,
     temarioId, setTemarioId: selectTemario,
     temarioSeleccionado,
     piezas, togglePieza, selectAllPiezas, deselectAllPiezas,

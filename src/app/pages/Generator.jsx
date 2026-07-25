@@ -4,7 +4,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useGenerator, PIEZAS, MODELOS } from '../hooks/useGenerator';
 import { useAuth } from '../hooks/useAuth';
+import { useExport } from '../hooks/useExport';
 import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
+import { SUBJECT_COLORS, darkenHex } from '../utils/asignaturaVisual';
+import { opcionesDePieza } from '../utils/exportOptions';
+import { ExportDropdown } from '../components/ExportDropdown';
 import { ResponseCountField } from '../components/ResponseCountField';
 import {
   Users as UsersIcon,
@@ -26,60 +30,9 @@ import {
   RefreshCw,
   BookOpen,
   Cpu,
-  Download,
   ChevronDown,
   Heart
 } from 'lucide-react';
-
-// Reusable SVG Icons for exports
-
-const IconMSForms = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4" y="4" width="16" height="16" rx="2" fill="#00828A" fillOpacity="0.1"/>
-    <rect x="4" y="4" width="16" height="16" rx="2" stroke="#00828A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M8 12L11 15L16 9" stroke="#00828A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const IconGoogleForms = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#7248B9" fillOpacity="0.1"/>
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 10H15M9 14H15" stroke="#7248B9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const IconDoc = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#2563EB" fillOpacity="0.1"/>
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 13H15M9 17H12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const IconMD = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4" y="6" width="16" height="12" rx="2" fill="#4B5563" fillOpacity="0.1"/>
-    <rect x="4" y="6" width="16" height="12" rx="2" stroke="#4B5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M7 14L9 10L11 14M13 14V10M13 14L15 12M13 14L17 14" stroke="#4B5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const IconPDF = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#DC2626" fillOpacity="0.1"/>
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 11V15M9 11H12C13.1046 11 14 11.8954 14 13C14 14.1046 13.1046 15 12 15H9M9 11V9" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const IconPPTX = () => (
-  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" fill="#EA580C" fillOpacity="0.1"/>
-    <path d="M14.5 3H7.5C6.11929 3 5 4.11929 5 5.5V18.5C5 19.8807 6.11929 21 7.5 21H16.5C17.8807 21 19 19.8807 19 18.5V7.5L14.5 3Z" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 10V16M9 10H13C14.1046 10 15 10.8954 15 12C15 13.1046 14.1046 14 13 14H9" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
 
 const IconZap = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -189,51 +142,11 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
   );
 };
 
-const ExportDropdown = ({ options, onSelect }) => {
-  const [open, setOpen] = React.useState(false);
-  const menuRef = React.useRef(null);
-  
-  React.useEffect(() => {
-    const handleClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  return (
-    <div ref={menuRef} style={{ position:'relative' }}>
-      <button 
-        onClick={() => setOpen(!open)}
-        style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 16px', borderRadius:'10px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', color:'var(--kt-heading)', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', cursor:'pointer', transition:'all .2s' }}
-      >
-        <Download size={14} /> Exportar con <ChevronDown size={14} style={{ transform: open ? 'rotate(180deg)' : 'none', transition:'transform .2s' }} />
-      </button>
-      
-      {open && (
-        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, background:'var(--kt-panel-bg)', border:'1px solid var(--kt-border)', borderRadius:'12px', padding:'6px', boxShadow:'0 10px 30px -10px rgba(0,0,0,0.15)', minWidth:'180px', zIndex:100, display:'flex', flexDirection:'column', gap:'2px' }}>
-          {options.map((opt, i) => (
-            <button 
-              key={i}
-              onClick={() => { onSelect(opt); setOpen(false); }}
-              style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px', borderRadius:'8px', background:'transparent', border:'none', color:'var(--kt-text)', fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px', cursor:'pointer', textAlign:'left', transition:'background .2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.background='var(--kt-bg1)'}
-              onMouseLeave={(e) => e.currentTarget.style.background='transparent'}
-            >
-              <span style={{ color: opt.color, display:'flex' }}>{opt.icon}</span>
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 export default function Generator() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { exportar, formatoEnCurso } = useExport();
   const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
   React.useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
@@ -246,7 +159,10 @@ export default function Generator() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   const {
-    courses,
+    asignaturas, asignaturasLoading,
+    materiaId, setMateriaId,
+    materiaSeleccionada,
+    courses, temariosLoading,
     temarioId, setTemarioId,
     temarioSeleccionado,
     piezas, togglePieza, selectAllPiezas, deselectAllPiezas,
@@ -305,6 +221,15 @@ export default function Generator() {
 
   const notify = (kind, title, msg) => {
     setNotifications(prev => [{ id: Date.now() + Math.random(), kind, title, msg, ts: Date.now() }, ...prev].slice(0, 20));
+  };
+
+  const handleExport = async (pieza, opcion) => {
+    const resultado = await exportar({ temarioId, pieza, formato: opcion.id, theme });
+    if (resultado.ok) {
+      notify('success', 'Exportación lista', `Se descargó ${resultado.filename}.`);
+    } else {
+      notify('error', 'No se pudo exportar', resultado.message);
+    }
   };
 
   const triggerGeneration = async () => {
@@ -617,7 +542,7 @@ export default function Generator() {
             </Link>
             <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/contenidos' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/contenidos' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/contenidos' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
               <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/contenidos' ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Historial de Contenidos</span>
             </Link>
           </nav>
 
@@ -710,7 +635,7 @@ export default function Generator() {
                       <Settings size={18} style={{ color:'var(--kt-muted)' }}/> Configuración
                     </h2>
                     <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', marginTop:'2px' }}>
-                      {temarioSeleccionado?.titulo || 'Sin temario'} • {piezas.length} piezas • {MODELOS.find(m => m.id === modelo)?.label || 'Básico'}
+                      {materiaSeleccionada?.nombre ? `${materiaSeleccionada.nombre} • ` : ''}{temarioSeleccionado?.titulo || 'Sin temario'} • {piezas.length} piezas • {MODELOS.find(m => m.id === modelo)?.label || 'Básico'}
                     </div>
                   </div>
                 </div>
@@ -729,7 +654,7 @@ export default function Generator() {
                   <button
                     className="kt-primary"
                     onClick={() => {
-                      const hasExistingContent = !!(contenidoExistente || generatedData || piezas.some(id => piezaYaGenerada(id)));
+                      const hasExistingContent = piezas.some(id => pieceHasContent(id));
                       if (hasExistingContent) {
                         setShowGenConfirmModal(true);
                       } else {
@@ -748,27 +673,46 @@ export default function Generator() {
               {!configCollapsed && (
               <div style={{ padding:'16px 20px', display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'20px', alignItems:'start' }}>
 
-                {/* 1. Temario selector */}
-                <div>
-                  <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
-                    <BookOpen size={13} style={{ color:'var(--kt-muted)' }} /> Temario
-                  </label>
-                  <CustomSelect 
-                    value={temarioId} 
-                    onChange={setTemarioId} 
-                    placeholder="— Selecciona un temario —"
-                    options={courses.map(c => ({ value: c.id, label: c.titulo + ' · ' + c.asignatura }))} 
-                  />
-                  {temarioSeleccionado && (
-                    <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', margin:'4px 2px 0' }}>
-                      {temarioSeleccionado.gradoAcademico ? temarioSeleccionado.gradoAcademico.charAt(0).toUpperCase() + temarioSeleccionado.gradoAcademico.slice(1) : 'Sin grado'} · {loadingContenido ? 'Consultando material...' : (contenidoExistente ? 'Con material' : 'Sin material')}
-                    </p>
-                  )}
-                  {courses.length === 0 && (
-                    <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', margin:'4px 2px 0' }}>
-                      No tienes temarios. <Link to="/dashboard" style={{ color:'#10B981', fontWeight:700 }}>Crea uno primero</Link>.
-                    </p>
-                  )}
+                {/* 1. Materia + Temario selectors */}
+                <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                  <div>
+                    <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
+                      <FolderDot size={13} style={{ color:'var(--kt-muted)' }} /> Materia
+                    </label>
+                    <CustomSelect
+                      value={materiaId}
+                      onChange={setMateriaId}
+                      placeholder="— Selecciona una materia —"
+                      options={asignaturas.map(a => ({ value: a.id, label: a.nombre }))}
+                    />
+                    {!asignaturasLoading && asignaturas.length === 0 && (
+                      <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', margin:'4px 2px 0' }}>
+                        No tienes materias. <Link to="/dashboard" style={{ color:'#10B981', fontWeight:700 }}>Crea una primero</Link>.
+                      </p>
+                    )}
+                  </div>
+
+                  <div style={{ opacity: materiaId ? 1 : 0.5, pointerEvents: materiaId ? 'auto' : 'none', transition:'opacity .2s ease' }}>
+                    <label style={{ display:'flex', alignItems:'center', gap:'6px', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>
+                      <BookOpen size={13} style={{ color:'var(--kt-muted)' }} /> Temario
+                    </label>
+                    <CustomSelect
+                      value={temarioId}
+                      onChange={setTemarioId}
+                      placeholder={materiaId ? '— Selecciona un temario —' : '— Primero selecciona una materia —'}
+                      options={courses.map(c => ({ value: c.id, label: c.titulo }))}
+                    />
+                    {temarioSeleccionado && (
+                      <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', margin:'4px 2px 0' }}>
+                        {temarioSeleccionado.gradoAcademico ? temarioSeleccionado.gradoAcademico.charAt(0).toUpperCase() + temarioSeleccionado.gradoAcademico.slice(1) : 'Sin grado'} · {loadingContenido ? 'Consultando material...' : (contenidoExistente ? 'Con material' : 'Sin material')}
+                      </p>
+                    )}
+                    {materiaId && !temariosLoading && courses.length === 0 && (
+                      <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11px', color:'var(--kt-muted)', margin:'4px 2px 0' }}>
+                        Esta materia no tiene temarios. <Link to="/dashboard" style={{ color:'#10B981', fontWeight:700 }}>Crea uno primero</Link>.
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* 2. Piece checkboxes with integrated count selectors */}
@@ -1031,13 +975,10 @@ export default function Generator() {
                     {activeTab === 'teoria' && (
                       <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
                         <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                          <ExportDropdown 
-                            options={[
-                              { label: 'DOC', icon: <IconDoc />, color: '#2563EB' },
-                              { label: 'PDF', icon: <IconPDF />, color: '#DC2626' },
-                              { label: 'Markdown', icon: <IconMD />, color: '#4B5563' }
-                            ]}
-                            onSelect={(opt) => notify('success','Exportado',`Teoría exportada a ${opt.label}.`)}
+                          <ExportDropdown
+                            options={opcionesDePieza('teoria')}
+                            loadingOptionId={formatoEnCurso('teoria')}
+                            onSelect={(opt) => handleExport('teoria', opt)}
                           />
                         </div>
                         <div style={{ background:'var(--kt-bg1)', border:'1px solid var(--kt-border)', borderRadius:'16px', padding:'40px', boxShadow:'var(--kt-shadow-panel)' }}>
@@ -1056,14 +997,10 @@ export default function Generator() {
                     {activeTab === 'evaluacion' && (
                       <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
                         <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                          <ExportDropdown 
-                            options={[
-                              { label: 'DOC', icon: <IconDoc />, color: '#2563EB' },
-                              { label: 'PDF', icon: <IconPDF />, color: '#DC2626' },
-                              { label: 'Markdown', icon: <IconMD />, color: '#4B5563' },
-                              { label: 'Google Forms', icon: <IconGoogleForms />, color: '#7248B9' }
-                            ]}
-                            onSelect={(opt) => notify('success','Exportado',`Evaluación exportada a ${opt.label}.`)}
+                          <ExportDropdown
+                            options={opcionesDePieza('evaluacion')}
+                            loadingOptionId={formatoEnCurso('evaluacion')}
+                            onSelect={(opt) => handleExport('evaluacion', opt)}
                           />
                         </div>
                         
@@ -1126,59 +1063,68 @@ export default function Generator() {
                       const slideIdx = Math.min(currentSlideIndex, slides.length - 1);
                       const slide = slides[slideIdx];
                       return (
-                      <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'24px', maxWidth:'1040px', margin:'0 auto', width:'100%' }}>
                         {/* Slide Exports */}
                         <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                          <ExportDropdown 
-                            options={[
-                              { label: 'PPTX', icon: <IconPPTX />, color: '#EA580C' },
-                              { label: 'PDF', icon: <IconPDF />, color: '#DC2626' }
-                            ]}
-                            onSelect={(opt) => notify('success','Exportado',`Diapositivas exportadas a ${opt.label}.`)}
+                          <ExportDropdown
+                            options={opcionesDePieza('diapositivas')}
+                            loadingOptionId={formatoEnCurso('diapositivas')}
+                            onSelect={(opt) => handleExport('diapositivas', opt)}
                           />
                         </div>
 
-                        <div style={{ maxWidth:'760px', width:'100%', margin:'0 auto', background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'18px',boxShadow:'var(--kt-shadow-panel)',padding:'22px',backdropFilter:'blur(12px)'}}>
+                        <div style={{ background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'18px',boxShadow:'var(--kt-shadow-panel)',padding:'22px',backdropFilter:'blur(12px)'}}>
                           <div style={{position:'relative',borderRadius:'14px',overflow:'hidden',background:'var(--kt-bg1)',aspectRatio:'16/9',boxShadow:'0 20px 50px -24px rgba(0,0,0,.6)', border:'1px solid var(--kt-border)'}}>
                             <div style={{display:'flex',height:'100%',transform:`translateX(-${currentSlideIndex * 100}%)`,transition:'transform .45s cubic-bezier(.4,0,.2,1)'}}>
-                              {slides.map((slideItem, idx) => (
-                                <div key={idx} style={{flex:'none',width:'100%',height:'100%',position:'relative',padding:'8% 9%',display:'flex',flexDirection:'column',background:'var(--kt-card-bg)'}}>
-                                  <div style={{position:'absolute',top:0,left:0,right:0,height:'6px',background:'linear-gradient(90deg,#0284C7,#38BDF8)'}}></div>
+                              {slides.map((slideItem, idx) => {
+                                const colorTema = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+                                const colorOscuro = darkenHex(colorTema);
+                                const isDark = theme === 'dark';
+                                const bgCover = isDark ? '#0F172A' : '#FFFFFF';
+                                const bgSidebar = isDark ? `linear-gradient(180deg, ${colorOscuro} 0%, #0F172A 100%)` : `linear-gradient(180deg, ${colorTema} 0%, ${colorOscuro} 100%)`;
+                                const textColorCover = isDark ? '#FFFFFF' : '#0F172A';
+                                const textColorAccent = colorTema;
+                                const contentBg = isDark ? 'var(--kt-card-bg)' : '#FFFFFF';
+
+                                return (
+                                <div key={idx} style={{flex:'none',width:'100%',height:'100%',position:'relative',display:'flex',background: idx === 0 ? bgCover : contentBg, overflow:'hidden', fontFamily:'sans-serif'}}>
                                   {idx === 0 ? (
-                                    <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'18px'}}>
-                                      <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'3px',color:'#38BDF8',textTransform:'uppercase'}}>{temarioSeleccionado?.asignatura || 'Asignatura'}</div>
-                                      <h2 style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'48px',letterSpacing:'-1.8px',lineHeight:1.1,color:'var(--kt-heading)',margin:0}}>{temarioSeleccionado?.titulo || 'Temario'}</h2>
+                                    <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',padding:'8% 10%', position:'relative'}}>
+                                      <div style={{width:'80px',height:'6px',background:colorTema,borderRadius:'3px',marginBottom:'24px'}}></div>
+                                      <div style={{fontWeight:800,fontSize:'15px',letterSpacing:'3px',color:textColorAccent,textTransform:'uppercase',marginBottom:'16px'}}>{temarioSeleccionado?.asignatura || 'Asignatura'}</div>
+                                      <h2 style={{fontWeight:700,fontSize:'48px',letterSpacing:'-1.5px',lineHeight:1.1,color:textColorCover,margin:'0 0 24px',maxWidth:'90%'}}>{temarioSeleccionado?.titulo || 'Temario'}</h2>
                                       {slideItem.titulo && slideItem.titulo !== temarioSeleccionado?.titulo && (
-                                        <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'26px',letterSpacing:'-.8px',color:'var(--kt-text)',margin:0}}>{slideItem.titulo}</h3>
-                                      )}
-                                      {slideItem.puntos?.length > 0 && (
-                                        <div style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'15px',color:'var(--kt-muted)'}}>
-                                          {slideItem.puntos.slice(0, 2).join(' · ')}
-                                        </div>
+                                        <h3 style={{fontWeight:600,fontSize:'24px',letterSpacing:'-.5px',color:isDark ? '#94A3B8' : '#475569',margin:0,maxWidth:'85%'}}>{slideItem.titulo}</h3>
                                       )}
                                     </div>
                                   ) : (
                                     <>
-                                      <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#38BDF8',textTransform:'uppercase',marginBottom:'auto'}}>{String(idx + 1).padStart(2, '0')} · {temarioSeleccionado?.asignatura || 'Asignatura'}</div>
-                                      <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',letterSpacing:'.5px',color:'var(--kt-muted)',marginBottom:'6px'}}>{temarioSeleccionado?.titulo || 'Temario'}</div>
-                                      <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'34px',letterSpacing:'-1.2px',color:'var(--kt-heading)',margin:'0 0 22px'}}>{slideItem.titulo}</h3>
-                                      <div style={{display:'flex',flexDirection:'column',gap:'13px',marginBottom:'auto'}}>
-                                        {slideItem.puntos.map((pt, pIdx) => (
-                                          <div key={pIdx} style={{display:'flex',alignItems:'center',gap:'12px',fontFamily:"'Manrope'",fontWeight:600,fontSize:'17px',color:'var(--kt-text)'}}>
-                                            <span style={{color:'#38BDF8'}}><CheckCircle2 size={18} /></span>{pt}
-                                          </div>
-                                        ))}
+                                      <div style={{width:'32%',background:bgSidebar,display:'flex',flexDirection:'column',padding:'6% 4%',position:'relative'}}>
+                                        <div style={{fontWeight:800,fontSize:'42px',color:isDark ? colorTema : '#FFFFFF',lineHeight:1,marginBottom:'16px'}}>{String(idx + 1).padStart(2, '0')}</div>
+                                        <div style={{fontWeight:700,fontSize:'12px',letterSpacing:'1.5px',color:'#FFFFFF',textTransform:'uppercase',marginBottom:'12px'}}>{temarioSeleccionado?.asignatura || 'Asignatura'}</div>
+                                        <div style={{fontWeight:600,fontSize:'14px',color:isDark ? '#94A3B8' : 'rgba(255,255,255,0.8)',lineHeight:1.5}}>{temarioSeleccionado?.titulo || 'Temario'}</div>
+                                      </div>
+                                      <div style={{flex:1,display:'flex',flexDirection:'column',padding:'6% 6% 6% 5%',position:'relative'}}>
+                                        <h3 style={{fontWeight:700,fontSize:'34px',letterSpacing:'-1px',color:'var(--kt-heading)',margin:'0 0 32px',lineHeight:1.2,maxWidth:'95%'}}>{slideItem.titulo}</h3>
+                                        <div style={{display:'flex',flexDirection:'column',gap:'20px',marginBottom:'auto'}}>
+                                          {slideItem.puntos.map((pt, pIdx) => (
+                                            <div key={pIdx} style={{display:'flex',alignItems:'flex-start',gap:'16px',fontWeight:500,fontSize:'17px',color:'var(--kt-text)',lineHeight:1.5}}>
+                                              <span style={{color:colorTema,marginTop:'3px',flex:'none'}}><CheckCircle2 size={20} /></span>
+                                              <span>{pt}</span>
+                                            </div>
+                                          ))}
+                                        </div>
                                       </div>
                                     </>
                                   )}
-                                  <div style={{position:'absolute',bottom:'56px',left:0,right:0,display:'flex',alignItems:'center',justifyContent:'center',gap:'9px',opacity:.45,pointerEvents:'none'}}>
-                                    <span style={{width:'20px',height:'20px',borderRadius:'5px',background:'#10B981',display:'grid',placeItems:'center',fontFamily:"'Inter'",fontWeight:700,fontSize:'11px',color:'#fff'}}>K</span>
-                                    <span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'10px',letterSpacing:'2.5px',color:'var(--kt-muted)',textTransform:'uppercase'}}>Creado por Katedra</span>
+                                  <div style={{position:'absolute',bottom:'6px',left:0,right:0,textAlign:'center',pointerEvents:'none'}}>
+                                    <span style={{fontWeight:700,fontSize:'10px',color:isDark ? '#64748B' : '#94A3B8'}}>© Katedra, 2026</span>
                                   </div>
                                 </div>
-                              ))}
+                                );
+                              })}
                             </div>
-                            
+
                             {/* Navigation Controls Overlay */}
                             <div style={{position:'absolute', bottom:'20px', left:'50%', transform:'translateX(-50%)', display:'flex', alignItems:'center', gap:'12px', background:'var(--kt-panel-bg)', padding:'6px 12px', borderRadius:'20px', border:'1px solid var(--kt-border)', backdropFilter:'blur(8px)'}}>
                               <button 
@@ -1203,8 +1149,10 @@ export default function Generator() {
 
                           {/* Dots Navigation */}
                           <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',marginTop:'16px'}}>
-                            {slides.map((_, idx) => (
-                              <button 
+                            {slides.map((_, idx) => {
+                              const colorDot = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+                              return (
+                              <button
                                 key={idx}
                                 onClick={() => setCurrentSlideIndex(idx)}
                                 aria-label={`Lámina ${idx + 1}`}
@@ -1213,51 +1161,49 @@ export default function Generator() {
                                   width: currentSlideIndex === idx ? '24px' : '7px',
                                   border:'none',
                                   borderRadius:'20px',
-                                  background: currentSlideIndex === idx ? 'var(--kt-code-fg)' : 'var(--kt-chip-border)',
+                                  background: currentSlideIndex === idx ? colorDot : 'var(--kt-chip-border)',
                                   cursor:'pointer',
                                   padding:0,
-                                  transition:'width .25s,background .25s'
+                                  transition:'all .3s'
                                 }}
-                              ></button>
-                            ))}
+                              />
+                              );
+                            })}
                           </div>
 
                           {/* Thumbnail Rail */}
                           <div style={{display:'flex',gap:'12px',marginTop:'18px',paddingTop:'18px',borderTop:'1px solid var(--kt-border-soft)',overflowX:'auto'}}>
                             {slides.map((slideItem, idx) => {
                               const isSelected = currentSlideIndex === idx;
-                              const accents = [
-                                'linear-gradient(90deg,#0284C7,#38BDF8)',
-                                'linear-gradient(90deg,#10B981,#34D399)',
-                                'linear-gradient(90deg,#F59E0B,#FCD34D)',
-                                'linear-gradient(90deg,#8B5CF6,#A78BFA)',
-                                'linear-gradient(90deg,#EC4899,#F472B6)',
-                              ];
-                              const colorBg = accents[idx % accents.length];
+                              const accentHex = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
                               return (
                                 <button
                                   key={idx}
                                   onClick={() => setCurrentSlideIndex(idx)}
+                                  className="kt-thumb"
                                   style={{
                                     flex:'none',
-                                    width:'120px',
-                                    height:'68px',
-                                    borderRadius:'8px',
-                                    padding:0,
-                                    cursor:'pointer',
-                                    border: isSelected ? '2px solid #38BDF8' : '1px solid var(--kt-border)',
-                                    background:'var(--kt-card-bg)',
+                                    width:'150px',
+                                    textAlign:'left',
+                                    border: isSelected ? `2px solid ${accentHex}` : '2px solid var(--kt-panel-border)',
+                                    borderRadius:'11px',
                                     overflow:'hidden',
-                                    display:'flex',
-                                    flexDirection:'column',
-                                    opacity: isSelected ? 1 : 0.65,
-                                    transition:'all .2s'
+                                    cursor:'pointer',
+                                    background:'var(--kt-card-bg)',
+                                    padding:0,
+                                    transition:'transform .25s,border-color .25s,box-shadow .25s',
+                                    outline:'none',
+                                    boxShadow: isSelected ? `0 8px 16px -6px ${accentHex}50` : 'none',
+                                    transform: isSelected ? 'translateY(-2px)' : 'none'
                                   }}
                                 >
-                                  <div style={{height:'4px',background:colorBg,width:'100%'}}></div>
-                                  <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'4px'}}>
-                                    <span style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'9px',color:'var(--kt-heading)',textAlign:'center',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',lineHeight:1.3}}>
-                                      {idx === 0 ? temarioSeleccionado?.titulo : slideItem.titulo}
+                                  <div style={{height:'4px',background: accentHex}}></div>
+                                  <div style={{padding:'11px 12px',aspectRatio:'16/9',display:'flex',flexDirection:'column'}}>
+                                    <span style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'8px',letterSpacing:'1px',color:'var(--kt-muted)',textTransform:'uppercase'}}>
+                                      {String(idx + 1).padStart(2, '0')}
+                                    </span>
+                                    <span style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'12px',letterSpacing:'-.2px',color:'var(--kt-heading)',marginTop:'4px',lineHeight:'1.25',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>
+                                      {slideItem.titulo}
                                     </span>
                                   </div>
                                 </button>

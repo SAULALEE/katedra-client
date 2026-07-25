@@ -55,7 +55,7 @@ export default function ResponsiveSidebar() {
       )
     },
     {
-      name: 'Contenidos Generados',
+      name: 'Historial de Contenidos',
       path: '/contenidos',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

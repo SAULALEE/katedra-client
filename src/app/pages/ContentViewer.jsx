@@ -3,7 +3,11 @@ import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAuth } from '../hooks/useAuth';
+import { useExport } from '../hooks/useExport';
+import { SUBJECT_COLORS, darkenHex } from '../utils/asignaturaVisual';
 import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
+import { opcionesDePieza } from '../utils/exportOptions';
+import { ExportDropdown } from '../components/ExportDropdown';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
@@ -22,7 +26,6 @@ import {
   FileBox,
   MonitorPlay,
   Copy,
-  Download,
   Heart,
   ChevronDown
 } from 'lucide-react';
@@ -33,14 +36,13 @@ export default function ContentViewer() {
   const location = useLocation();
   const { courses } = useTemarios();
   const { logout, user } = useAuth();
+  const { exportar, formatoEnCurso } = useExport();
   
   const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
   useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(false);
   const [asignaturasOpen, setAsignaturasOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [exportTarget, setExportTarget] = useState(null); 
   const [notifications, setNotifications] = useState([]);
   const [toasts, setToasts] = useState([]);
 
@@ -163,6 +165,15 @@ export default function ContentViewer() {
     notify('success', 'Copiado', 'El contenido fue copiado al portapapeles.');
   };
 
+  const handleExport = async (pieza, opcion) => {
+    const resultado = await exportar({ temarioId: id, pieza, formato: opcion.id, theme });
+    if (resultado.ok) {
+      notify('success', 'Exportación lista', `Se descargó ${resultado.filename}.`);
+    } else {
+      notify('error', 'No se pudo exportar', resultado.message);
+    }
+  };
+
   const getEvaluationMarkdown = () => {
     if (!content || !content.evaluacion) return '';
     return content.evaluacion.map((q, qIndex) => {
@@ -230,7 +241,6 @@ export default function ContentViewer() {
   .kt-primary:active{transform:translateY(0)}
   .kt-ghostbtn:hover{background:var(--kt-chip-hover) !important;color:var(--kt-heading) !important}
   .kt-iconbtn:hover{background:var(--kt-chip-hover) !important;color:var(--kt-heading) !important}
-  .kt-expitem:hover{background:var(--kt-chip-bg) !important}
   .kt-optbtn:hover{border-color:rgba(16,185,129,.4) !important}
   .kt-thumb:hover{transform:translateY(-2px)}
 
@@ -278,10 +288,6 @@ export default function ContentViewer() {
   [data-root][data-kt-tview="md"] .tview-render{display:none}
 
   /* export dropdown */
-  [data-export-menu]{opacity:0;pointer-events:none;transform:translateY(-8px) scale(.98);transition:opacity .16s ease,transform .16s ease}
-  [data-root][data-kt-export="true"] [data-export-menu]{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
-  [data-export-catcher]{display:none}
-  [data-root][data-kt-export="true"] [data-export-catcher]{display:block}
   
   [data-notif-panel]{opacity:0;pointer-events:none;transform:translateY(-8px) scale(.97);transition:opacity .18s ease,transform .18s ease}
   [data-root][data-kt-notif="true"] [data-notif-panel]{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
@@ -315,7 +321,7 @@ export default function ContentViewer() {
   }
   `}</style>
       
-      <div data-root data-kt-theme={theme} data-kt-collapsed={collapsed ? "true" : "false"} data-kt-tab={activeTab} data-kt-tview={tView} data-kt-evalview={evalView} data-kt-export={exportOpen ? "true" : "false"} data-kt-notif={notifOpen ? "true" : "false"} data-kt-examchecked={examChecked ? "true" : "false"} style={{position:'fixed',inset:0,display:'flex',overflow:'hidden',fontFamily:"'Manrope',sans-serif",background:'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)',color:'var(--kt-text)'}}>
+      <div data-root data-kt-theme={theme} data-kt-collapsed={collapsed ? "true" : "false"} data-kt-tab={activeTab} data-kt-tview={tView} data-kt-evalview={evalView} data-kt-notif={notifOpen ? "true" : "false"} data-kt-examchecked={examChecked ? "true" : "false"} style={{position:'fixed',inset:0,display:'flex',overflow:'hidden',fontFamily:"'Manrope',sans-serif",background:'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)',color:'var(--kt-text)'}}>
         
         {/* ambient */}
         <div style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:0}}>
@@ -422,7 +428,7 @@ export default function ContentViewer() {
             </Link>
             <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname.startsWith('/contenido') ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname.startsWith('/contenido') ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname.startsWith('/contenido') ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
               <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname.startsWith('/contenido') ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname.startsWith('/contenido') ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
+              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname.startsWith('/contenido') ? 700 : 600, fontSize:'14px' }}>Historial de Contenidos</span>
             </Link>
           </nav>
 
@@ -540,9 +546,9 @@ export default function ContentViewer() {
                 {/* tabs */}
                 <div className="kt-tabscroll kt-main-pad" style={{display:'flex',gap:'26px',padding:'18px 32px 0',borderBottom:'1px solid var(--kt-border-soft)'}}>
                   {[
-                    { id: 'teoria', label: 'Teoría Docente', icon: <FileText size={16} color="#0284C7" /> },
-                    { id: 'evaluacion', label: 'Evaluación', icon: <CheckCircle2 size={16} color="#0284C7" /> },
-                    { id: 'slides', label: 'Diapositivas', icon: <MonitorPlay size={16} color="#0284C7" /> }
+                    { id: 'teoria', label: 'Teoría Docente', icon: <FileText size={16} color="#10B981" /> },
+                    { id: 'evaluacion', label: 'Evaluación', icon: <CheckCircle2 size={16} color="#10B981" /> },
+                    { id: 'slides', label: 'Diapositivas', icon: <MonitorPlay size={16} color="#10B981" /> }
                   ].map(tab => (
                     <button
                       key={tab.id}
@@ -561,8 +567,8 @@ export default function ContentViewer() {
 
                     {/* ========================= TEORÍA ========================= */}
                     <div data-tabpanel="teoria">
-                      <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px'}}>
-                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(37,99,235,.14)',color:'#0284C7',display:'grid',placeItems:'center'}}><FileText size={19} /></div>
+                      <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px',position:'relative',zIndex:30}}>
+                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(16,185,129,.14)',color:'#10B981',display:'grid',placeItems:'center'}}><FileText size={19} /></div>
                         <div style={{minWidth:0,marginRight:'auto'}}>
                           <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'15.5px',letterSpacing:'-.4px',color:'var(--kt-heading)'}}>Material Teórico</div>
                           <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'12px',color:'var(--kt-muted)'}}>Lectura de ~4 min</div>
@@ -575,24 +581,12 @@ export default function ContentViewer() {
                         <button onClick={() => handleCopy(content?.teoria)} className="kt-iconbtn" style={{display:'flex',alignItems:'center',justifyContent:'center',width:'40px',height:'40px',border:'1px solid var(--kt-chip-border)',background:'var(--kt-chip-bg)',borderRadius:'10px',color:'var(--kt-text)',cursor:'pointer'}} title="Copiar Teoría">
                           <Copy size={17} />
                         </button>
-                        <div style={{position:'relative'}}>
-                          <button onClick={() => {setExportTarget('teoria'); setExportOpen(!exportOpen)}} className="kt-primary" style={{display:'flex',alignItems:'center',gap:'8px',height:'40px',padding:'0 16px',border:'none',borderRadius:'10px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'13px',boxShadow:'0 10px 22px -12px rgba(16,185,129,.7)',transition:'transform .18s,box-shadow .25s'}}>
-                            <Download size={15} />
-                            Exportar con ...
-                          </button>
-                          {exportOpen && exportTarget === 'teoria' && (
-                            <>
-                              <div data-export-catcher onClick={() => setExportOpen(false)} style={{position:'fixed',inset:0,zIndex:65}}></div>
-                              <div data-export-menu style={{position:'absolute',top:'48px',right:0,width:'262px',background:'var(--kt-modal-bg1)',border:'1px solid var(--kt-modal-border)',borderRadius:'14px',boxShadow:'var(--kt-shadow-modal)',zIndex:70,padding:'8px'}}>
-                                <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'9.5px',letterSpacing:'1px',textTransform:'uppercase',color:'var(--kt-label)',padding:'8px 10px 6px'}}>Exportar teoría a</div>
-                                <button onClick={() => {setExportOpen(false); window.print()}} className="kt-expitem" style={{display:'flex',alignItems:'center',gap:'11px',width:'100%',padding:'9px 10px',border:'none',background:'none',borderRadius:'9px',cursor:'pointer',textAlign:'left'}}>
-                                  <span style={{width:'30px',height:'30px',flex:'none',borderRadius:'8px',background:'rgba(244,63,94,.14)',color:'#EF4444',display:'grid',placeItems:'center'}}><FileText size={15} /></span>
-                                  <span style={{minWidth:0}}><span style={{display:'block',fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',color:'var(--kt-heading)'}}>Documento PDF</span><span style={{display:'block',fontFamily:"'Manrope'",fontWeight:500,fontSize:'11px',color:'var(--kt-muted)'}}>Listo para imprimir</span></span>
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
+                        <ExportDropdown
+                          variant="primary"
+                          options={opcionesDePieza('teoria', { disponible: Boolean(content?.teoria) })}
+                          loadingOptionId={formatoEnCurso('teoria')}
+                          onSelect={(opt) => handleExport('teoria', opt)}
+                        />
                       </div>
 
                       <div style={{background:'var(--kt-card-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'16px',boxShadow:'var(--kt-shadow-panel)',overflow:'hidden'}}>
@@ -616,8 +610,8 @@ export default function ContentViewer() {
 
                     {/* ========================= EVALUACIÓN ========================= */}
                     <div data-tabpanel="evaluacion">
-                      <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px'}}>
-                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(2,132,199,.14)',color:'#0284C7',display:'grid',placeItems:'center'}}><CheckCircle2 size={19} /></div>
+                      <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px',position:'relative',zIndex:30}}>
+                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(16,185,129,.14)',color:'#10B981',display:'grid',placeItems:'center'}}><CheckCircle2 size={19} /></div>
                         <div style={{minWidth:0,marginRight:'auto'}}>
                           <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'15.5px',letterSpacing:'-.4px',color:'var(--kt-heading)'}}>Banco de Preguntas</div>
                           <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'12px',color:'var(--kt-muted)'}}>Cuestionario interactivo</div>
@@ -629,24 +623,12 @@ export default function ContentViewer() {
                         <button onClick={() => handleCopy(getEvaluationMarkdown())} className="kt-iconbtn" style={{display:'flex',alignItems:'center',justifyContent:'center',width:'40px',height:'40px',border:'1px solid var(--kt-chip-border)',background:'var(--kt-chip-bg)',borderRadius:'10px',color:'var(--kt-text)',cursor:'pointer'}} title="Copiar Evaluación">
                           <Copy size={17} />
                         </button>
-                        <div style={{position:'relative'}}>
-                          <button onClick={() => {setExportTarget('evaluacion'); setExportOpen(!exportOpen)}} className="kt-primary" style={{display:'flex',alignItems:'center',gap:'8px',height:'40px',padding:'0 16px',border:'none',borderRadius:'10px',background:'linear-gradient(150deg,#10B981,#059669)',color:'#fff',cursor:'pointer',fontFamily:"'Manrope'",fontWeight:800,fontSize:'13px',boxShadow:'0 10px 22px -12px rgba(16,185,129,.7)',transition:'transform .18s,box-shadow .25s'}}>
-                            <Download size={15} />
-                            Exportar con ...
-                          </button>
-                          {exportOpen && exportTarget === 'evaluacion' && (
-                            <>
-                              <div data-export-catcher onClick={() => setExportOpen(false)} style={{position:'fixed',inset:0,zIndex:65}}></div>
-                              <div data-export-menu style={{position:'absolute',top:'48px',right:0,width:'262px',background:'var(--kt-modal-bg1)',border:'1px solid var(--kt-modal-border)',borderRadius:'14px',boxShadow:'var(--kt-shadow-modal)',zIndex:70,padding:'8px'}}>
-                                <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'9.5px',letterSpacing:'1px',textTransform:'uppercase',color:'var(--kt-label)',padding:'8px 10px 6px'}}>Exportar evaluación a</div>
-                                <button onClick={() => {setExportOpen(false); window.print()}} className="kt-expitem" style={{display:'flex',alignItems:'center',gap:'11px',width:'100%',padding:'9px 10px',border:'none',background:'none',borderRadius:'9px',cursor:'pointer',textAlign:'left'}}>
-                                  <span style={{width:'30px',height:'30px',flex:'none',borderRadius:'8px',background:'rgba(244,63,94,.14)',color:'#EF4444',display:'grid',placeItems:'center'}}><FileText size={15} /></span>
-                                  <span style={{minWidth:0}}><span style={{display:'block',fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',color:'var(--kt-heading)'}}>Documento PDF</span><span style={{display:'block',fontFamily:"'Manrope'",fontWeight:500,fontSize:'11px',color:'var(--kt-muted)'}}>Hoja imprimible</span></span>
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
+                        <ExportDropdown
+                          variant="primary"
+                          options={opcionesDePieza('evaluacion', { disponible: Boolean(content?.evaluacion?.length) })}
+                          loadingOptionId={formatoEnCurso('evaluacion')}
+                          onSelect={(opt) => handleExport('evaluacion', opt)}
+                        />
                       </div>
 
                       {evalView === 'render' ? (
@@ -762,63 +744,81 @@ export default function ContentViewer() {
 
                     {/* ========================= SLIDES ========================= */}
                     <div data-tabpanel="slides">
-                      <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px'}}>
-                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(2,132,199,.14)',color:'#0284C7',display:'grid',placeItems:'center'}}><MonitorPlay size={19} /></div>
+                      <div className="kt-toolbar" style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap',padding:'16px 18px',background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'15px',backdropFilter:'blur(12px)',marginBottom:'20px',position:'relative',zIndex:30}}>
+                        <div style={{width:'40px',height:'40px',flex:'none',borderRadius:'11px',background:'rgba(16,185,129,.14)',color:'#10B981',display:'grid',placeItems:'center'}}><MonitorPlay size={19} /></div>
                         <div style={{minWidth:0,marginRight:'auto'}}>
                           <div style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'15.5px',letterSpacing:'-.4px',color:'var(--kt-heading)'}}>Presentación Visual</div>
                           <div style={{fontFamily:"'Manrope'",fontWeight:500,fontSize:'12px',color:'var(--kt-muted)'}}>Visor de láminas autogeneradas (16:9)</div>
                         </div>
+                        <ExportDropdown
+                          variant="primary"
+                          options={opcionesDePieza('diapositivas', { disponible: Boolean(content?.diapositivas?.length) })}
+                          loadingOptionId={formatoEnCurso('diapositivas')}
+                          onSelect={(opt) => handleExport('diapositivas', opt)}
+                        />
                       </div>
 
                       <div style={{background:'var(--kt-panel-bg)',border:'1px solid var(--kt-panel-border)',borderRadius:'18px',boxShadow:'var(--kt-shadow-panel)',padding:'22px',backdropFilter:'blur(12px)'}}>
                         <div style={{position:'relative',borderRadius:'14px',overflow:'hidden',background:'var(--kt-bg1)',aspectRatio:'16/9',boxShadow:'0 20px 50px -24px rgba(0,0,0,.6)', border:'1px solid var(--kt-border)'}}>
                           <div style={{display:'flex',height:'100%',transform:`translateX(-${currentSlideIndex * 100}%)`,transition:'transform .45s cubic-bezier(.4,0,.2,1)'}}>
-                            {content?.diapositivas?.map((slide, idx) => (
-                              <div key={idx} style={{flex:'none',width:'100%',height:'100%',position:'relative',padding:'8% 9%',display:'flex',flexDirection:'column',background:'var(--kt-card-bg)'}}>
-                                <div style={{position:'absolute',top:0,left:0,right:0,height:'6px',background:'linear-gradient(90deg,#0284C7,#0284C7)'}}></div>
-                                {idx === 0 ? (
-                                  /* Cover slide: temario + topic title, large and centered */
-                                  <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'18px'}}>
-                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'3px',color:'#0284C7',textTransform:'uppercase'}}>{course.asignatura}</div>
-                                    <h2 style={{fontFamily:"'Inter'",fontWeight:700,fontSize:'48px',letterSpacing:'-1.8px',lineHeight:1.1,color:'var(--kt-heading)',margin:0}}>{course.titulo}</h2>
-                                    {slide.titulo && slide.titulo !== course.titulo && (
-                                      <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'26px',letterSpacing:'-.8px',color:'var(--kt-text)',margin:0}}>{slide.titulo}</h3>
-                                    )}
-                                    {slide.puntos?.length > 0 && (
-                                      <div style={{fontFamily:"'Manrope'",fontWeight:600,fontSize:'15px',color:'var(--kt-muted)'}}>
-                                        {slide.puntos.slice(0, 2).join(' · ')}
-                                      </div>
-                                    )}
-                                  </div>
-                                ) : (
-                                  /* Content slide: discreet temario title above the slide title */
-                                  <>
-                                    <div style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'12px',letterSpacing:'2px',color:'#0284C7',textTransform:'uppercase',marginBottom:'auto'}}>{String(idx + 1).padStart(2, '0')} · {course.asignatura}</div>
-                                    <div style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'13px',letterSpacing:'.5px',color:'var(--kt-muted)',marginBottom:'6px'}}>{course.titulo}</div>
-                                    <h3 style={{fontFamily:"'Inter'",fontWeight:600,fontSize:'34px',letterSpacing:'-1.2px',color:'var(--kt-heading)',margin:'0 0 22px'}}>{slide.titulo}</h3>
-                                    <div style={{display:'flex',flexDirection:'column',gap:'13px',marginBottom:'auto'}}>
-                                      {slide.puntos.map((pt, pIdx) => (
-                                        <div key={pIdx} style={{display:'flex',alignItems:'center',gap:'12px',fontFamily:"'Manrope'",fontWeight:600,fontSize:'17px',color:'var(--kt-text)'}}>
-                                          <span style={{color:'#0284C7'}}><CheckCircle2 size={18} /></span>{pt}
-                                        </div>
-                                      ))}
+                            {content?.diapositivas?.map((slide, idx) => {
+                              const colorTema = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+                              const colorOscuro = darkenHex(colorTema);
+                              const isDark = theme === 'dark';
+                              // Portada usa fondo sólido sutil idéntico al PDF/PPTX
+                              const bgCover = isDark ? '#0F172A' : '#FFFFFF';
+                              const bgSidebar = isDark ? `linear-gradient(180deg, ${colorOscuro} 0%, #0F172A 100%)` : `linear-gradient(180deg, ${colorTema} 0%, ${colorOscuro} 100%)`;
+                              const textColorCover = isDark ? '#FFFFFF' : '#0F172A';
+                              const textColorAccent = isDark ? colorTema : colorTema;
+                              const contentBg = isDark ? 'var(--kt-card-bg)' : '#FFFFFF';
+
+                              return (
+                                <div key={idx} style={{flex:'none',width:'100%',height:'100%',position:'relative',display:'flex',background: idx === 0 ? bgCover : contentBg, overflow:'hidden', fontFamily:'sans-serif'}}>
+                                  {idx === 0 ? (
+                                    /* Cover slide: temario + topic title, large and stylish */
+                                    <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',padding:'8% 10%', position:'relative'}}>
+                                      <div style={{width:'80px',height:'6px',background:colorTema,borderRadius:'3px',marginBottom:'24px'}}></div>
+                                      <div style={{fontWeight:800,fontSize:'15px',letterSpacing:'3px',color:textColorAccent,textTransform:'uppercase',marginBottom:'16px'}}>{course.asignatura}</div>
+                                      <h2 style={{fontWeight:700,fontSize:'48px',letterSpacing:'-1.5px',lineHeight:1.1,color:textColorCover,margin:'0 0 24px',maxWidth:'90%'}}>{course.titulo}</h2>
+                                      {slide.titulo && slide.titulo !== course.titulo && (
+                                        <h3 style={{fontWeight:600,fontSize:'24px',letterSpacing:'-.5px',color:isDark ? '#94A3B8' : '#475569',margin:0,maxWidth:'85%'}}>{slide.titulo}</h3>
+                                      )}
                                     </div>
-                                  </>
-                                )}
-                                {/* Watermark footer on every slide (fixed px, not %, so it
-                                    clears the absolutely-positioned nav pill at bottom:20px
-                                    regardless of slide container height) */}
-                                <div style={{position:'absolute',bottom:'56px',left:0,right:0,display:'flex',alignItems:'center',justifyContent:'center',gap:'9px',opacity:.45,pointerEvents:'none'}}>
-                                  <span style={{width:'20px',height:'20px',borderRadius:'5px',background:'#10B981',display:'grid',placeItems:'center',fontFamily:"'Inter'",fontWeight:700,fontSize:'11px',color:'#fff'}}>K</span>
-                                  <span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'10px',letterSpacing:'2.5px',color:'var(--kt-muted)',textTransform:'uppercase'}}>Creado por Katedra</span>
+                                  ) : (
+                                    /* Content slide: two-column layout */
+                                    <>
+                                      <div style={{width:'32%',background:bgSidebar,display:'flex',flexDirection:'column',padding:'6% 4%',position:'relative'}}>
+                                        <div style={{fontWeight:800,fontSize:'42px',color:isDark ? colorTema : '#FFFFFF',lineHeight:1,marginBottom:'16px'}}>{String(idx + 1).padStart(2, '0')}</div>
+                                        <div style={{fontWeight:700,fontSize:'12px',letterSpacing:'1.5px',color:'#FFFFFF',textTransform:'uppercase',marginBottom:'12px'}}>{course.asignatura}</div>
+                                        <div style={{fontWeight:600,fontSize:'14px',color:isDark ? '#94A3B8' : 'rgba(255,255,255,0.8)',lineHeight:1.5}}>{course.titulo}</div>
+                                      </div>
+                                      <div style={{flex:1,display:'flex',flexDirection:'column',padding:'6% 6% 6% 5%',position:'relative'}}>
+                                        <h3 style={{fontWeight:700,fontSize:'34px',letterSpacing:'-1px',color:'var(--kt-heading)',margin:'0 0 32px',lineHeight:1.2,maxWidth:'95%'}}>{slide.titulo}</h3>
+                                        <div style={{display:'flex',flexDirection:'column',gap:'20px',marginBottom:'auto'}}>
+                                          {slide.puntos.map((pt, pIdx) => (
+                                            <div key={pIdx} style={{display:'flex',alignItems:'flex-start',gap:'16px',fontWeight:500,fontSize:'17px',color:'var(--kt-text)',lineHeight:1.5}}>
+                                              <span style={{color:colorTema,marginTop:'3px',flex:'none'}}><CheckCircle2 size={20} /></span>
+                                              <span>{pt}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* Watermark Centered Bottom — sits below the nav pill (bottom:20px, ~32px
+                                      tall) so the two never overlap on shorter/mobile heights */}
+                                  <div style={{position:'absolute',bottom:'6px',left:0,right:0,textAlign:'center',pointerEvents:'none'}}>
+                                    <span style={{fontWeight:700,fontSize:'10px',color:isDark ? '#64748B' : '#94A3B8'}}>© Katedra, 2026</span>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
-                          
+
                           {/* Navigation Controls Overlay */}
                           <div style={{position:'absolute', bottom:'20px', left:'50%', transform:'translateX(-50%)', display:'flex', alignItems:'center', gap:'12px', background:'var(--kt-panel-bg)', padding:'6px 12px', borderRadius:'20px', border:'1px solid var(--kt-border)', backdropFilter:'blur(8px)'}}>
-                            <button 
+                            <button
                               onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                               disabled={currentSlideIndex === 0}
                               style={{background:'none', border:'none', color:'var(--kt-text)', cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer', opacity: currentSlideIndex === 0 ? 0.5 : 1}}
@@ -828,7 +828,7 @@ export default function ContentViewer() {
                             <span style={{fontFamily:"'Manrope'",fontWeight:700,fontSize:'12px',color:'var(--kt-heading)'}}>
                               {currentSlideIndex + 1} / {content?.diapositivas?.length || 1}
                             </span>
-                            <button 
+                            <button
                               onClick={() => setCurrentSlideIndex(Math.min((content?.diapositivas?.length || 1) - 1, currentSlideIndex + 1))}
                               disabled={currentSlideIndex === (content?.diapositivas?.length || 1) - 1}
                               style={{background:'none', border:'none', color:'var(--kt-text)', cursor: currentSlideIndex === (content?.diapositivas?.length || 1) - 1 ? 'not-allowed' : 'pointer', opacity: currentSlideIndex === (content?.diapositivas?.length || 1) - 1 ? 0.5 : 1, transform:'rotate(180deg)'}}
@@ -836,12 +836,13 @@ export default function ContentViewer() {
                               <ChevronLeft size={20} />
                             </button>
                           </div>
-                        </div>
 
                         {/* Dots Navigation */}
                         <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',marginTop:'16px'}}>
-                          {content?.diapositivas?.map((_, idx) => (
-                            <button 
+                          {content?.diapositivas?.map((_, idx) => {
+                            const colorDot = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+                            return (
+                            <button
                               key={idx}
                               onClick={() => setCurrentSlideIndex(idx)}
                               aria-label={`Lámina ${idx + 1}`}
@@ -850,47 +851,45 @@ export default function ContentViewer() {
                                 width: currentSlideIndex === idx ? '24px' : '7px',
                                 border:'none',
                                 borderRadius:'20px',
-                                background: currentSlideIndex === idx ? 'var(--kt-code-fg)' : 'var(--kt-chip-border)',
+                                background: currentSlideIndex === idx ? colorDot : 'var(--kt-chip-border)',
                                 cursor:'pointer',
                                 padding:0,
-                                transition:'width .25s,background .25s'
+                                transition:'all .3s'
                               }}
-                            ></button>
-                          ))}
+                            />
+                            );
+                          })}
                         </div>
+                      </div>
 
                         {/* Thumbnail Rail */}
                         <div style={{display:'flex',gap:'12px',marginTop:'18px',paddingTop:'18px',borderTop:'1px solid var(--kt-border-soft)',overflowX:'auto'}}>
                           {content?.diapositivas?.map((slide, idx) => {
                             const isSelected = currentSlideIndex === idx;
-                            const accents = [
-                              'linear-gradient(90deg,#0284C7,#0284C7)',
-                              'linear-gradient(90deg,#10B981,#34D399)',
-                              'linear-gradient(90deg,#F59E0B,#FBBF24)',
-                              'linear-gradient(90deg,#7C3AED,#A78BFA)'
-                            ];
-                            const accent = accents[idx % accents.length];
-                            
+                            const accentHex = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+
                             return (
-                              <button 
+                              <button
                                 key={idx}
                                 onClick={() => setCurrentSlideIndex(idx)}
-                                className="kt-thumb" 
+                                className="kt-thumb"
                                 style={{
                                   flex:'none',
                                   width:'150px',
                                   textAlign:'left',
-                                  border: isSelected ? '2px solid #10B981' : '2px solid var(--kt-panel-border)',
+                                  border: isSelected ? `2px solid ${accentHex}` : '2px solid var(--kt-panel-border)',
                                   borderRadius:'11px',
                                   overflow:'hidden',
                                   cursor:'pointer',
                                   background:'var(--kt-card-bg)',
                                   padding:0,
                                   transition:'transform .25s,border-color .25s,box-shadow .25s',
-                                  transform: isSelected ? 'scale(1.02)' : 'none'
+                                  outline:'none',
+                                  boxShadow: isSelected ? `0 8px 16px -6px ${accentHex}50` : 'none',
+                                  transform: isSelected ? 'translateY(-2px)' : 'none'
                                 }}
                               >
-                                <div style={{height:'4px',background: accent}}></div>
+                                <div style={{height:'4px',background: accentHex}}></div>
                                 <div style={{padding:'11px 12px',aspectRatio:'16/9',display:'flex',flexDirection:'column'}}>
                                   <span style={{fontFamily:"'Manrope'",fontWeight:800,fontSize:'8px',letterSpacing:'1px',color:'var(--kt-muted)',textTransform:'uppercase'}}>
                                     {String(idx + 1).padStart(2, '0')}

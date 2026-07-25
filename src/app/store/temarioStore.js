@@ -12,25 +12,7 @@ import {
   actualizarFavoritoTemario
 } from '../services/temarioService';
 
-export const logActivity = (action, temario, extra = {}) => {
-  try {
-    const history = JSON.parse(localStorage.getItem('katedra_activity_log') || '[]');
-    history.unshift({
-      id: 'act_' + Date.now() + Math.random().toString(36).substring(7),
-      action, // 'CREADO', 'EDITADO', 'ELIMINADO', 'GENERADO'
-      temarioId: temario.id || temario.temarioId || '',
-      temarioTitulo: temario.titulo || temario.nombre || 'Temario sin título',
-      asignatura: temario.asignatura || temario.curso || 'Materia general',
-      createdAt: new Date().toISOString(),
-      ...extra
-    });
-    localStorage.setItem('katedra_activity_log', JSON.stringify(history.slice(0, 200)));
-  } catch (e) {
-    console.error('Error logging activity:', e);
-  }
-};
-
-export const useTemarioStore = create((set, get) => ({
+export const useTemarioStore = create((set) => ({
   courses: [],
   assignmentCourses: [],
   assignmentLoading: false,
@@ -68,7 +50,6 @@ export const useTemarioStore = create((set, get) => ({
         loading: false,
         error: null
       }));
-      logActivity('CREADO', nuevoTemario);
       return { success: true };
     } catch (err) {
       const errorMessage = err.message || 'Error al crear temario';
@@ -162,7 +143,6 @@ export const useTemarioStore = create((set, get) => ({
   deleteTemario: async (id) => {
     set({ loading: true, error: null });
     try {
-      const temarioToDelete = get().courses.find(c => c.id === id) || { id, titulo: 'Temario Eliminado' };
       await eliminarTemarioRequest(id);
       set((state) => ({
         courses: state.courses.filter((course) => course.id !== id),
@@ -170,7 +150,6 @@ export const useTemarioStore = create((set, get) => ({
         favoriteCourses: state.favoriteCourses.filter((course) => course.id !== id),
         loading: false
       }));
-      logActivity('ELIMINADO', temarioToDelete);
       return { success: true };
     } catch (err) {
       const errorMessage = err.message || 'Error al eliminar temario';
@@ -187,7 +166,6 @@ export const useTemarioStore = create((set, get) => ({
         courses: state.courses.map((course) => course.id === id ? actualizado : course),
         loading: false
       }));
-      logActivity('EDITADO', actualizado);
       return { success: true, temario: actualizado };
     } catch (err) {
       const errorMessage = err.message || 'Error al actualizar temario';
@@ -213,7 +191,6 @@ export const useTemarioStore = create((set, get) => ({
         loading: false,
         error: null
       }));
-      logActivity('CREADO', nuevoTemario, { method: tipo });
       return { success: true };
     } catch (err) {
       const errorMessage = err.message || 'Error al cargar temario';

@@ -1,4 +1,6 @@
 import api from './api.js';
+import { nombreDesdeContentDisposition } from '../utils/descargarArchivo.js';
+import { EXTENSION_POR_FORMATO } from '../utils/exportOptions.js';
 
 
 /**
@@ -54,6 +56,19 @@ export const getTemarioStats = async () => {
     return response.data;
   } catch (error) {
     throw new Error('Error al obtener estadísticas de temarios', { cause: error });
+  }
+};
+
+/**
+ * Fetches the authenticated user's read-only content history (temarios created, edited,
+ * (un)favorited, had material generated, or deleted), newest first.
+ */
+export const getHistorial = async () => {
+  try {
+    const response = await api.get('/temarios/historial');
+    return response.data;
+  } catch (error) {
+    throw new Error('Error al obtener el historial de contenidos', { cause: error });
   }
 };
 
@@ -157,5 +172,57 @@ export const getFuenteTemario = async (id) => {
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al obtener el contenido fuente', { cause: error });
+  }
+};
+
+/**
+ * With responseType 'blob' the ERROR body is a Blob too, so `error.response.data.message` is
+ * undefined and the user would see "undefined" in the toast. Read the blob back as JSON.
+ */
+const leerMensajeDeErrorBlob = async (error) => {
+  const data = error?.response?.data;
+  if (!(data instanceof Blob)) {
+    return data?.message || data?.error || null;
+  }
+  try {
+    return JSON.parse(await data.text())?.message || null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Downloads a generated material piece as a file.
+ *
+ * @param {string} id - the temario UUID
+ * @param {'teoria'|'evaluacion'|'diapositivas'} pieza
+ * @param {'docx'|'pdf'|'md'|'pptx'|'gs'} formato
+ * @param {'light'|'dark'} [theme] - matches the app's current theme so slide exports look like a
+ *   continuation of what the teacher was looking at, not a fixed style
+ * @returns {Promise<{ blob: Blob, filename: string }>}
+ */
+export const exportarMaterialTemario = async (id, pieza, formato, theme) => {
+  try {
+    const params = { pieza, formato };
+    if (theme) params.theme = theme;
+
+    const response = await api.get(`/temarios/${id}/exportaciones`, {
+      params,
+      responseType: 'blob',
+      // The axios instance has no default timeout (0 = wait forever), which would leave the
+      // export spinner running indefinitely if the backend hangs.
+      timeout: 60000
+    });
+
+    return {
+      blob: response.data,
+      filename: nombreDesdeContentDisposition(response.headers['content-disposition'])
+        || `${pieza}.${EXTENSION_POR_FORMATO[formato] || formato}`
+    };
+  } catch (error) {
+    const mensaje = error?.code === 'ECONNABORTED'
+      ? 'La exportación tardó demasiado. Intenta de nuevo.'
+      : await leerMensajeDeErrorBlob(error);
+    throw new Error(mensaje || 'No se pudo exportar el material', { cause: error });
   }
 };
