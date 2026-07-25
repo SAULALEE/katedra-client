@@ -5,6 +5,7 @@ import Dashboard from './app/pages/Dashboard';
 import Generator from './app/pages/Generator';
 import Login from './app/pages/Login';
 import Register from './app/pages/Register';
+import ChangePassword from './app/pages/ChangePassword';
 import AuthCallback from './app/pages/AuthCallback';
 import AuthError from './app/pages/AuthError';
 import Users from './app/pages/Users';
@@ -46,6 +47,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/error" element={<AuthError />} />
+        <Route path="/cambiar-password" element={<ChangePassword />} />
 
         {/* Protected Academic Routes (ROLE_PROFESOR) */}
         <Route 

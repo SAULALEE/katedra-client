@@ -119,7 +119,7 @@ const getAvatarInitials = (nombre) => {
     .toUpperCase();
 };
 
-const normalizeAuthResponse = (data = {}) => {
+export const normalizeAuthResponse = (data = {}) => {
   const token = data.token || data.accessToken || data.jwt;
   const usuario = data.usuario || data.user || {};
   const nombre = usuario.nombre || usuario.name || data.nombre || 'Usuario Katedra';
@@ -133,7 +133,8 @@ const normalizeAuthResponse = (data = {}) => {
       email,
       nombre,
       rol,
-      avatarInitials: getAvatarInitials(nombre)
+      avatarInitials: getAvatarInitials(nombre),
+      mustChangePassword: Boolean(data.mustChangePassword)
     },
     token
   };
@@ -227,6 +228,18 @@ export const getOAuthErrorMessage = (errorCode) => {
   return 'No se pudo completar el acceso con Google. Inténtalo de nuevo.';
 };
 
+/**
+ * Resolves a user-facing message for an auth-related request failure.
+ * Distinguishes "no response reached the server" (network/CORS/timeout) from
+ * an actual error response, since those need different guidance.
+ */
+const resolveAuthErrorMessage = (error, fallback) => {
+  if (!error.response) {
+    return 'No se pudo conectar con el servidor. Verifica tu conexión e intenta de nuevo.';
+  }
+  return error.response.data?.message || error.response.data?.error || fallback;
+};
+
 export const startGoogleLogin = () => {
   window.location.assign(getGoogleOAuthUrl());
 };
@@ -271,8 +284,25 @@ export const registerRequest = async (email, password, nombre) => {
 };
 
 /**
+ * Changes the password of the currently authenticated user.
+ *
+ * @param {string} currentPassword
+ * @param {string} newPassword
+ * @returns {Promise<object>} Returns mapped user details and a fresh JWT token.
+ */
+export const changePasswordRequest = async (currentPassword, newPassword) => {
+  try {
+    const response = await api.post('/usuarios/me/password', { currentPassword, newPassword });
+    return normalizeAuthResponse(response.data);
+  } catch (error) {
+    const errorMessage = resolveAuthErrorMessage(error, 'Error al cambiar la contraseña.');
+    throw new Error(errorMessage, { cause: error });
+  }
+};
+
+/**
  * Performs a logout request on the backend if configured, and returns true.
- * 
+ *
  * @returns {Promise<boolean>}
  */
 export const logoutRequest = async () => {

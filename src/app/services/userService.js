@@ -23,15 +23,22 @@ export const getUsersRequest = async () => {
 };
 
 /**
- * Creates a new user in the backend API.
+ * Creates a new administrator account in the backend API. This endpoint only
+ * creates ROLE_ADMIN accounts; teachers self-register via /auth/register.
  *
- * @param {object} userData User data to create
- * @returns {Promise<object>} Created user
+ * @param {object} userData Data for the new admin ({ nombre, email })
+ * @returns {Promise<{user: object, temporaryPassword: string}>} Created user and its one-time temporary password
  */
 export const createUserRequest = async (userData) => {
   try {
-    const response = await api.post('/usuarios', userData);
-    return normalizeUser(response.data);
+    const response = await api.post('/usuarios', {
+      nombre: userData.nombre,
+      email: userData.email
+    });
+    return {
+      user: normalizeUser(response.data.usuario),
+      temporaryPassword: response.data.temporaryPassword
+    };
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Error al crear usuario');
   }

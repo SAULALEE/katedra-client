@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUsers } from '../hooks/useUsers';
-import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
+import { isAdmin, isProfesor, formatRoleDisplay } from '../utils/roleUtils';
 import { 
   Users as UsersIcon, 
   FolderDot, 
@@ -48,6 +48,7 @@ export default function Users() {
   const [asignaturasOpen, setAsignaturasOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [editRol, setEditRol] = useState(null);
   const [formRole, setFormRole] = useState('Premium');
   const [formStatus, setFormStatus] = useState('Activo');
   const [query, setQuery] = useState('');
@@ -55,6 +56,8 @@ export default function Users() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsUser, setDetailsUser] = useState(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [credentialsCopied, setCredentialsCopied] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -131,6 +134,7 @@ export default function Users() {
 
   const handleEditClick = (u) => {
     setEditId(u.id);
+    setEditRol(u.rol);
     setNombre(u.nombre);
     setEmail(u.email);
     setFormRole(getRoleShort(u.rol));
@@ -157,8 +161,25 @@ export default function Users() {
     setDeleteConfirmUser(null);
   };
 
+  const handleCopyCredentials = async () => {
+    if (!createdCredentials) return;
+    try {
+      await navigator.clipboard.writeText(createdCredentials.temporaryPassword);
+      setCredentialsCopied(true);
+      setTimeout(() => setCredentialsCopied(false), 2000);
+    } catch {
+      // clipboard access can be denied by the browser; nothing to recover here
+    }
+  };
+
+  const closeCredentialsPanel = () => {
+    setCreatedCredentials(null);
+    setCredentialsCopied(false);
+  };
+
   const handleSubmit = async (e) => {
     if(e) e.preventDefault();
+    if (isSubmitting) return;
     setFormError('');
 
     if (!nombre.trim() || !email.trim()) {
@@ -175,16 +196,25 @@ export default function Users() {
     }
 
     setIsSubmitting(true);
-    const longRole = formRole === 'Admin' ? 'Administrador' : formRole === 'Premium' ? 'Docente Premium' : 'Docente Plan Libre';
-    const payload = { nombre, email, rol: longRole, estado: formStatus };
+    // Role is never edited from this form: for a new user it's always
+    // ROLE_ADMIN (this panel only creates admins); for an existing user it
+    // stays whatever it already was, shown here only for display.
+    const rolForPayload = editId ? editRol : 'ROLE_ADMIN';
+    const payload = { nombre, email, rol: rolForPayload, estado: formStatus };
     let success = false;
 
     if (editId) {
       success = await updateUser(editId, payload);
       if(success) notify('success', 'Cambios guardados', nombre + ' fue actualizado.');
     } else {
-      success = await createUser(payload);
-      if(success) notify('success', 'Docente registrado', nombre + ' se añadió al listado.');
+      const result = await createUser(payload);
+      success = Boolean(result);
+      if (result) {
+        notify('success', 'Administrador registrado', nombre + ' se añadió al listado.');
+        setCreatedCredentials({ email, temporaryPassword: result.temporaryPassword });
+      } else {
+        setFormError(error || 'No se pudo crear el usuario.');
+      }
     }
 
     setIsSubmitting(false);
@@ -402,77 +432,81 @@ export default function Users() {
               </Link>
             )}
 
-            <div
-              onClick={() => navigate('/dashboard')}
-              className="kt-nav kt-navrow"
-              style={{
-                display:'flex',
-                alignItems:'center',
-                gap:'13px',
-                padding:'11px 12px',
-                borderRadius:'11px',
-                cursor:'pointer',
-                background: 'transparent',
-                border: '1px solid transparent',
-                color: 'var(--kt-muted)'
-              }}
-            >
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><FolderDot size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px', flex: 1 }}>Mis Asignaturas</span>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAsignaturasOpen(!asignaturasOpen);
-                }}
-                aria-label="Contraer/Desplegar Mis Asignaturas"
-                className="kt-sidelabel"
-                style={{
-                  display:'grid',
-                  placeItems:'center',
-                  padding:'2px',
-                  borderRadius:'6px',
-                  cursor:'pointer',
-                  opacity: 0.85
-                }}
-              >
-                <ChevronDown size={16} style={{ transform: asignaturasOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s cubic-bezier(.4,0,.2,1)' }} />
-              </span>
-            </div>
-
-            {/* Submódulo de Mis Asignaturas (Únicamente Mis Favoritos) */}
-            {asignaturasOpen && (
-              <div style={{ display:'flex', flexDirection:'column', gap:'2px', paddingLeft:'12px', marginTop:'-1px', marginBottom:'4px', borderLeft:'2px solid var(--kt-border-soft)', marginLeft:'21px' }}>
-                <Link
-                  to="/dashboard?view=favoritos"
+            {isProfesor(user) && (
+              <>
+                <div
+                  onClick={() => navigate('/dashboard')}
                   className="kt-nav kt-navrow"
                   style={{
                     display:'flex',
                     alignItems:'center',
-                    gap:'10px',
-                    padding:'8px 10px',
-                    borderRadius:'9px',
-                    textDecoration:'none',
-                    border: '1px solid transparent',
+                    gap:'13px',
+                    padding:'11px 12px',
+                    borderRadius:'11px',
+                    cursor:'pointer',
                     background: 'transparent',
-                    color: 'var(--kt-muted)',
-                    width:'100%',
-                    textAlign:'left'
+                    border: '1px solid transparent',
+                    color: 'var(--kt-muted)'
                   }}
                 >
-                  <span style={{ flex:'none', width:'18px', display:'grid', placeItems:'center' }}><Heart size={16} /></span>
-                  <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}>Mis Favoritos</span>
-                </Link>
-              </div>
-            )}
+                  <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center' }}><FolderDot size={20} /></span>
+                  <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'14px', flex: 1 }}>Mis Asignaturas</span>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAsignaturasOpen(!asignaturasOpen);
+                    }}
+                    aria-label="Contraer/Desplegar Mis Asignaturas"
+                    className="kt-sidelabel"
+                    style={{
+                      display:'grid',
+                      placeItems:'center',
+                      padding:'2px',
+                      borderRadius:'6px',
+                      cursor:'pointer',
+                      opacity: 0.85
+                    }}
+                  >
+                    <ChevronDown size={16} style={{ transform: asignaturasOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s cubic-bezier(.4,0,.2,1)' }} />
+                  </span>
+                </div>
 
-            <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
-            </Link>
-            <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/contenidos' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/contenidos' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/contenidos' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
-              <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/contenidos' ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
-              <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
-            </Link>
+                {/* Submódulo de Mis Asignaturas (Únicamente Mis Favoritos) */}
+                {asignaturasOpen && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:'2px', paddingLeft:'12px', marginTop:'-1px', marginBottom:'4px', borderLeft:'2px solid var(--kt-border-soft)', marginLeft:'21px' }}>
+                    <Link
+                      to="/dashboard?view=favoritos"
+                      className="kt-nav kt-navrow"
+                      style={{
+                        display:'flex',
+                        alignItems:'center',
+                        gap:'10px',
+                        padding:'8px 10px',
+                        borderRadius:'9px',
+                        textDecoration:'none',
+                        border: '1px solid transparent',
+                        background: 'transparent',
+                        color: 'var(--kt-muted)',
+                        width:'100%',
+                        textAlign:'left'
+                      }}
+                    >
+                      <span style={{ flex:'none', width:'18px', display:'grid', placeItems:'center' }}><Heart size={16} /></span>
+                      <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13px' }}>Mis Favoritos</span>
+                    </Link>
+                  </div>
+                )}
+
+                <Link to="/generador" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/generador' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/generador' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/generador' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+                  <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/generador' ? '#10B981' : 'inherit' }}><Wand2 size={20} /></span>
+                  <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/generador' ? 700 : 600, fontSize:'14px' }}>Generador</span>
+                </Link>
+                <Link to="/contenidos" className="kt-nav kt-navrow" style={{ display:'flex', alignItems:'center', gap:'13px', padding:'11px 12px', borderRadius:'11px', textDecoration:'none', background: location.pathname === '/contenidos' ? 'linear-gradient(120deg,rgba(16,185,129,.16),rgba(16,185,129,.06))' : 'transparent', border: location.pathname === '/contenidos' ? '1px solid rgba(16,185,129,.28)' : '1px solid transparent', color: location.pathname === '/contenidos' ? 'var(--kt-heading)' : 'var(--kt-muted)' }}>
+                  <span style={{ flex:'none', width:'20px', display:'grid', placeItems:'center', color: location.pathname === '/contenidos' ? '#10B981' : 'inherit' }}><Sparkles size={20} /></span>
+                  <span className="kt-sidelabel" style={{ fontFamily:"'Manrope'", fontWeight:location.pathname === '/contenidos' ? 700 : 600, fontSize:'14px' }}>Contenidos Generados</span>
+                </Link>
+              </>
+            )}
           </nav>
 
           <div style={{ marginTop:'auto', padding:'16px 14px 18px', display:'flex', flexDirection:'column', gap:'12px' }}>
@@ -673,11 +707,14 @@ export default function Users() {
               </div>
               <div>
                 <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>Rol de Sistema</label>
-                <div style={{ display:'flex', gap:'8px', padding:'4px', background:'var(--kt-input-bg)', border:'1px solid var(--kt-input-border)', borderRadius:'12px' }}>
-                  <button data-role-opt="Libre" onClick={() => setFormRole('Libre')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Libre</button>
-                  <button data-role-opt="Premium" onClick={() => setFormRole('Premium')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Premium</button>
-                  <button data-role-opt="Admin" onClick={() => setFormRole('Admin')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Admin</button>
+                <div style={{ display:'flex', alignItems:'center', gap:'8px', height:'38px', padding:'0 14px', background:'rgba(56,189,248,.12)', border:'1px solid rgba(56,189,248,.3)', borderRadius:'12px', color:'#0369A1', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px' }}>
+                  {editId ? (getRoleShort(editRol) === 'Admin' ? 'Administrador' : 'Profesor') : 'Administrador'}
                 </div>
+                <p style={{ margin:'6px 0 0', fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)' }}>
+                  {editId
+                    ? 'El rol no se puede cambiar desde aquí.'
+                    : 'Este panel solo crea cuentas de administrador. Los docentes se registran ellos mismos.'}
+                </p>
               </div>
               <div>
                 <label style={{ display:'block', fontFamily:"'Inter'", fontWeight:600, fontSize:'12px', color:'var(--kt-text)', marginBottom:'7px' }}>Estado de la Cuenta</label>
@@ -698,7 +735,7 @@ export default function Users() {
 
             <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:'12px', marginTop:'26px' }}>
               <button onClick={() => setModalOpen(false)} style={{ height:'44px', padding:'0 18px', border:'none', background:'none', color:'var(--kt-muted)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'14px' }}>Cancelar</button>
-              <button className="kt-primary" onClick={handleSubmit} style={{ height:'44px', padding:'0 22px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow:'0 12px 26px -12px rgba(16,185,129,.7)', transition:'transform .18s,box-shadow .25s' }}>
+              <button className="kt-primary" onClick={handleSubmit} disabled={isSubmitting} style={{ height:'44px', padding:'0 22px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.75 : 1, fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px', boxShadow:'0 12px 26px -12px rgba(16,185,129,.7)', transition:'transform .18s,box-shadow .25s' }}>
                 <span className="kt-only-create">{isSubmitting ? 'Guardando...' : (editId ? 'Guardar Cambios' : 'Registrar Docente')}</span>
               </button>
             </div>
@@ -724,6 +761,40 @@ export default function Users() {
             <div style={{ display:'flex', gap:'12px' }}>
               <button onClick={() => setDeleteConfirmUser(null)} style={{ flex:1, height:'44px', border:'1px solid var(--kt-input-border)', background:'none', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', borderRadius:'11px' }}>Cancelar</button>
               <button onClick={confirmDelete} style={{ flex:1, height:'44px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#F43F5E,#BE123C)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13.5px', boxShadow:'0 12px 26px -12px rgba(244,63,94,.7)' }}>Sí, Eliminar</button>
+            </div>
+          </div>
+        </div>
+
+        {/* CREATED ADMIN CREDENTIALS MODAL */}
+        <div style={{ position:'absolute', inset:0, zIndex:90, display:'flex', alignItems:'center', justifyContent:'center', padding:'24px', opacity: createdCredentials ? 1 : 0, pointerEvents: createdCredentials ? 'auto' : 'none', transition:'opacity .22s ease' }}>
+          <div style={{ position:'absolute', inset:0, background:'var(--kt-modal-backdrop)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}></div>
+          <div style={{ position:'relative', width:'100%', maxWidth:'420px', background:'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2))', border:'1px solid var(--kt-modal-border)', borderRadius:'20px', boxShadow:'var(--kt-shadow-modal)', padding:'28px', transform: createdCredentials ? 'scale(1) translateY(0)' : 'scale(.94) translateY(10px)', transition:'transform .3s cubic-bezier(.34,1.56,.64,1)' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', gap:'13px', marginBottom:'20px' }}>
+              <div style={{ width:'40px', height:'40px', flex:'none', borderRadius:'11px', background:'linear-gradient(150deg,rgba(16,185,129,.2),rgba(16,185,129,.08))', border:'1px solid rgba(16,185,129,.3)', display:'grid', placeItems:'center', color:'#10B981' }}><CheckCircle2 size={20} /></div>
+              <div>
+                <h3 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'19px', letterSpacing:'-.6px', color:'var(--kt-heading)', margin:0 }}>Administrador creado</h3>
+                <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', margin:'2px 0 0' }}>Comparte esta contraseña temporal — no volverá a mostrarse.</p>
+              </div>
+            </div>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'5px' }}>CORREO</div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'13.5px', color:'var(--kt-text)' }}>{createdCredentials?.email}</div>
+              </div>
+              <div>
+                <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10px', letterSpacing:'1px', color:'var(--kt-label)', marginBottom:'5px' }}>CONTRASEÑA TEMPORAL</div>
+                <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                  <code style={{ flex:1, padding:'10px 12px', background:'var(--kt-input-bg)', border:'1px solid var(--kt-input-border)', borderRadius:'10px', fontFamily:"monospace", fontWeight:700, fontSize:'14px', color:'var(--kt-heading)', letterSpacing:'.5px', wordBreak:'break-all' }}>{createdCredentials?.temporaryPassword}</code>
+                  <button onClick={handleCopyCredentials} style={{ flex:'none', height:'40px', padding:'0 14px', border:'1px solid var(--kt-input-border)', borderRadius:'10px', background:'var(--kt-chip-bg)', color:'var(--kt-text)', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px' }}>
+                    {credentialsCopied ? 'Copiado' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display:'flex', justifyContent:'flex-end', marginTop:'24px' }}>
+              <button className="kt-primary" onClick={closeCredentialsPanel} style={{ height:'44px', padding:'0 22px', border:'none', borderRadius:'11px', background:'linear-gradient(150deg,#10B981,#059669)', color:'#fff', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:800, fontSize:'14px' }}>Listo</button>
             </div>
           </div>
         </div>

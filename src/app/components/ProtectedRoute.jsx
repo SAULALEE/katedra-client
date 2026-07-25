@@ -27,6 +27,11 @@ export default function ProtectedRoute({ children, allowedRoles, adminOnly = fal
     return <Navigate to="/login" replace />;
   }
 
+  // Admin-created accounts must replace their temporary password before using the app
+  if (user?.mustChangePassword) {
+    return <Navigate to="/cambiar-password" replace />;
+  }
+
   const effectiveAllowedRoles = allowedRoles || (adminOnly ? ['ROLE_ADMIN'] : ['ROLE_PROFESOR']);
   const userRole = isAdmin(user) ? 'ROLE_ADMIN' : 'ROLE_PROFESOR';
 

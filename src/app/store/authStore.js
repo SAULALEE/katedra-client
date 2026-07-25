@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import {
+  changePasswordRequest,
   isSessionWithinTolerance,
   loginRequest,
   logoutRequest,
@@ -94,22 +95,14 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
-   * Attempts to register a new user and authenticate them.
+   * Registers a new user account. Does not authenticate the caller;
+   * they log in separately with their new credentials.
    */
-  register: async (email, password, nombre, now = Date.now()) => {
+  register: async (email, password, nombre) => {
     set({ loading: true, error: null });
     try {
-      const data = await registerRequest(email, password, nombre);
-      
-      saveLocalSession(data, now);
-
-      set({
-        user: data.user,
-        token: data.token,
-        isAuthenticated: true,
-        loading: false,
-        error: null
-      });
+      await registerRequest(email, password, nombre);
+      set({ loading: false, error: null });
       return true;
     } catch (err) {
       set({
@@ -117,6 +110,30 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         isAuthenticated: false
       });
+      return false;
+    }
+  },
+
+  /**
+   * Changes the current user's password and clears the mustChangePassword flag.
+   */
+  changePassword: async (currentPassword, newPassword) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await changePasswordRequest(currentPassword, newPassword);
+      const updatedUser = { ...data.user, mustChangePassword: false };
+
+      saveLocalSession({ user: updatedUser, token: data.token });
+
+      set({
+        user: updatedUser,
+        token: data.token,
+        loading: false,
+        error: null
+      });
+      return true;
+    } catch (err) {
+      set({ error: err.message || 'Error al cambiar la contraseña', loading: false });
       return false;
     }
   },

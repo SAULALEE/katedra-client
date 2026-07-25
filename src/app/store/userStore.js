@@ -20,21 +20,22 @@ export const useUserStore = create((set, get) => ({
   },
 
   /**
-   * Action to create a new user.
+   * Action to create a new admin user. Returns the created user and its
+   * one-time temporary password, or null on failure.
    */
   createUser: async (userData) => {
     set({ loading: true, error: null });
     try {
-      const newUser = await createUserRequest(userData);
+      const { user, temporaryPassword } = await createUserRequest(userData);
       set((state) => ({
-        users: [newUser, ...state.users],
+        users: [user, ...state.users],
         loading: false,
         error: null
       }));
-      return true;
+      return { user, temporaryPassword };
     } catch (err) {
       set({ error: err.message || 'Error al crear usuario', loading: false });
-      return false;
+      return null;
     }
   },
 

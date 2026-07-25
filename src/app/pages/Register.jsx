@@ -38,7 +38,7 @@ export default function Register() {
 
     const success = await register(email.trim(), password, nombre.trim());
     if (success) {
-      navigate(getDefaultRoute(user));
+      navigate('/login', { state: { registered: true } });
     }
   };
 

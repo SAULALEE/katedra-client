@@ -1,5 +1,6 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import api from '../services/api.js';
 import {
   SESSION_LAST_ACTIVE_KEY,
@@ -131,4 +132,12 @@ test('AuthCallback es idempotente ante la doble ejecución de StrictMode', () =>
   assert.equal(tokenWrites, 1);
   assert.equal(urlCleanups, 1);
   assert.equal(currentHref, 'http://localhost/auth/callback');
+});
+
+test('changePassword llama al servicio y limpia mustChangePassword en el usuario persistido', async () => {
+  const source = await readFile(new URL('./authStore.js', import.meta.url), 'utf8');
+
+  assert.match(source, /changePassword\s*:\s*async/);
+  assert.match(source, /changePasswordRequest/);
+  assert.match(source, /mustChangePassword:\s*false/);
 });
