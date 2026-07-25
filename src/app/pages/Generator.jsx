@@ -34,6 +34,8 @@ import {
   Heart
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
+import { PlanModal } from '../components/PlanModal';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 const IconZap = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -158,6 +160,8 @@ export default function Generator() {
   const [showGenConfirmModal, setShowGenConfirmModal] = useState(false);
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [planModalAbierto, setPlanModalAbierto] = useState(false);
+  const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
 
   const {
     asignaturas, asignaturasLoading,
@@ -552,6 +556,7 @@ export default function Generator() {
             theme={theme}
             onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             onLogout={async () => { await logout(); navigate('/login'); }}
+            onAbrirPlan={() => setPlanModalAbierto(true)}
           />
         </aside>
 
@@ -1234,7 +1239,14 @@ export default function Generator() {
           </div>
         </div>
 
+
+      <PlanModal
+        abierto={planModalAbierto}
+        onCerrar={() => setPlanModalAbierto(false)}
+        onMejorar={(ciclo) => { setPlanModalAbierto(false); abrirCheckout(ciclo); }}
+      />
       </div>
+
     </>
   );
 }

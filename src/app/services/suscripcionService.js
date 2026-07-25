@@ -1,18 +1,18 @@
 import api from './api';
 
 /**
- * Llamadas al backend de facturación.
+ * Billing backend calls.
  *
- * Sigue la convención del resto de servicios: cada función atrapa el error de axios y
- * relanza un Error con el mensaje del backend, para que los stores no tengan que conocer
- * la forma de la respuesta de axios.
+ * Follows the convention of the other services: each function catches the axios error and
+ * rethrows an Error carrying the backend message, so stores never need to know the shape
+ * of an axios response.
  */
 
 /**
- * Plan, uso del día y capacidades habilitadas.
+ * Plan, today's usage and enabled capabilities.
  *
- * Es la autoridad sobre el plan. El campo `plan` que viene en el usuario de localStorage
- * es sólo una copia para pintar la insignia antes de que esta llamada resuelva.
+ * The authority on the plan. The `plan` field on the localStorage user is only a copy, used
+ * to paint the badge before this call resolves.
  */
 export const getMiUsoRequest = async () => {
   try {
@@ -23,7 +23,7 @@ export const getMiUsoRequest = async () => {
   }
 };
 
-/** Estado de facturación actual. Devuelve plan FREE si nunca se suscribió. */
+/** Current billing state. Reports plan FREE for a user who never subscribed. */
 export const getMiSuscripcionRequest = async () => {
   try {
     const { data } = await api.get('/suscripciones/me');
@@ -34,11 +34,11 @@ export const getMiSuscripcionRequest = async () => {
 };
 
 /**
- * Paso uno del checkout: registra los datos de facturación y devuelve el clientSecret
- * con el que el navegador confirma el pago.
+ * Checkout step one: registers billing details and returns the clientSecret the browser
+ * confirms the payment with.
  *
- * Es idempotente en el servidor: repetirlo reutiliza la suscripción en curso en vez de
- * crear otra en Stripe, así que volver atrás en el formulario es seguro.
+ * Idempotent server-side: repeating it reuses the in-flight subscription instead of
+ * creating another one in Stripe, so going back in the form is safe.
  */
 export const iniciarSuscripcionRequest = async ({ ciclo, facturacion }) => {
   try {
@@ -50,10 +50,10 @@ export const iniciarSuscripcionRequest = async ({ ciclo, facturacion }) => {
 };
 
 /**
- * Avisa al backend de que el pago se confirmó.
+ * Tells the backend the payment was confirmed.
  *
- * No es una afirmación de que se pagó: el servidor sólo la usa para volver a leer el
- * estado real desde Stripe.
+ * Not a claim that anything was paid: the server only uses it to decide which subscription
+ * to re-read from Stripe.
  */
 export const confirmarSuscripcionRequest = async (suscripcionId) => {
   try {
@@ -64,7 +64,7 @@ export const confirmarSuscripcionRequest = async (suscripcionId) => {
   }
 };
 
-/** Cancela al final del periodo pagado; el plan Pro sigue activo hasta que termine. */
+/** Cancels at the end of the paid period; Pro stays active until it runs out. */
 export const cancelarSuscripcionRequest = async () => {
   try {
     const { data } = await api.delete('/suscripciones/me');

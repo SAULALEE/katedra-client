@@ -1,10 +1,11 @@
 import React from 'react';
 import { LogOut, Moon, Settings, Sun } from 'lucide-react';
 import { formatRoleDisplay } from '../utils/roleUtils';
+import { useSuscripcion } from '../hooks/useSuscripcion';
+import { AjustesPopover } from './AjustesPopover';
+import { PlanBadge } from './PlanBadge';
 
-/**
- * Devuelve la inicial del avatar, ignorando títulos académicos: "Dra. Ana" -> "A".
- */
+/** Avatar initial, ignoring academic titles: "Dra. Ana" -> "A". */
 const getInitial = (name) => {
   if (!name) return 'U';
   const clean = name.replace(/^(prof\.|dra\.|dr\.|ing\.|mtra\.|mtro\.|lic\.)\s*/i, '').trim();
@@ -12,29 +13,49 @@ const getInitial = (name) => {
 };
 
 /**
- * Pie del sidebar: cambio de tema, identidad del usuario, ajustes y cierre de sesión.
+ * Sidebar footer: theme toggle, user identity, settings and logout.
  *
- * Antes estaba duplicado literal en las cinco páginas del panel (Dashboard, Users,
- * Generator, GeneratedContents, ContentViewer). Ya habían divergido entre sí, así que
- * extraerlo no es sólo higiene: es la única forma de que el engranaje de ajustes exista
- * en un sitio y no en cinco copias que se vuelvan a separar.
+ * Was duplicated verbatim across the five panel pages (Dashboard, Users, Generator,
+ * GeneratedContents, ContentViewer), and had already drifted between them. Extracting it
+ * is not just hygiene: it is the only way the settings gear lives in one place instead of
+ * five copies that would drift again.
  *
- * El tema llega por props y no desde useThemeStore a propósito: cada página del panel
- * mantiene su propio useState leyendo 'katedra-theme' de localStorage, y los bloques
- * <style> dependen del atributo data-kt-theme que esas páginas escriben. Usar el store
- * global desincronizaría ambos sistemas.
+ * Theme arrives as a prop rather than from useThemeStore on purpose: each panel page keeps
+ * its own useState reading 'katedra-theme' from localStorage, and their inline <style>
+ * blocks key off the data-kt-theme attribute those pages write. The global store would
+ * desync the two systems.
  *
- * @param {object}   props.user
+ * @param {object} props.user
  * @param {'light'|'dark'} props.theme
  * @param {() => void} props.onToggleTheme
  * @param {() => void} props.onLogout
- * @param {React.ReactNode} props.children - contenido del popover de ajustes
+ * @param {() => void} props.onAbrirPlan - opens the plan modal
  */
-export const SidebarUserMenu = ({ user, theme, onToggleTheme, onLogout, children }) => {
+export const SidebarUserMenu = ({ user, theme, onToggleTheme, onLogout, onAbrirPlan }) => {
   const [ajustesAbierto, setAjustesAbierto] = React.useState(false);
   const menuRef = React.useRef(null);
 
-  // Mismo patrón que ExportDropdown: clic fuera y Escape cierran el popover.
+  // The single place that fetches usage per screen: this component is on all five panel
+  // pages, so loading here stops every consumer from repeating the request.
+  const { uso, loading } = useSuscripcion(true);
+
+  // The sidebar collapses to 76px via data-kt-collapsed on [data-root], which the pages
+  // drive with CSS rather than React state, so it has to be observed. Collapsed, the avatar
+  // (38px) and the gear (30px) do not fit on one row and overflow:hidden clipped the gear
+  // away entirely, leaving it unreachable.
+  const [colapsado, setColapsado] = React.useState(false);
+  React.useEffect(() => {
+    const root = document.querySelector('[data-root]');
+    if (!root) return undefined;
+
+    const leer = () => setColapsado(root.getAttribute('data-kt-collapsed') === 'true');
+    leer();
+    const observer = new MutationObserver(leer);
+    observer.observe(root, { attributes: true, attributeFilter: ['data-kt-collapsed'] });
+    return () => observer.disconnect();
+  }, []);
+
+  // Same pattern as ExportDropdown: outside click and Escape close the popover.
   React.useEffect(() => {
     const handleClick = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) setAjustesAbierto(false);
@@ -70,9 +91,12 @@ export const SidebarUserMenu = ({ user, theme, onToggleTheme, onLogout, children
         </span>
       </button>
 
-      {/* position:relative ancla el popover; el <aside> necesita overflow visible. */}
+      {/* position:relative anchors the popover; every <aside> already has overflow visible. */}
       <div ref={menuRef} style={{ position: 'relative' }}>
-        <div className="kt-navrow" style={{ display: 'flex', alignItems: 'center', gap: '11px', padding: '6px 8px', overflow: 'hidden' }}>
+        <div
+          className="kt-navrow"
+          style={{ display: 'flex', alignItems: 'center', gap: '11px', padding: '6px 8px', overflow: 'hidden', flexDirection: colapsado ? 'column' : 'row' }}
+        >
           <div style={{ width: '38px', height: '38px', flex: 'none', borderRadius: '11px', background: 'linear-gradient(150deg,#38BDF8,#2563EB)', display: 'grid', placeItems: 'center', fontFamily: "'Manrope'", fontWeight: 800, fontSize: '13px', color: '#fff' }}>
             {getInitial(nombreVisible)}
           </div>
@@ -80,8 +104,13 @@ export const SidebarUserMenu = ({ user, theme, onToggleTheme, onLogout, children
             <div style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: '13px', color: 'var(--kt-heading)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {nombreVisible}
             </div>
-            <div style={{ fontFamily: "'Manrope'", fontWeight: 500, fontSize: '11px', color: 'var(--kt-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {formatRoleDisplay(user?.rol)}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+              <span style={{ fontFamily: "'Manrope'", fontWeight: 500, fontSize: '11px', color: 'var(--kt-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {formatRoleDisplay(user?.rol)}
+              </span>
+              {/* Only rendered for Pro: a permanent "Gratis" pill under the name would read
+                  as a standing reproach rather than information. */}
+              {uso?.plan && uso.plan !== 'free' && <PlanBadge plan={uso.plan} size="sm" />}
             </div>
           </div>
           <button
@@ -91,20 +120,46 @@ export const SidebarUserMenu = ({ user, theme, onToggleTheme, onLogout, children
             aria-expanded={ajustesAbierto}
             aria-label="Ajustes de la cuenta"
             title="Ajustes"
-            style={{ flex: 'none', width: '30px', height: '30px', display: 'grid', placeItems: 'center', borderRadius: '9px', border: '1px solid transparent', background: ajustesAbierto ? 'var(--kt-chip-bg)' : 'transparent', color: ajustesAbierto ? 'var(--kt-heading)' : 'var(--kt-muted)', cursor: 'pointer', transition: 'background .18s, color .18s' }}
+            style={{ flex: 'none', width: '30px', height: '30px', marginTop: colapsado ? '4px' : 0, display: 'grid', placeItems: 'center', borderRadius: '9px', border: '1px solid transparent', background: ajustesAbierto ? 'var(--kt-chip-bg)' : 'transparent', color: ajustesAbierto ? 'var(--kt-heading)' : 'var(--kt-muted)', cursor: 'pointer', transition: 'background .18s, color .18s' }}
           >
             <Settings size={17} />
           </button>
         </div>
 
         {ajustesAbierto && (
-          // Abre hacia arriba: este bloque vive al fondo del sidebar, así que un popover
-          // hacia abajo se saldría de la ventana.
+          // Opens upward: this block sits at the bottom of the sidebar, so a downward
+          // popover would fall off the window.
           <div
             role="menu"
-            style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, right: 0, minWidth: '240px', zIndex: 60, borderRadius: '16px', border: '1px solid var(--kt-panel-border)', background: 'var(--kt-panel-bg)', boxShadow: 'var(--kt-shadow-modal)', padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}
+            // Two background layers, with an opaque --kt-bg1 underneath on purpose: this
+            // popover overlaps the theme toggle and has no backdrop isolating it, so any
+            // translucency lets the switch show through the menu. --kt-panel-bg (66%) and
+            // even --kt-modal-bg (96%) both leaked it.
+            //
+            // Collapsed, the sidebar is 76px and the 240px menu cannot sit inside it, so it
+            // is anchored to the right edge instead of stretched to the rail's width.
+            style={{
+              position: 'absolute',
+              bottom: 'calc(100% + 8px)',
+              ...(colapsado ? { left: 0 } : { left: 0, right: 0 }),
+              minWidth: '240px',
+              zIndex: 60,
+              borderRadius: '16px',
+              border: '1px solid var(--kt-modal-border)',
+              background: 'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2)), var(--kt-bg1)',
+              boxShadow: 'var(--kt-shadow-modal)',
+              padding: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}
           >
-            {children}
+            <AjustesPopover
+              uso={uso}
+              cargando={loading}
+              onAbrirPlan={() => { setAjustesAbierto(false); onAbrirPlan?.(); }}
+              onLogout={onLogout}
+            />
           </div>
         )}
       </div>

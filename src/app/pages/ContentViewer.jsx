@@ -30,6 +30,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
+import { PlanModal } from '../components/PlanModal';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 export default function ContentViewer() {
   const { id } = useParams();
@@ -58,6 +60,8 @@ export default function ContentViewer() {
   const [checkedAnswers, setCheckedAnswers] = useState({});
   const [examChecked, setExamChecked] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [planModalAbierto, setPlanModalAbierto] = useState(false);
+  const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
 
   const course = courses.find(c => c.id === id) || { titulo: 'Temario Generado', asignatura: 'Cargando...' };
 
@@ -438,6 +442,7 @@ export default function ContentViewer() {
             theme={theme}
             onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             onLogout={async () => { await logout(); navigate('/login'); }}
+            onAbrirPlan={() => setPlanModalAbierto(true)}
           />
         </aside>
 
@@ -909,7 +914,14 @@ export default function ContentViewer() {
             </div>
           ))}
         </div>
+
+      <PlanModal
+        abierto={planModalAbierto}
+        onCerrar={() => setPlanModalAbierto(false)}
+        onMejorar={(ciclo) => { setPlanModalAbierto(false); abrirCheckout(ciclo); }}
+      />
       </div>
+
     </>
   );
 }

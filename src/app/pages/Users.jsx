@@ -26,6 +26,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
+import { PlanModal } from '../components/PlanModal';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 const ROLE_OPTIONS = [
   { id: 'Docente Plan Libre', short: 'Libre' },
@@ -67,6 +69,8 @@ export default function Users() {
   const [email, setEmail] = useState('');
   
   const [toasts, setToasts] = useState([]);
+  const [planModalAbierto, setPlanModalAbierto] = useState(false);
+  const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
 
   useEffect(() => {
     const linkId = 'katedra-fonts';
@@ -515,6 +519,7 @@ export default function Users() {
             theme={theme}
             onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             onLogout={async () => { await logout(); navigate('/login'); }}
+            onAbrirPlan={() => setPlanModalAbierto(true)}
           />
         </aside>
 
@@ -796,7 +801,14 @@ export default function Users() {
             </div>
           ))}
         </div>
+
+      <PlanModal
+        abierto={planModalAbierto}
+        onCerrar={() => setPlanModalAbierto(false)}
+        onMejorar={(ciclo) => { setPlanModalAbierto(false); abrirCheckout(ciclo); }}
+      />
       </div>
+
     </>
   );
 }

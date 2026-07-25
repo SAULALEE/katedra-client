@@ -18,6 +18,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
+import { PlanModal } from '../components/PlanModal';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 export default function GeneratedContents() {
   const navigate = useNavigate();
@@ -30,6 +32,8 @@ export default function GeneratedContents() {
   const [collapsed, setCollapsed] = useState(false);
   const [asignaturasOpen, setAsignaturasOpen] = useState(false);
   const [zoom, setZoom] = useState(100);
+  const [planModalAbierto, setPlanModalAbierto] = useState(false);
+  const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
 
   useEffect(() => {
     const linkId = 'katedra-fonts';
@@ -324,6 +328,7 @@ export default function GeneratedContents() {
             theme={theme}
             onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             onLogout={async () => { await logout(); navigate('/login'); }}
+            onAbrirPlan={() => setPlanModalAbierto(true)}
           />
         </aside>
 
@@ -432,7 +437,14 @@ export default function GeneratedContents() {
             </div>
           </div>
         </main>
+
+      <PlanModal
+        abierto={planModalAbierto}
+        onCerrar={() => setPlanModalAbierto(false)}
+        onMejorar={(ciclo) => { setPlanModalAbierto(false); abrirCheckout(ciclo); }}
+      />
       </div>
+
     </>
   );
 }

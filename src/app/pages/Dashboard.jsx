@@ -35,6 +35,8 @@ import {
   Zap
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
+import { PlanModal } from '../components/PlanModal';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 const ICON_KEYS = Object.keys(SUBJECT_ICONS);
 
@@ -152,6 +154,8 @@ export default function Dashboard() {
   const [dragActive, setDragActive] = useState(false);
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [planModalAbierto, setPlanModalAbierto] = useState(false);
+  const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
 
   const handleModeloChange = (nuevoModelo) => {
     setModelo(nuevoModelo);
@@ -930,6 +934,7 @@ export default function Dashboard() {
             theme={theme}
             onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             onLogout={async () => { await logout(); navigate('/login'); }}
+            onAbrirPlan={() => setPlanModalAbierto(true)}
           />
         </aside>
 
@@ -2013,7 +2018,14 @@ export default function Dashboard() {
             );
           })}
         </div>
+
+      <PlanModal
+        abierto={planModalAbierto}
+        onCerrar={() => setPlanModalAbierto(false)}
+        onMejorar={(ciclo) => { setPlanModalAbierto(false); abrirCheckout(ciclo); }}
+      />
       </div>
+
     </>
   );
 }
