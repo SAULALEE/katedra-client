@@ -9,7 +9,6 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const justRegistered = Boolean(location.state?.registered);
-<<<<<<< HEAD
   const { login, loginWithGoogle, isAuthenticated, user, loading, error, clearError } = useAuth();
   const abrirCheckout = useSuscripcionStore((state) => state.abrirCheckout);
 
