@@ -13,15 +13,15 @@ const PALETA = {
     texto: '#334155',
     titulo: '#0F172A',
     tenue: '#94A3B8',
-    borde: 'rgba(15,23,42,.12)'
+    borde: 'rgb(15,23,42)'
   },
   dark: {
     fondo: '#111827',
-    fondoInput: 'rgba(15,23,42,.75)',
+    fondoInput: '#0F172A',
     texto: '#E2E8F0',
     titulo: '#F8FAFC',
     tenue: '#64748B',
-    borde: 'rgba(148,163,184,.16)'
+    borde: 'rgb(148,163,184)'
   }
 };
 
