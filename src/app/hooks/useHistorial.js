@@ -23,9 +23,17 @@ export const useHistorial = () => {
     }
   }, []);
 
+  // Initial load only: does not call fetchHistorial() (it synchronously calls
+  // setLoading(true), which is already the initial state) to avoid a
+  // same-effect cascading re-render. refetch still goes through fetchHistorial.
   useEffect(() => {
-    fetchHistorial();
-  }, [fetchHistorial]);
+    let cancelado = false;
+    getHistorial()
+      .then((data) => { if (!cancelado) setEventos(data); })
+      .catch((err) => { if (!cancelado) setError(err.message || 'Error al obtener el historial de contenidos'); })
+      .finally(() => { if (!cancelado) setLoading(false); });
+    return () => { cancelado = true; };
+  }, []);
 
   return { eventos, loading, error, refetch: fetchHistorial };
 };

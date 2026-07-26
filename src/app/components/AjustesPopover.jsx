@@ -1,4 +1,3 @@
-import React from 'react';
 import { CreditCard, Zap } from 'lucide-react';
 import { PlanBadge } from './PlanBadge';
 import { colorUso, esPro, porcentajeUso } from '../utils/plan';

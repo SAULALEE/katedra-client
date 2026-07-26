@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createUserRequest, deleteUserRequest, getUsersRequest, updateUserRequest } from '../services/userService';
 
-export const useUserStore = create((set, get) => ({
+export const useUserStore = create((set) => ({
   users: [],
   loading: false,
   error: null,

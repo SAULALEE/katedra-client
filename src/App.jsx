@@ -11,6 +11,7 @@ import AuthError from './app/pages/AuthError';
 import Users from './app/pages/Users';
 import ContentViewer from './app/pages/ContentViewer';
 import GeneratedContents from './app/pages/GeneratedContents';
+import NotFound from './app/pages/NotFound';
 import ProtectedRoute from './app/components/ProtectedRoute';
 import { useThemeStore } from './app/store/useThemeStore';
 import CheckoutModal from './app/components/CheckoutModal';
@@ -93,6 +94,9 @@ function App() {
             </ProtectedRoute>
           } 
         />
+
+        {/* Fallback */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <CheckoutModal />
     </BrowserRouter>

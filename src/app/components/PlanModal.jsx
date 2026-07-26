@@ -2,7 +2,7 @@ import React from 'react';
 import { Check, Lock, X, Zap } from 'lucide-react';
 import { PlanBadge } from './PlanBadge';
 import { useSuscripcion } from '../hooks/useSuscripcion';
-import { PRECIOS, colorUso, esPro, porcentajeUso } from '../utils/plan';
+import { PRECIOS, colorUso, porcentajeUso } from '../utils/plan';
 
 const CAPACIDADES = [
   { clave: 'generaciones', etiqueta: 'Generaciones de IA al día', free: '10', pro: '100' },
@@ -54,9 +54,15 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
 
   React.useEffect(() => {
     if (abierto && yaEsPro) cargarSuscripcion();
-    if (!abierto) setConfirmandoCancelacion(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abierto, yaEsPro]);
+
+  // Resets the confirm-cancel view on every close, however triggered (X button,
+  // backdrop click, Escape), so the next time the modal opens it starts fresh.
+  const cerrar = React.useCallback(() => {
+    setConfirmandoCancelacion(false);
+    onCerrar();
+  }, [onCerrar]);
 
   // Escape closes, Tab is trapped inside the panel. The panel pages' own modals do
   // neither, so keyboard users could tab into the page behind the backdrop.
@@ -65,7 +71,7 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
 
     const onKey = (e) => {
       if (e.key === 'Escape') {
-        onCerrar();
+        cerrar();
         return;
       }
       if (e.key !== 'Tab' || !panelRef.current) return;
@@ -89,7 +95,7 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
     document.addEventListener('keydown', onKey);
     cerrarRef.current?.focus();
     return () => document.removeEventListener('keydown', onKey);
-  }, [abierto, onCerrar]);
+  }, [abierto, cerrar]);
 
   if (!abierto) return null;
 
@@ -97,7 +103,7 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
 
   return (
     <div
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onCerrar(); }}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) cerrar(); }}
       style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'grid', placeItems: 'center', padding: '24px', background: 'var(--kt-modal-backdrop)', backdropFilter: 'blur(8px)' }}
     >
       {/* The scrolling element below carries no border-radius of its own — a native
@@ -135,7 +141,7 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
           <button
             ref={cerrarRef}
             type="button"
-            onClick={onCerrar}
+            onClick={cerrar}
             aria-label="Cerrar"
             style={{ flex: 'none', width: '32px', height: '32px', display: 'grid', placeItems: 'center', borderRadius: '10px', border: '1px solid var(--kt-chip-border)', background: 'var(--kt-chip-bg)', color: 'var(--kt-muted)', cursor: 'pointer' }}
           >

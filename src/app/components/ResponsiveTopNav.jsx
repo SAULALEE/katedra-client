@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useThemeStore } from '../store/useThemeStore';
 import Button from './Button';
 import Container from './Container';
 
 export default function ResponsiveTopNav() {
   const navigate = useNavigate();
-  const { isDarkMode } = useThemeStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (

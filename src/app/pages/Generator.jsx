@@ -5,9 +5,10 @@ import remarkGfm from 'remark-gfm';
 import { useGenerator, PIEZAS, MODELOS } from '../hooks/useGenerator';
 import { useAuth } from '../hooks/useAuth';
 import { useExport } from '../hooks/useExport';
-import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
 import { SUBJECT_COLORS, darkenHex } from '../utils/asignaturaVisual';
 import { opcionesDePieza } from '../utils/exportOptions';
+import { formatTimeAgo } from '../utils/timeAgo';
 import { ExportDropdown } from '../components/ExportDropdown';
 import { ResponseCountField } from '../components/ResponseCountField';
 import {
@@ -16,9 +17,6 @@ import {
   Sparkles,
   Wand2,
   ChevronLeft,
-  Moon,
-  Sun,
-  LogOut,
   Bell,
   CheckCircle2,
   AlertCircle,
@@ -27,7 +25,6 @@ import {
   CheckSquare,
   Settings,
   FileQuestion,
-  RefreshCw,
   BookOpen,
   Cpu,
   ChevronDown,
@@ -228,16 +225,7 @@ export default function Generator() {
     }
   }, []);
 
-  const timeAgo = (ts) => {
-    const s = Math.floor((Date.now() - ts) / 1000);
-    if (s < 10) return 'justo ahora';
-    if (s < 60) return `hace ${s}s`;
-    const m = Math.floor(s / 60);
-    if (m < 60) return `hace ${m}min`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `hace ${h}h`;
-    return `hace ${Math.floor(h / 24)}d`;
-  };
+  const [now] = useState(Date.now);
 
   const notify = (kind, title, msg) => {
     setNotifications(prev => [{ id: Date.now() + Math.random(), kind, title, msg, ts: Date.now() }, ...prev].slice(0, 20));
@@ -645,7 +633,7 @@ export default function Generator() {
                       <div style={{ minWidth:0 }}>
                         <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', color:'var(--kt-heading)' }}>{n.title}</div>
                         <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', marginTop:'1px' }}>{n.msg}</div>
-                        <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'10px', color:'var(--kt-faint)', marginTop:'4px' }}>{timeAgo(n.ts)}</div>
+                        <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'10px', color:'var(--kt-faint)', marginTop:'4px' }}>{formatTimeAgo(n.ts, now)}</div>
                       </div>
                     </div>
                   )) : (
@@ -1133,8 +1121,6 @@ export default function Generator() {
                     {/* 4. Diapositivas */}
                     {activeTab === 'diapositivas' && (() => {
                       const slides = displayData.diapositivas;
-                      const slideIdx = Math.min(currentSlideIndex, slides.length - 1);
-                      const slide = slides[slideIdx];
                       return (
                       <div style={{ display:'flex', flexDirection:'column', gap:'24px', maxWidth:'1040px', margin:'0 auto', width:'100%' }}>
                         {/* Slide Exports */}

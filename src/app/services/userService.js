@@ -18,7 +18,7 @@ export const getUsersRequest = async () => {
     const users = Array.isArray(response.data) ? response.data : [];
     return users.map(normalizeUser);
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al obtener usuarios');
+    throw new Error(error.response?.data?.message || 'Error al obtener usuarios', { cause: error });
   }
 };
 
@@ -40,7 +40,7 @@ export const createUserRequest = async (userData) => {
       temporaryPassword: response.data.temporaryPassword
     };
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al crear usuario');
+    throw new Error(error.response?.data?.message || 'Error al crear usuario', { cause: error });
   }
 };
 
@@ -56,7 +56,7 @@ export const updateUserRequest = async (id, userData) => {
     const response = await api.put(`/usuarios/${id}`, userData);
     return normalizeUser(response.data);
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al actualizar usuario');
+    throw new Error(error.response?.data?.message || 'Error al actualizar usuario', { cause: error });
   }
 };
 
@@ -71,6 +71,6 @@ export const deleteUserRequest = async (id) => {
     await api.delete(`/usuarios/${id}`);
     return true;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al eliminar usuario');
+    throw new Error(error.response?.data?.message || 'Error al eliminar usuario', { cause: error });
   }
 };

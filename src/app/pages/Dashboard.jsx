@@ -4,7 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAsignaturas } from '../hooks/useAsignaturas';
 import { useAsignaturaVisual } from '../hooks/useAsignaturaVisual';
-import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
+import { formatTimeAgo } from '../utils/timeAgo';
 import {
   filtrarTemarios
 } from '../utils/asignaturas';
@@ -21,9 +22,6 @@ import {
   Sparkles,
   Wand2,
   ChevronLeft,
-  Moon,
-  Sun,
-  LogOut,
   Bell,
   CheckCircle2,
   AlertCircle,
@@ -178,22 +176,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  const getInitial = (name) => {
-    if (!name) return 'U';
-    const clean = name.replace(/^(prof\.|dra\.|dr\.|ing\.|mtra\.|mtro\.|lic\.)\s*/i, '').trim();
-    return (clean[0] || 'U').toUpperCase();
-  };
-
-  const timeAgo = (ts) => {
-    const s = Math.floor((Date.now() - ts) / 1000);
-    if (s < 10) return 'justo ahora';
-    if (s < 60) return `hace ${s}s`;
-    const m = Math.floor(s / 60);
-    if (m < 60) return `hace ${m}min`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `hace ${h}h`;
-    return `hace ${Math.floor(h / 24)}d`;
-  };
+  const [now] = useState(Date.now);
 
   const addToast = (kind, title, msg) => {
     const id = Date.now() + Math.random();
@@ -412,13 +395,6 @@ export default function Dashboard() {
     setVistaFavoritos(false);
   };
 
-  const handleOpenTemarios = async () => {
-    setVistaFavoritos(false);
-    if (!asignaturaActiva && asignaturas && asignaturas.length > 0) {
-      await handleOpenAsignatura(asignaturas[0]);
-    }
-  };
-
   const handleOpenFavoritos = async () => {
     const result = await fetchFavoritos();
     if (result.success) {
@@ -433,6 +409,8 @@ export default function Dashboard() {
     const params = new URLSearchParams(location.search);
     const viewParam = params.get('view');
     if (viewParam === 'favoritos') {
+      // URL-driven initial view (?view=favoritos), not a per-render props-mirroring pattern.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       handleOpenFavoritos();
     } else if (viewParam === 'temarios') {
       setVistaFavoritos(false);
@@ -1018,7 +996,7 @@ export default function Dashboard() {
                       <div style={{ minWidth:0 }}>
                         <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', color:'var(--kt-heading)' }}>{n.title}</div>
                         <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', marginTop:'1px' }}>{n.msg}</div>
-                        <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'10px', color:'var(--kt-faint)', marginTop:'4px' }}>{timeAgo(n.ts)}</div>
+                        <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'10px', color:'var(--kt-faint)', marginTop:'4px' }}>{formatTimeAgo(n.ts, now)}</div>
                       </div>
                     </div>
                   )) : (
@@ -1384,8 +1362,6 @@ export default function Dashboard() {
                     <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:'20px', alignItems:'stretch' }}>
                       {favoriteCourses.map(c => {
                         const subj = asignaturas.find(a => a.id === c.asignaturaId);
-                        const meta = subj ? getMeta(subj.id) : null;
-                        const accent = meta ? meta.color : '#10B981';
                         const total = c.temas || 6;
                         const pct = c.progreso || 0;
                         return (

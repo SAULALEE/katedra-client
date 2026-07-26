@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useHistorial } from '../hooks/useHistorial';
-import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
 import {
   Users as UsersIcon,
   FolderDot,
   Sparkles,
   Wand2,
   ChevronLeft,
-  Moon,
-  Sun,
-  LogOut,
   Trash2,
   Settings,
   Heart,
@@ -31,7 +28,6 @@ export default function GeneratedContents() {
   useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
   const [collapsed, setCollapsed] = useState(() => window.innerWidth <= 820);
   const [asignaturasOpen, setAsignaturasOpen] = useState(false);
-  const [zoom, setZoom] = useState(100);
   const [planModalAbierto, setPlanModalAbierto] = useState(false);
   const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
 
@@ -45,12 +41,6 @@ export default function GeneratedContents() {
       document.head.appendChild(link);
     }
   }, []);
-
-  const getInitial = (name) => {
-    if (!name) return 'U';
-    const clean = name.replace(/^(prof\.|dra\.|dr\.|ing\.|mtra\.|mtro\.|lic\.)\s*/i, '').trim();
-    return (clean[0] || 'U').toUpperCase();
-  };
 
   return (
     <>

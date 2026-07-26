@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUsers } from '../hooks/useUsers';
-import { isAdmin, isProfesor, formatRoleDisplay } from '../utils/roleUtils';
-import { 
-  Users as UsersIcon, 
-  FolderDot, 
-  Sparkles, 
-  Wand2, 
+import { isAdmin, isProfesor } from '../utils/roleUtils';
+import { formatTimeAgo } from '../utils/timeAgo';
+import {
+  Users as UsersIcon,
+  FolderDot,
+  Sparkles,
+  Wand2,
   ChevronLeft,
-  Moon,
-  Sun,
-  LogOut,
   Bell,
   Search,
   Eye,
@@ -21,7 +19,6 @@ import {
   UserPlus,
   CheckCircle2,
   AlertCircle,
-  FileText,
   Heart,
   ChevronDown
 } from 'lucide-react';
@@ -30,19 +27,8 @@ import { PlanModal } from '../components/PlanModal';
 import { PlanBadge } from '../components/PlanBadge';
 import { useSuscripcionStore } from '../store/suscripcionStore';
 
-const ROLE_OPTIONS = [
-  { id: 'Docente Plan Libre', short: 'Libre' },
-  { id: 'Docente Premium', short: 'Premium' },
-  { id: 'Administrador', short: 'Admin' },
-];
-
-const ESTADO_OPTIONS = [
-  { id: 'Activo', label: 'Activo' },
-  { id: 'Inactivo', label: 'Inactivo' },
-];
-
 export default function Users() {
-  const { users, loading, error, createUser, updateUser, deleteUser } = useUsers();
+  const { users, error, createUser, updateUser, deleteUser } = useUsers();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -109,16 +95,7 @@ export default function Users() {
     return (clean[0] || 'U').toUpperCase();
   };
   
-  const timeAgo = (ts) => {
-    const s = Math.floor((Date.now() - ts) / 1000);
-    if (s < 10) return 'justo ahora';
-    if (s < 60) return `hace ${s}s`;
-    const m = Math.floor(s / 60);
-    if (m < 60) return `hace ${m}min`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `hace ${h}h`;
-    return `hace ${Math.floor(h / 24)}d`;
-  };
+  const [now] = useState(Date.now);
 
   const addToast = (kind, title, msg) => {
     const id = Date.now() + Math.random();
@@ -212,7 +189,7 @@ export default function Users() {
     // stays whatever it already was, shown here only for display.
     const rolForPayload = editId ? editRol : 'ROLE_ADMIN';
     const payload = { nombre, email, rol: rolForPayload, estado: formStatus };
-    let success = false;
+    let success;
 
     if (editId) {
       success = await updateUser(editId, payload);
@@ -603,7 +580,7 @@ export default function Users() {
                       <div style={{ minWidth:0 }}>
                         <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', color:'var(--kt-heading)' }}>{n.title}</div>
                         <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'11.5px', color:'var(--kt-muted)', marginTop:'1px' }}>{n.msg}</div>
-                        <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'10px', color:'var(--kt-faint)', marginTop:'4px' }}>{timeAgo(n.ts)}</div>
+                        <div style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'10px', color:'var(--kt-faint)', marginTop:'4px' }}>{formatTimeAgo(n.ts, now)}</div>
                       </div>
                     </div>
                   )) : (

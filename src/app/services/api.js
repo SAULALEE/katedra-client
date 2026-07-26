@@ -34,4 +34,36 @@ api.interceptors.request.use(
   }
 );
 
+const isPublicAuthRequest = (url = '') =>
+  url.includes('/auth/login') ||
+  url.includes('/auth/register') ||
+  url.includes('/auth/google') ||
+  url.includes('/oauth2/');
+
+// Response interceptor: an expired/revoked token otherwise keeps producing
+// failed requests silently instead of forcing the user back to login.
+// Clears storage directly (not via authStore.logout(), which itself calls
+// the API and would re-trigger this same 401 path) and hard-navigates so
+// the whole app re-initializes from the now-empty session, avoiding a
+// circular import with authStore/authService (both import this module).
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const url = error.config?.url || '';
+
+    if (status === 401 && !isPublicAuthRequest(url)) {
+      localStorage.removeItem('katedra_user');
+      localStorage.removeItem('katedra_token');
+      localStorage.removeItem('katedra_last_active');
+
+      if (window.location.pathname !== '/login') {
+        window.location.assign('/login');
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

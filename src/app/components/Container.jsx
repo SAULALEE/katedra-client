@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function Container({ children, className = '', size = '7xl' }) {
   const sizeClasses = {

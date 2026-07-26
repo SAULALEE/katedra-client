@@ -131,6 +131,10 @@ export const useGenerator = () => {
     if (initialTemarioResolved) return;
     const match = courses.find(c => c.id === initialTemarioId);
     if (!match) return;
+    // Guarded by initialTemarioResolved above: runs at most once per mount, resolving
+    // materiaId from a URL-preselected temario once `courses` has loaded — not a
+    // per-render props-mirroring pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMateriaIdState(match.asignaturaId);
     fetchCoursesByAsignatura(match.asignaturaId);
     setInitialTemarioResolved(true);
