@@ -1,25 +1,29 @@
-import React, { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getDefaultRoute } from '../utils/roleUtils';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const { handleOAuthCallback, user, error } = useAuth();
+  const { handleOAuthCallback } = useAuth();
+  const hasHandledCallback = useRef(false);
 
   useEffect(() => {
-    const success = handleOAuthCallback();
+    if (hasHandledCallback.current) return;
+    hasHandledCallback.current = true;
 
-    if (success) {
-      navigate(getDefaultRoute(user), { replace: true });
+    const session = handleOAuthCallback();
+
+    if (session) {
+      navigate(getDefaultRoute(session.user), { replace: true });
       return;
     }
 
     navigate('/auth/error', {
       replace: true,
-      state: { message: error || 'No se pudo completar el inicio de sesion social.' }
+      state: { message: 'No se pudo completar el acceso con Google. Inténtalo de nuevo.' }
     });
-  }, [handleOAuthCallback, user, navigate, error]);
+  }, [handleOAuthCallback, navigate]);
 
   return (
     <div className="w-full min-h-screen bg-canvas text-ink flex items-center justify-center">
