@@ -378,7 +378,7 @@ export default function Dashboard() {
         refetchStats(),
         fetchCoursesByAsignatura(asignaturaActiva.id)
       ]);
-      notify('success', 'Temario generado', `${titulo} se estructuró con IA (${subtemas} módulos).`);
+      notify('success', 'Temario creado', `${titulo} quedó organizado en ${subtemas} módulos.`);
     } else {
       notify('error', 'No se pudo crear', result.error || 'Revisa los datos e intenta nuevamente.');
     }
@@ -458,7 +458,7 @@ export default function Dashboard() {
       if (nuevoEstado) notify('fav', 'Añadido a favoritos', course.titulo || course.nombre || '');
       else addToast('warn', 'Quitado de favoritos', course.titulo || course.nombre || '');
     } else {
-      notify('error', 'No se pudo actualizar Favoritos', result.error);
+      notify('error', 'No se pudieron actualizar los favoritos', result.error);
     }
   };
 
@@ -509,7 +509,7 @@ export default function Dashboard() {
     if (result.success) {
       setMeta(result.asignatura.id, { color: smColor, icon: smIcon });
       setAsignaturaModalOpen(false);
-      notify('success', 'Asignatura creada', `${nombre} se añadió a tu biblioteca.`);
+      notify('success', 'Asignatura creada', `${nombre} se agregó a tus asignaturas.`);
     } else {
       notify('error', 'No se pudo crear', result.error);
     }
@@ -531,7 +531,7 @@ export default function Dashboard() {
 
     setDeleteProcessing(false);
     if (result.success) {
-      notify('success', esAsignatura ? 'Asignatura eliminada' : 'Temario eliminado', `${deletePending.name} fue removido.`);
+      notify('success', esAsignatura ? 'Asignatura eliminada' : 'Temario eliminado', `${deletePending.name} se eliminó.`);
       setDeletePending(null);
       if (!esAsignatura && asignaturaActiva) {
         await fetchCoursesByAsignatura(asignaturaActiva.id);
@@ -1612,7 +1612,7 @@ export default function Dashboard() {
               <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'12px', marginBottom:'12px' }}>
                 <div>
                   <span style={{ display:'inline-flex', alignItems:'center', padding:'4px 10px', borderRadius:'7px', background:'rgba(16,185,129,.14)', color:'#059669', fontFamily:"'Manrope'", fontWeight:800, fontSize:'9.5px', letterSpacing:'1.2px', textTransform:'uppercase', marginBottom:'12px' }}>
-                    {editId ? 'Editar Temario' : 'Ingesta Inteligente'}
+                    {editId ? 'Editar Temario' : 'Crear Temario'}
                   </span>
                   <h3 style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'22px', letterSpacing:'-.8px', color:'var(--kt-heading)', margin:0 }}>
                     {editId ? 'Editar Temario' : 'Cargar Temario'}
@@ -1682,7 +1682,7 @@ export default function Dashboard() {
                     </div>
                     <div style={{ display:'flex', gap:'11px', padding:'12px 14px', borderRadius:'12px', background:'rgba(16,185,129,.08)', border:'1px solid rgba(16,185,129,.25)' }}>
                       <span style={{ flex:'none', color:'#10B981' }}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg></span>
-                      <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', lineHeight:1.45, color:'#059669' }}><span style={{ fontWeight:800 }}>Importación Web:</span> La IA analizará la página provista para extraer los temas y estructurar el temario automáticamente.</div>
+                      <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12px', lineHeight:1.45, color:'#059669' }}><span style={{ fontWeight:800 }}>Desde una página web:</span> Katedra revisará el contenido del enlace y lo usará para organizar el temario.</div>
                     </div>
                   </div>
                 )}
@@ -1691,7 +1691,7 @@ export default function Dashboard() {
                   <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                     <div style={{ display:'flex', gap:'11px', padding:'12px 14px', borderRadius:'12px', background:'rgba(16,185,129,.08)', border:'1px solid rgba(16,185,129,.25)' }}>
                       <span style={{ flex:'none', color:'#10B981' }}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg></span>
-                      <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', lineHeight:1.45, color:'#059669' }}><span style={{ fontWeight:800 }}>Creación Manual Inteligente:</span> Define los metadatos y la IA estructurará el temario de forma autónoma.</div>
+                      <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'12.5px', lineHeight:1.45, color:'#059669' }}><span style={{ fontWeight:800 }}>Crear desde cero:</span> Completa los datos y Katedra organizará el temario.</div>
                     </div>
                   </div>
                 )}
@@ -1963,7 +1963,7 @@ export default function Dashboard() {
                     }}>
                       {[
                         { value:'TUTOR', label:'Tutor', hint:'Rápido y directo, ideal para respuestas ágiles' },
-                        { value:'CATEDRATICO', label:'Catedrático', hint:'Máxima profundidad y rigor académico' }
+                        { value:'CATEDRATICO', label:'Catedrático', hint:'Respuestas más detalladas para temas complejos' }
                       ].map(opt => {
                         const isCatedratico = opt.value === 'CATEDRATICO';
                         const isSelected = modelo === opt.value;

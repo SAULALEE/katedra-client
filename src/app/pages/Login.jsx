@@ -301,9 +301,9 @@ export default function Login() {
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 20% 0%, rgba(16,185,129,.10), transparent 60%)', pointerEvents: 'none' }}></div>
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '10px', letterSpacing: '1.35px', textTransform: 'uppercase', color: '#059669', marginBottom: '12px' }}>Bienvenido de vuelta, educador</div>
-              <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '29px', lineHeight: '1.12', letterSpacing: '-1.4px', color: '#0F172A', margin: '0 0 8px' }}>Tu aula,<br />supercargada.</h2>
+              <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '29px', lineHeight: '1.12', letterSpacing: '-1.4px', color: '#0F172A', margin: '0 0 8px' }}>Prepara tus clases<br />con más facilidad.</h2>
               <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: '1.55', color: '#475569', margin: 0, maxWidth: '280px' }}>
-                Continúa donde lo dejaste — lecciones, cuestionarios y rúbricas, generados en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>segundos</span>.
+                Continúa donde lo dejaste y revisa tus Temarios y materiales.
               </p>
             </div>
 
@@ -378,7 +378,7 @@ export default function Login() {
             </div>
 
             <h1 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '27px', lineHeight: 1.1, letterSpacing: '-1px', color: '#0F172A', margin: '0 0 7px' }}>Inicia sesión en tu cuenta</h1>
-            <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14.5px', color: '#64748B', margin: '0 0 26px' }}>Bienvenido de vuelta — construyamos algo grandioso.</p>
+            <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14.5px', color: '#64748B', margin: '0 0 26px' }}>Bienvenido de nuevo. Continúa con tus materiales.</p>
 
             {/* OAuth */}
             <div style={{ display: 'flex', gap: '11px', marginBottom: '22px' }}>

@@ -295,10 +295,10 @@ export default function Register() {
             <div className="kt-left" style={{ position: 'relative', padding: '44px 40px', background: 'linear-gradient(165deg,#ECFDF5 0%,#F0FDFA 46%,#FEFCE8 100%)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 20% 0%, rgba(16,185,129,.10), transparent 60%)', pointerEvents: 'none' }}></div>
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '10px', letterSpacing: '1.35px', textTransform: 'uppercase', color: '#059669', marginBottom: '12px' }}>Comienza tu viaje, educador</div>
-                <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '29px', lineHeight: '1.12', letterSpacing: '-1.4px', color: '#0F172A', margin: '0 0 8px' }}>Potencia tu<br />enseñanza.</h2>
+                <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '10px', letterSpacing: '1.35px', textTransform: 'uppercase', color: '#059669', marginBottom: '12px' }}>Crea tu espacio de trabajo</div>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '29px', lineHeight: '1.12', letterSpacing: '-1.4px', color: '#0F172A', margin: '0 0 8px' }}>Prepara tus clases<br />con más facilidad.</h2>
                 <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: '1.55', color: '#475569', margin: 0, maxWidth: '280px' }}>
-                  Diseña temarios, teoría y evaluaciones de clase con inteligencia artificial en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>segundos</span>.
+                  Organiza Temarios, Teoría docente y Evaluaciones para tus clases.
                 </p>
               </div>
 
