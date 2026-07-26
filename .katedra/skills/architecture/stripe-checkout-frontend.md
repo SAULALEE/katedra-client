@@ -152,24 +152,38 @@ Opens on gear popover CTA or Landing pricing cards.
 ```
 
 ### `CheckoutModal.jsx`
-Two-step checkout shell. Owns the step machine, error state, processing indicator.
+Full-screen checkout, rendered once in `App.jsx` outside `<Routes>` so any page can open it.
 
-**Step 1 (DatosFacturacionStep):** Form with fields:
-- Nombre completo
-- Email
-- País, ciudad, dirección, código postal
+**Presented as a single scrolling page,** not a stack of dialogs: cycle selector → order
+summary → renewal notice → payment method → consent → CTA. The cycle, the total and the
+renewal date stay visible while the card is typed.
 
-Validates: no blanks, email format. On submit → `enviarDatosFacturacion()`.
+The two server round-trips remain (the backend needs a customer before Stripe issues a
+client secret), so the card block **reveals in place** instead of pushing a second screen:
 
-**Step 2 (PagoTarjetaStep):** Stripe Elements. Mounted inside `<Elements>` provider with:
-- `clientSecret` from step 1
-- `appearance` (theme-aware styling, reads `--kt-*` vars)
-- `fonts: [{ cssSrc: 'https://fonts.googleapis.com/...' }]`
+| `paso` | billing fields | card block | CTA |
+|---|---|---|---|
+| `datos` | editable | hidden | "Continuar al pago" → `enviarDatosFacturacion()` |
+| `tarjeta` | disabled + "Editar datos" (→ `volverADatos`) | `<Elements>` mounted | "Suscribirse" → `stripe.confirmPayment()` |
+| `exito` | — | — | "Empezar a usar Pro" → `cerrarCheckout()` |
 
-On submit → `stripe.confirmPayment()`. On success → `confirmarPago()`. On error → `fallarPago(mensaje)`.
+Required fields: `nombreCompleto`, `email`, `pais`. `pais` submits an **ISO country code**,
+not a display name — `StripeService` passes it straight to `Address.setCountry`.
 
-### `stripeAppearance.js`
-Reads `--kt-*` CSS variables and builds Stripe Elements appearance object. Elements run in cross-origin iframe, so they can't read vars directly.
+On payment success → `confirmarPago()` → `actualizarPlan('pro')`.
+On Stripe error (declined, failed 3DS) → `fallarPago(mensaje)`, retryable in place.
+
+Changing the cycle calls `cambiarCiclo()`, which clears `clientSecret` and collapses the
+card block — the old secret belongs to a subscription for the other amount.
+
+**Theme tokens are re-declared inside the component** under `[data-kt-checkout]`. The
+`--kt-*` variables are scoped to each page's `[data-root]`, and the checkout renders
+outside all of them, so inheriting is not an option.
+
+### `utils/stripeAppearance.js`
+Builds the Stripe Elements appearance object. Elements run in a cross-origin iframe and
+cannot read the `--kt-*` variables, so the token values are **mirrored as literals** —
+keep them in sync with the pages' THEME TOKENS block.
 
 ```javascript
 construirAppearance(theme) → {
@@ -177,16 +191,16 @@ construirAppearance(theme) → {
   variables: { colorPrimary, colorBackground, colorText, ... },
   rules: { '.Input': { border, boxShadow, ... }, ... }
 }
+FUENTES_STRIPE  // Manrope, or the iframe falls back to system fonts
 ```
 
-### `lib/stripe.js`
-Module-scoped Stripe instance (singleton, loads once).
+The appearance is memoized on `clientSecret` alone, deliberately excluding the theme:
+rebuilding it on a theme toggle remounts the iframe and wipes the typed card.
 
-```javascript
-export const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
-```
-
-**Why module scope?** `loadStripe()` inside component body re-initializes on every render → flicker. This approach initializes once.
+### Stripe instance
+`loadStripe()` is memoized on `publishableKey`, which arrives in the `POST /suscripciones`
+response rather than from `import.meta.env`. Rotating the key, or pointing a deployment at
+a different Stripe account, therefore needs no frontend rebuild.
 
 ---
 
