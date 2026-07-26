@@ -76,7 +76,7 @@ export default function Dashboard() {
 
   const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
   useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth <= 820);
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [tab, setTab] = useState('file');
@@ -696,7 +696,8 @@ export default function Dashboard() {
         .kt-fuente-wrapper{width:0;transition:width .32s cubic-bezier(.4,0,.2,1);overflow:hidden;flex:none;background:var(--kt-modal-bg1);border-left:1px solid transparent;position:relative;z-index:10}
         [data-root][data-kt-fuente="true"] .kt-fuente-wrapper{width:420px;border-color:var(--kt-border)}
         @media(max-width:760px){
-          [data-root][data-kt-fuente="true"] .kt-fuente-wrapper{width:min(420px,90vw)}
+          .kt-header-wrap { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+          .kt-header-actions { margin-left: 0 !important; flex-wrap: wrap !important; width: 100% !important; justify-content: flex-start !important; }
         }
 
         /* modal reveal */
@@ -753,14 +754,26 @@ export default function Dashboard() {
           .kt-navrow{justify-content:center !important}
           .kt-collapsebtn{display:none !important}
         }
+        @media(max-width:820px){
+          .kt-fuente-wrapper { position: absolute !important; right: 0; top: 0; bottom: 0; z-index: 90; box-shadow: -10px 0 40px rgba(0,0,0,0.15); }
+          [data-root][data-kt-theme="dark"] .kt-fuente-wrapper { box-shadow: -10px 0 40px rgba(0,0,0,0.4); }
+          [data-root][data-kt-fuente="true"] .kt-fuente-wrapper{width:min(420px,90vw)}
+          .kt-sidebar{position:absolute !important;z-index:90;height:100%;width:260px !important;border-top-right-radius:24px;border-bottom-right-radius:24px;box-shadow:10px 0 40px rgba(0,0,0,0.15) !important;transform:translateX(0)}
+          [data-root][data-kt-theme="dark"] .kt-sidebar{box-shadow:10px 0 40px rgba(0,0,0,0.4) !important}
+          [data-root][data-kt-collapsed="true"] .kt-sidebar{width:260px !important;transform:translateX(-100%);box-shadow:none !important}
+          .kt-sidelabel, .kt-menutitle{display:inline-block !important;opacity:1 !important}
+          .kt-navrow, .kt-brand-header{justify-content:flex-start !important;padding-left:12px !important;padding-right:12px !important}
+          .kt-brand-header{padding:22px 20px 20px !important}
+          [data-root][data-kt-collapsed="true"] .kt-sidelabel, [data-root][data-kt-collapsed="true"] .kt-menutitle{display:none !important}
+          .kt-collapsebtn{display:grid !important;right:-20px;width:40px;height:40px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+        }
         @media(max-width:760px){
+          .kt-header-wrap { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+          .kt-header-actions { margin-left: 0 !important; flex-wrap: wrap !important; width: 100% !important; justify-content: flex-start !important; }
           .kt-headtitle{font-size:22px !important}
           .kt-main-pad{padding:18px !important}
           .kt-modal-2col{grid-template-columns:1fr !important}
           .kt-searchrow{flex-direction:column !important;align-items:stretch !important}
-        }
-        @media(max-width:560px){
-          .kt-sidebar{position:absolute !important;z-index:40;height:100%;box-shadow:0 0 60px rgba(0,0,0,.6)}
         }
 
         /* modal scrollable content */
@@ -806,6 +819,22 @@ export default function Dashboard() {
           background:var(--kt-scrollbar);
           background-clip:content-box;
         }
+        .kt-mobile-overlay {
+          display: none;
+        }
+        @media(max-width:820px) {
+          .kt-mobile-overlay {
+            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(2px);
+          }
+          [data-root][data-kt-theme="dark"] .kt-mobile-overlay {
+            background: rgba(0, 0, 0, 0.7);
+          }
+        }
       `}</style>
 
       <div
@@ -833,6 +862,18 @@ export default function Dashboard() {
             <rect width="100%" height="100%" filter="url(#ktnoise)"></rect>
           </svg>
         </div>
+
+        
+        {/* Mobile Overlay for sidebars */}
+        {(!collapsed || sourcePanelCourse) && (
+          <div 
+            className="kt-mobile-overlay"
+            onClick={() => {
+              if (!collapsed) setCollapsed(true);
+              if (sourcePanelCourse) handleCloseFuente();
+            }}
+          />
+        )}
 
         {/* SIDEBAR */}
         <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .32s cubic-bezier(.4,0,.2,1)', overflow:'visible' }}>
@@ -943,13 +984,13 @@ export default function Dashboard() {
 
         {/* MAIN */}
         <main style={{ position:'relative', zIndex:5, flex:1, minWidth:0, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          <header className="kt-main-pad" style={{ display:'flex', alignItems:'center', gap:'18px', padding:'26px 32px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+          <header className="kt-main-pad kt-header-wrap" style={{ display:'flex', alignItems:'center', gap:'18px', padding:'26px 32px', borderBottom:'1px solid var(--kt-border-soft)' }}>
             <div style={{ minWidth:0 }}>
               <h1 className="kt-headtitle" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'27px', lineHeight:1.15, letterSpacing:'-1.2px', color:'var(--kt-heading)', margin:0 }}>{view === 'favoritos' ? 'Favoritos' : view === 'temarios' ? 'Mis Temarios' : 'Mis Asignaturas'}</h1>
               <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', color:'var(--kt-muted)', margin:'3px 0 0' }}>{view === 'favoritos' ? 'Tus temarios marcados en un solo lugar' : view === 'temarios' ? 'Temarios de la asignatura seleccionada' : 'Administra tus asignaturas'}</p>
             </div>
 
-            <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'12px' }}>
+            <div className="kt-header-actions" style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'12px' }}>
               {/* Notifications */}
               <div style={{ position:'relative' }}>
                 <button onClick={() => setNotifOpen(!notifOpen)} aria-label="Notificaciones" style={{ position:'relative', width:'42px', height:'42px', display:'grid', placeItems:'center', border:'1px solid var(--kt-chip-border)', background:'var(--kt-chip-bg)', borderRadius:'11px', color:'var(--kt-muted)', cursor:'pointer' }}>

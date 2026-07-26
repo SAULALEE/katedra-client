@@ -200,6 +200,22 @@ export default function Login() {
           .kt-nav-links{display:none !important}
           .kt-nav{padding:14px 20px !important}
         }
+        .kt-mobile-overlay {
+          display: none;
+        }
+        @media(max-width:820px) {
+          .kt-mobile-overlay {
+            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(2px);
+          }
+          [data-root][data-kt-theme="dark"] .kt-mobile-overlay {
+            background: rgba(0, 0, 0, 0.7);
+          }
+        }
       `}</style>
 
       <div data-root className="kt-page" style={{ position: 'fixed', inset: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', fontFamily: "'Manrope', sans-serif", background: 'radial-gradient(130% 135% at 12% 6%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 86%, #FCD34D 112%)', zIndex: 9999 }}>

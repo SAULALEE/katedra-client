@@ -44,7 +44,7 @@ export default function ContentViewer() {
   
   const [theme, setTheme] = useState(() => localStorage.getItem('katedra-theme') || 'light');
   useEffect(() => { localStorage.setItem('katedra-theme', theme); }, [theme]);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth <= 820);
   const [asignaturasOpen, setAsignaturasOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -322,12 +322,38 @@ export default function ContentViewer() {
     .kt-collapsebtn{display:none !important}
   }
   @media(max-width:820px){
+    .kt-sidebar{position:absolute !important;z-index:90;height:100%;width:260px !important;border-top-right-radius:24px;border-bottom-right-radius:24px;box-shadow:10px 0 40px rgba(0,0,0,0.15) !important;transform:translateX(0)}
+    [data-root][data-kt-theme="dark"] .kt-sidebar{box-shadow:10px 0 40px rgba(0,0,0,0.4) !important}
+    [data-root][data-kt-collapsed="true"] .kt-sidebar{width:260px !important;transform:translateX(-100%);box-shadow:none !important}
+    .kt-sidelabel, .kt-menutitle{display:inline-block !important;opacity:1 !important}
+    .kt-navrow, .kt-brand-header{justify-content:flex-start !important;padding-left:12px !important;padding-right:12px !important}
+    .kt-brand-header{padding:22px 20px 20px !important}
+    [data-root][data-kt-collapsed="true"] .kt-sidelabel, [data-root][data-kt-collapsed="true"] .kt-menutitle{display:none !important}
+    .kt-collapsebtn{display:grid !important;right:-20px;width:40px;height:40px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+    
     .kt-headtitle{font-size:21px !important}
     .kt-main-pad{padding:16px !important}
     .kt-tabscroll{overflow-x:auto}
     .kt-toolbar{flex-wrap:wrap}
   }
-  `}</style>
+  
+        .kt-mobile-overlay {
+          display: none;
+        }
+        @media(max-width:820px) {
+          .kt-mobile-overlay {
+            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(2px);
+          }
+          [data-root][data-kt-theme="dark"] .kt-mobile-overlay {
+            background: rgba(0, 0, 0, 0.7);
+          }
+        }
+      `}</style>
       
       <div data-root data-kt-theme={theme} data-kt-collapsed={collapsed ? "true" : "false"} data-kt-tab={activeTab} data-kt-tview={tView} data-kt-evalview={evalView} data-kt-notif={notifOpen ? "true" : "false"} data-kt-examchecked={examChecked ? "true" : "false"} style={{position:'fixed',inset:0,display:'flex',overflow:'hidden',fontFamily:"'Manrope',sans-serif",background:'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)',color:'var(--kt-text)'}}>
         
@@ -343,6 +369,15 @@ export default function ContentViewer() {
             <rect width="100%" height="100%" filter="url(#ktnoise)"></rect>
           </svg>
         </div>
+
+        
+        {/* Mobile Overlay for sidebars */}
+        {!collapsed && (
+          <div 
+            className="kt-mobile-overlay"
+            onClick={() => setCollapsed(true)}
+          />
+        )}
 
         {/* SIDEBAR */}
         <aside className="kt-sidebar" style={{ position:'relative', zIndex:10, flex:'none', display:'flex', flexDirection:'column', background:'var(--kt-sidebar-bg)', backdropFilter:'blur(14px)', borderRight:'1px solid var(--kt-border)', transition:'width .32s cubic-bezier(.4,0,.2,1)', overflow:'visible' }}>
