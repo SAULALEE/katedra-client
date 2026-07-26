@@ -38,6 +38,7 @@ export const useSuscripcion = (cargarAlMontar = false) => {
     puedeGenerarDiapositivas: uso?.permiteDiapositivas ?? false,
     puedeCargarArchivo: uso?.permiteCargaArchivo ?? false,
     puedeCargarUrl: uso?.permiteCargaUrl ?? false,
+    puedeExportarAvanzado: uso?.permiteExportacionAvanzada ?? false,
 
     generacionesUsadas: uso?.generacionesUsadas ?? 0,
     generacionesLimite: uso?.generacionesLimite ?? 0,

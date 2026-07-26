@@ -175,7 +175,7 @@ export default function Generator() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [planModalAbierto, setPlanModalAbierto] = useState(false);
   const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
-  const { puedeUsarModeloPro, puedeGenerarDiapositivas } = useSuscripcion();
+  const { puedeUsarModeloPro, puedeGenerarDiapositivas, puedeExportarAvanzado } = useSuscripcion();
 
   const {
     asignaturas, asignaturasLoading,
@@ -244,6 +244,7 @@ export default function Generator() {
   };
 
   const handleExport = async (pieza, opcion) => {
+    if (opcion.locked) { setPlanModalAbierto(true); return; }
     const resultado = await exportar({ temarioId, pieza, formato: opcion.id, theme });
     if (resultado.ok) {
       notify('success', 'Exportación lista', `Se descargó ${resultado.filename}.`);
@@ -875,7 +876,7 @@ export default function Generator() {
                       <button
                         type="button"
                         onClick={() => setPlanModalAbierto(true)}
-                        style={{ alignSelf:'flex-start', display:'flex', alignItems:'center', gap:'6px', padding:'7px 13px', borderRadius:'9px', border:'none', cursor:'pointer', background:'linear-gradient(120deg,#FBBF24,#D97706)', color:'#fff', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11.5px' }}
+                        style={{ alignSelf:'flex-start', display:'flex', alignItems:'center', gap:'6px', padding:'7px 13px', borderRadius:'9px', border:'none', cursor:'pointer', background:'linear-gradient(120deg,#10B981,#059669)', color:'#fff', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11.5px' }}
                       >
                         <Sparkles size={13} />
                         Mejorar a Pro
@@ -998,7 +999,7 @@ export default function Generator() {
                       <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
                         <div style={{ display:'flex', justifyContent:'flex-end' }}>
                           <ExportDropdown
-                            options={opcionesDePieza('teoria')}
+                            options={opcionesDePieza('teoria', { puedeExportarAvanzado })}
                             loadingOptionId={formatoEnCurso('teoria')}
                             onSelect={(opt) => handleExport('teoria', opt)}
                           />
@@ -1020,7 +1021,7 @@ export default function Generator() {
                       <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
                         <div style={{ display:'flex', justifyContent:'flex-end' }}>
                           <ExportDropdown
-                            options={opcionesDePieza('evaluacion')}
+                            options={opcionesDePieza('evaluacion', { puedeExportarAvanzado })}
                             loadingOptionId={formatoEnCurso('evaluacion')}
                             onSelect={(opt) => handleExport('evaluacion', opt)}
                           />

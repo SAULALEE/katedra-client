@@ -4,6 +4,7 @@ import { getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAuth } from '../hooks/useAuth';
 import { useExport } from '../hooks/useExport';
+import { useSuscripcion } from '../hooks/useSuscripcion';
 import { SUBJECT_COLORS, darkenHex } from '../utils/asignaturaVisual';
 import { isAdmin, formatRoleDisplay } from '../utils/roleUtils';
 import { opcionesDePieza } from '../utils/exportOptions';
@@ -62,6 +63,7 @@ export default function ContentViewer() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [planModalAbierto, setPlanModalAbierto] = useState(false);
   const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
+  const { puedeExportarAvanzado } = useSuscripcion();
 
   const course = courses.find(c => c.id === id) || { titulo: 'Temario Generado', asignatura: 'Cargando...' };
 
@@ -171,6 +173,7 @@ export default function ContentViewer() {
   };
 
   const handleExport = async (pieza, opcion) => {
+    if (opcion.locked) { setPlanModalAbierto(true); return; }
     const resultado = await exportar({ temarioId: id, pieza, formato: opcion.id, theme });
     if (resultado.ok) {
       notify('success', 'Exportación lista', `Se descargó ${resultado.filename}.`);
@@ -569,7 +572,7 @@ export default function ContentViewer() {
                         </button>
                         <ExportDropdown
                           variant="primary"
-                          options={opcionesDePieza('teoria', { disponible: Boolean(content?.teoria) })}
+                          options={opcionesDePieza('teoria', { disponible: Boolean(content?.teoria), puedeExportarAvanzado })}
                           loadingOptionId={formatoEnCurso('teoria')}
                           onSelect={(opt) => handleExport('teoria', opt)}
                         />
@@ -611,7 +614,7 @@ export default function ContentViewer() {
                         </button>
                         <ExportDropdown
                           variant="primary"
-                          options={opcionesDePieza('evaluacion', { disponible: Boolean(content?.evaluacion?.length) })}
+                          options={opcionesDePieza('evaluacion', { disponible: Boolean(content?.evaluacion?.length), puedeExportarAvanzado })}
                           loadingOptionId={formatoEnCurso('evaluacion')}
                           onSelect={(opt) => handleExport('evaluacion', opt)}
                         />

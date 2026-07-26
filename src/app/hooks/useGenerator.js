@@ -3,6 +3,7 @@ import { useSearchParams, useLocation } from 'react-router-dom';
 import { generarMaterialParaTemario, getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from './useTemarios';
 import { useAsignaturas } from './useAsignaturas';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 export const PIEZAS = [
   { id: 'teoria', label: 'Teoría Docente' },
@@ -66,6 +67,7 @@ export const useGenerator = () => {
   const location = useLocation();
   const { courses, assignmentCourses, assignmentLoading, fetchCoursesByAsignatura } = useTemarios();
   const { asignaturas, loading: asignaturasLoading } = useAsignaturas();
+  const cargarUso = useSuscripcionStore((s) => s.cargarUso);
 
   const initialTemarioId = searchParams.get('temarioId') || location.state?.temarioId || '';
   const [temarioId, setTemarioIdState] = useState(initialTemarioId);
@@ -237,6 +239,9 @@ export const useGenerator = () => {
     } finally {
       setIsGenerating(false);
       clearInterval(stepInterval);
+      // Every attempt (success, partial failure, or a 403/429 rejection) may have moved
+      // today's quota; resync so the sidebar meter never lags behind what just happened.
+      cargarUso();
     }
   };
 

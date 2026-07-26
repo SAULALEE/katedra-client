@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { usePlanes } from '../hooks/usePlanes';
 import { useSuscripcionStore } from '../store/suscripcionStore';
+import { PlanModal } from '../components/PlanModal';
 
 // Animated Counter component that starts when it enters the viewport
 function AnimatedCounter({ target, prefix = '', suffix = '' }) {
@@ -57,6 +58,7 @@ export default function Landing() {
   const { isAuthenticated } = useAuth();
   const { planes, loading: planesLoading, error: planesError } = usePlanes();
   const abrirCheckout = useSuscripcionStore((state) => state.abrirCheckout);
+  const [planModalAbierto, setPlanModalAbierto] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(0);
   const [selectedTab, setSelectedTab] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,12 +72,13 @@ export default function Landing() {
       navigate(isAuthenticated ? '/dashboard' : '/register');
       return;
     }
-    const ciclo = plan.ciclo || (billing === 'monthly' ? 'mensual' : 'anual');
     if (isAuthenticated) {
-      abrirCheckout(ciclo);
-      navigate('/dashboard');
+      // Same entry point as every locked feature elsewhere (Generator, Dashboard, Users):
+      // the comparison modal first, checkout only after "Mejorar a Pro" inside it.
+      setPlanModalAbierto(true);
       return;
     }
+    const ciclo = plan.ciclo || (billing === 'monthly' ? 'mensual' : 'anual');
     const checkoutIntent = { planId: plan.id, ciclo };
     sessionStorage.setItem('katedra_checkout_intent', JSON.stringify(checkoutIntent));
     navigate('/login', { state: { checkoutIntent } });
@@ -1467,6 +1470,30 @@ export default function Landing() {
         </div>
       </footer>
 
+      {/*
+        Landing has no [data-root]/dark-mode toggle of its own, so PlanModal's `--kt-*`
+        variables would otherwise resolve to nothing here. Mirror the light-theme values
+        the panel pages declare, scoped to this wrapper only.
+      */}
+      <style>{`
+        [data-kt-landing-modal]{
+          --kt-bg1:#FFFFFF;
+          --kt-text:#334155;--kt-heading:#0F172A;--kt-muted:#64748B;--kt-faint:#94A3B8;
+          --kt-border:rgba(15,23,42,.09);--kt-border-soft:rgba(15,23,42,.06);
+          --kt-chip-bg:rgba(15,23,42,.045);--kt-chip-border:rgba(15,23,42,.08);
+          --kt-modal-bg1:rgba(255,255,255,.98);--kt-modal-bg2:rgba(248,250,252,.98);
+          --kt-modal-border:rgba(15,23,42,.09);--kt-modal-backdrop:rgba(15,23,42,.25);
+          --kt-shadow-modal:0 30px 70px -25px rgba(15,23,42,.25);
+          --kt-scrollbar:rgba(15,23,42,.16);
+        }
+      `}</style>
+      <div data-kt-landing-modal>
+        <PlanModal
+          abierto={planModalAbierto}
+          onCerrar={() => setPlanModalAbierto(false)}
+          onMejorar={(ciclo) => { setPlanModalAbierto(false); abrirCheckout(ciclo); navigate('/dashboard'); }}
+        />
+      </div>
     </div>
   );
 }

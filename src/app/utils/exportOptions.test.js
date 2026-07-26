@@ -41,3 +41,20 @@ test('opcionesDePieza marca como deshabilitadas las opciones sin contenido', () 
   assert.ok(opciones.length > 0);
   assert.ok(opciones.every(o => o.disabled === true));
 });
+
+test('opcionesDePieza bloquea Markdown y Google Forms cuando el plan no lo permite', () => {
+  const teoria = opcionesDePieza('teoria', { puedeExportarAvanzado: false });
+  const evaluacion = opcionesDePieza('evaluacion', { puedeExportarAvanzado: false });
+
+  assert.equal(teoria.find(o => o.id === 'md').locked, true);
+  assert.equal(teoria.find(o => o.id === 'docx').locked, false);
+  assert.equal(teoria.find(o => o.id === 'pdf').locked, false);
+  assert.equal(evaluacion.find(o => o.id === 'gs').locked, true);
+  assert.equal(evaluacion.find(o => o.id === 'md').locked, true);
+});
+
+test('opcionesDePieza no bloquea nada cuando el plan permite exportación avanzada', () => {
+  const opciones = opcionesDePieza('evaluacion', { puedeExportarAvanzado: true });
+
+  assert.ok(opciones.every(o => o.locked === false));
+});
