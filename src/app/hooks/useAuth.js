@@ -21,7 +21,8 @@ export const useAuth = () => {
     clearError,
     initAuth,
     handleOAuthCallback,
-    recordLastActivity
+    recordLastActivity,
+    actualizarPlan
   } = useAuthStore();
 
   // Run initial state restoration check
@@ -56,6 +57,7 @@ export const useAuth = () => {
     changePassword,
     logout,
     clearError,
-    handleOAuthCallback
+    handleOAuthCallback,
+    actualizarPlan
   };
 };
