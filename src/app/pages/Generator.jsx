@@ -31,17 +31,19 @@ import {
   BookOpen,
   Cpu,
   ChevronDown,
-  Heart
+  Heart,
+  Lock
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
 import { PlanModal } from '../components/PlanModal';
 import { useSuscripcionStore } from '../store/suscripcionStore';
+import { useSuscripcion } from '../hooks/useSuscripcion';
 
 const IconZap = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
 );
 
-const CustomSelect = ({ value, onChange, options, placeholder }) => {
+const CustomSelect = ({ value, onChange, options, placeholder, onLockedOption }) => {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
   
@@ -98,34 +100,39 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
             const isOptPro = opt.value === 'pro';
             const isOptFlash = opt.value === 'flash';
             const isSelected = value === opt.value;
-            
+            const isLocked = Boolean(opt.disabled);
+
             return (
-              <div 
+              <div
                 key={opt.value}
-                onClick={() => { onChange(opt.value); setOpen(false); }}
+                onClick={() => {
+                  if (isLocked) { onLockedOption?.(); setOpen(false); return; }
+                  onChange(opt.value); setOpen(false);
+                }}
                 style={{
                   padding:'10px 12px', borderRadius:'8px', cursor:'pointer',
-                  background: isSelected 
+                  background: isSelected
                     ? 'var(--kt-chip-bg)'
                     : (isOptPro ? 'rgba(16, 185, 129, .02)' : 'transparent'),
-                  border: isSelected 
-                    ? '1px solid var(--kt-chip-border)' 
+                  border: isSelected
+                    ? '1px solid var(--kt-chip-border)'
                     : (isOptPro ? '1px solid rgba(16, 185, 129, .2)' : '1px solid transparent'),
-                  color: isSelected 
-                    ? 'var(--kt-heading)' 
+                  color: isSelected
+                    ? 'var(--kt-heading)'
                     : (isOptPro ? '#10B981' : 'var(--kt-text)'),
                   fontFamily:"'Inter'", fontWeight: (isSelected || isOptPro) ? 700 : 500, fontSize:'13px',
                   transition:'background .15s',
-                  marginBottom: '4px'
+                  marginBottom: '4px',
+                  opacity: isLocked ? .7 : 1
                 }}
-                onMouseEnter={(e) => { 
+                onMouseEnter={(e) => {
                   if (!isSelected) {
-                    e.currentTarget.style.background = isOptPro ? 'rgba(16, 185, 129, .06)' : 'var(--kt-chip-bg)'; 
+                    e.currentTarget.style.background = isOptPro ? 'rgba(16, 185, 129, .06)' : 'var(--kt-chip-bg)';
                   }
                 }}
-                onMouseLeave={(e) => { 
+                onMouseLeave={(e) => {
                   if (!isSelected) {
-                    e.currentTarget.style.background = isOptPro ? 'rgba(16, 185, 129, .02)' : 'transparent'; 
+                    e.currentTarget.style.background = isOptPro ? 'rgba(16, 185, 129, .02)' : 'transparent';
                   }
                 }}
               >
@@ -133,7 +140,13 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
                   {isOptFlash && <IconZap style={{ color: isSelected ? 'var(--kt-heading)' : 'inherit' }} />}
                   {isOptPro && <Sparkles size={14} style={{ color: isSelected ? 'var(--kt-heading)' : '#10B981' }} />}
                   <span>{opt.label}</span>
-                  {isOptPro && <span style={{ fontSize:'9px', background:'#10B981', color:'#fff', padding:'1px 5px', borderRadius:'10px', transform: 'scale(0.95)', transformOrigin: 'left center', fontWeight:800, letterSpacing:'0.5px' }}>RECOMENDADO</span>}
+                  {isLocked ? (
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:'3px', fontSize:'9px', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', color:'var(--kt-muted)', padding:'1px 5px', borderRadius:'10px', fontWeight:800, letterSpacing:'0.5px' }}>
+                      <Lock size={9} /> PRO
+                    </span>
+                  ) : isOptPro && (
+                    <span style={{ fontSize:'9px', background:'#10B981', color:'#fff', padding:'1px 5px', borderRadius:'10px', transform: 'scale(0.95)', transformOrigin: 'left center', fontWeight:800, letterSpacing:'0.5px' }}>RECOMENDADO</span>
+                  )}
                 </div>
                 {opt.hint && <div style={{ fontSize:'11px', color: isSelected ? 'var(--kt-muted)' : (isOptPro ? 'rgba(16, 185, 129, 0.8)' : 'var(--kt-muted)'), marginTop:'2px', fontWeight:500 }}>{opt.hint}</div>}
               </div>
@@ -162,6 +175,7 @@ export default function Generator() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [planModalAbierto, setPlanModalAbierto] = useState(false);
   const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
+  const { puedeUsarModeloPro, puedeGenerarDiapositivas } = useSuscripcion();
 
   const {
     asignaturas, asignaturasLoading,
@@ -184,6 +198,7 @@ export default function Generator() {
     generationStep,
     generatedData,
     genError,
+    genErrorEsPlan,
     piezasFallidas,
     activeTab, setActiveTab,
     checkedAnswers, setCheckedAnswers,
@@ -729,18 +744,22 @@ export default function Generator() {
                       const exists = piezaYaGenerada(pieza.id);
                       const theoryExists = piezaYaGenerada('teoria');
                       const theorySelected = piezas.includes('teoria');
-                      const isDisabled = (pieza.id === 'evaluacion' || pieza.id === 'diapositivas') && !theoryExists && !theorySelected;
-                      
+                      const isLockedByPlan = pieza.id === 'diapositivas' && !puedeGenerarDiapositivas;
+                      const isDisabled = isLockedByPlan || ((pieza.id === 'evaluacion' || pieza.id === 'diapositivas') && !theoryExists && !theorySelected);
+
                       return (
-                        <div 
-                          key={pieza.id} 
-                          onClick={() => { if(temarioId && !isDisabled) togglePieza(pieza.id); }}
-                          style={{ 
-                            border:`1px solid ${selected ? '#10B981' : 'var(--kt-input-border)'}`, 
-                            background: selected ? 'rgba(16,185,129,0.05)' : (isDisabled ? 'var(--kt-border-soft)' : 'var(--kt-input-bg)'), 
-                            borderRadius:'10px', 
-                            padding:'8px 12px', 
-                            cursor: (temarioId && !isDisabled) ? 'pointer' : 'not-allowed', 
+                        <div
+                          key={pieza.id}
+                          onClick={() => {
+                            if (isLockedByPlan) { setPlanModalAbierto(true); return; }
+                            if (temarioId && !isDisabled) togglePieza(pieza.id);
+                          }}
+                          style={{
+                            border:`1px solid ${selected ? '#10B981' : 'var(--kt-input-border)'}`,
+                            background: selected ? 'rgba(16,185,129,0.05)' : (isDisabled ? 'var(--kt-border-soft)' : 'var(--kt-input-bg)'),
+                            borderRadius:'10px',
+                            padding:'8px 12px',
+                            cursor: isLockedByPlan ? 'pointer' : ((temarioId && !isDisabled) ? 'pointer' : 'not-allowed'),
                             opacity: (temarioId && !isDisabled) ? 1 : 0.55,
                             transition:'all .2s ease'
                           }}
@@ -757,7 +776,11 @@ export default function Generator() {
                             </div>
                             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <span style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'12.5px', color: selected ? 'var(--kt-heading)' : 'var(--kt-text)', transition: 'color 0.2s ease' }}>{pieza.label}</span>
-                              {isDisabled && <span style={{ fontFamily:"'Manrope'", fontSize:'9.5px', color:'#F43F5E' }}>Requiere Teoría</span>}
+                              {isLockedByPlan ? (
+                                <span style={{ display:'inline-flex', alignItems:'center', gap:'3px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'9.5px', color:'var(--kt-muted)', background:'var(--kt-chip-bg)', border:'1px solid var(--kt-chip-border)', padding:'2px 6px', borderRadius:'6px' }}>
+                                  <Lock size={9} /> Pro
+                                </span>
+                              ) : isDisabled && <span style={{ fontFamily:"'Manrope'", fontSize:'9.5px', color:'#F43F5E' }}>Requiere Teoría</span>}
                               {exists && !isDisabled && (
                                 <span style={{ display:'inline-flex', alignItems:'center', gap:'3px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'9.5px', color:'#059669', background:'rgba(16,185,129,.14)', border:'1px solid rgba(16,185,129,.3)', padding:'2px 6px', borderRadius:'6px' }}>
                                   <CheckCircle2 size={10} /> Listo
@@ -825,7 +848,8 @@ export default function Generator() {
                     value={modelo}
                     onChange={setModelo}
                     placeholder="— Selecciona modelo —"
-                    options={MODELOS.map(m => ({ value: m.id, label: m.label, hint: m.hint }))}
+                    options={MODELOS.map(m => ({ value: m.id, label: m.label, hint: m.hint, disabled: m.id === 'pro' && !puedeUsarModeloPro }))}
+                    onLockedOption={() => setPlanModalAbierto(true)}
                   />
                 </div>
 
@@ -842,9 +866,21 @@ export default function Generator() {
                 )}
 
                 {genError && (
-                  <div style={{ display:'flex', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(244,63,94,.1)', border:'1px solid rgba(244,63,94,.25)' }}>
-                    <AlertCircle size={16} style={{ color:'#F43F5E', flex:'none', marginTop:'1px' }} />
-                    <p style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-text)', margin:0, lineHeight:1.5 }}>{genError}</p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'10px', padding:'12px 14px', borderRadius:'12px', background:'rgba(244,63,94,.1)', border:'1px solid rgba(244,63,94,.25)' }}>
+                    <div style={{ display:'flex', gap:'10px' }}>
+                      <AlertCircle size={16} style={{ color:'#F43F5E', flex:'none', marginTop:'1px' }} />
+                      <p style={{ fontFamily:"'Manrope'", fontWeight:600, fontSize:'11.5px', color:'var(--kt-text)', margin:0, lineHeight:1.5 }}>{genError}</p>
+                    </div>
+                    {genErrorEsPlan && (
+                      <button
+                        type="button"
+                        onClick={() => setPlanModalAbierto(true)}
+                        style={{ alignSelf:'flex-start', display:'flex', alignItems:'center', gap:'6px', padding:'7px 13px', borderRadius:'9px', border:'none', cursor:'pointer', background:'linear-gradient(120deg,#FBBF24,#D97706)', color:'#fff', fontFamily:"'Manrope'", fontWeight:700, fontSize:'11.5px' }}
+                      >
+                        <Sparkles size={13} />
+                        Mejorar a Pro
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

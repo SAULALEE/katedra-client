@@ -32,11 +32,13 @@ import {
   FileText,
   ChevronDown,
   X,
-  Zap
+  Zap,
+  Lock
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
 import { PlanModal } from '../components/PlanModal';
 import { useSuscripcionStore } from '../store/suscripcionStore';
+import { useSuscripcion } from '../hooks/useSuscripcion';
 
 const ICON_KEYS = Object.keys(SUBJECT_ICONS);
 
@@ -155,6 +157,7 @@ export default function Dashboard() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [planModalAbierto, setPlanModalAbierto] = useState(false);
+  const { puedeCargarArchivo, puedeCargarUrl } = useSuscripcion();
   const abrirCheckout = useSuscripcionStore((s) => s.abrirCheckout);
 
   const handleModeloChange = (nuevoModelo) => {
@@ -260,7 +263,7 @@ export default function Dashboard() {
 
   const handleOpenCreate = () => {
     setEditId(null);
-    setTab('file');
+    setTab(puedeCargarArchivo ? 'file' : 'manual');
     setTitulo('');
     setAsignaturaId(asignaturaActiva?.id || '');
     setCreandoAsignaturaTemario(false);
@@ -1629,8 +1632,22 @@ export default function Dashboard() {
 
             {!editId && (
               <div style={{ display:'flex', gap:'4px', padding:'5px', background:'var(--kt-input-bg)', border:'1px solid var(--kt-input-border)', borderRadius:'12px', marginBottom:'20px' }}>
-                <button data-tab-opt="file" onClick={() => setTab('file')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>PDF / Archivo</button>
-                <button data-tab-opt="web" onClick={() => setTab('web')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Enlace Web</button>
+                <button
+                  data-tab-opt="file"
+                  onClick={() => (puedeCargarArchivo ? setTab('file') : setPlanModalAbierto(true))}
+                  style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s', opacity: puedeCargarArchivo ? 1 : .7 }}
+                >
+                  {!puedeCargarArchivo && <Lock size={11} />}
+                  PDF / Archivo
+                </button>
+                <button
+                  data-tab-opt="web"
+                  onClick={() => (puedeCargarUrl ? setTab('web') : setPlanModalAbierto(true))}
+                  style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s', opacity: puedeCargarUrl ? 1 : .7 }}
+                >
+                  {!puedeCargarUrl && <Lock size={11} />}
+                  Enlace Web
+                </button>
                 <button data-tab-opt="manual" onClick={() => setTab('manual')} style={{ flex:1, height:'38px', border:'none', borderRadius:'9px', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}>Manual</button>
               </div>
             )}

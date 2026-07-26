@@ -99,6 +99,10 @@ export const useGenerator = () => {
   const [generationStep, setGenerationStep] = useState('');
   const [generatedData, setGeneratedData] = useState(null);
   const [genError, setGenError] = useState('');
+  // True when genError came from a plan gate (403 capability lock, 429 quota exhausted),
+  // so the UI can offer "Mejorar a Pro" instead of just "try again" on a rejection that
+  // retrying will never fix.
+  const [genErrorEsPlan, setGenErrorEsPlan] = useState(false);
   // { [piezaId]: mensaje } for pieces whose generation failed server-side;
   // their previous content is preserved rather than overwritten.
   const [piezasFallidas, setPiezasFallidas] = useState({});
@@ -183,6 +187,7 @@ export const useGenerator = () => {
     if (!temarioId || piezas.length === 0) return;
     setIsGenerating(true);
     setGenError('');
+    setGenErrorEsPlan(false);
     setPiezasFallidas({});
     setCheckedAnswers({});
 
@@ -223,7 +228,11 @@ export const useGenerator = () => {
       return true;
     } catch (error) {
       console.error('AI Generation failed:', error);
-      setGenError('No se pudo generar el material. Intenta de nuevo.');
+      const status = error.cause?.response?.status;
+      setGenErrorEsPlan(status === 403 || status === 429);
+      setGenError(status === 403 || status === 429
+        ? error.message
+        : 'No se pudo generar el material. Intenta de nuevo.');
       return false;
     } finally {
       setIsGenerating(false);
@@ -262,6 +271,7 @@ export const useGenerator = () => {
     generationStep,
     generatedData,
     genError,
+    genErrorEsPlan,
     piezasFallidas,
     activeTab, setActiveTab,
     checkedAnswers, setCheckedAnswers,

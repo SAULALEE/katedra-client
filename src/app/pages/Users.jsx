@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { SidebarUserMenu } from '../components/SidebarUserMenu';
 import { PlanModal } from '../components/PlanModal';
+import { PlanBadge } from '../components/PlanBadge';
 import { useSuscripcionStore } from '../store/suscripcionStore';
 
 const ROLE_OPTIONS = [
@@ -96,6 +97,11 @@ export default function Users() {
     if (r === 'DOCENTE PREMIUM' || r === 'ROLE_PROFESOR' || r === 'ROLE_PREMIUM' || r === 'PREMIUM') return 'Premium';
     return 'Libre';
   };
+
+  // Display text only — keeps the "Premium"/"Libre" tokens above as the CSS/data-role key
+  // (styling hooks throughout the page key off them) without calling a teacher's *role*
+  // "Premium", which used to read as a billing claim. Billing is PlanBadge, below.
+  const getRoleLabel = (shortRole) => (shortRole === 'Admin' ? 'Admin' : 'Docente');
 
   const getInitial = (name) => {
     if (!name) return 'U';
@@ -615,7 +621,10 @@ export default function Users() {
                             <span style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.nombre}</span>
                           </div>
                           <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.email}</div>
-                          <div><span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'5px 11px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleShort(u.rol)}</span></div>
+                          <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                            <span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'5px 11px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleLabel(getRoleShort(u.rol))}</span>
+                            <PlanBadge plan={u.plan} size="sm" />
+                          </div>
                           <div><span data-statuspill style={{ display:'inline-flex', alignItems:'center', gap:'7px', padding:'5px 11px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.5px', textTransform:'uppercase' }}><span data-statusdot style={{ width:'6px', height:'6px', borderRadius:'50%', animation:'ktPulse 2s ease-in-out infinite' }}></span>{u.estado || 'Activo'}</span></div>
                           <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:'6px' }} onClick={(e) => e.stopPropagation()}>
                             <button className="kt-actbtn" onClick={() => handleViewDetails(u)} aria-label="Ver" style={{ width:'32px', height:'32px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer', transition:'background .18s,color .18s' }}><Eye size={16} /></button>
@@ -649,7 +658,8 @@ export default function Users() {
                     <div style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'18px', letterSpacing:'-.4px', color:'var(--kt-heading)' }}>{detailsUser.nombre}</div>
                     <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', marginTop:'3px' }}>{detailsUser.email}</div>
                     <div style={{ display:'flex', gap:'8px', marginTop:'14px' }}>
-                      <span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'6px 12px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleShort(detailsUser.rol)}</span>
+                      <span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'6px 12px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleLabel(getRoleShort(detailsUser.rol))}</span>
+                      <PlanBadge plan={detailsUser.plan} size="sm" />
                       <span data-statuspill style={{ display:'inline-flex', alignItems:'center', gap:'7px', padding:'6px 12px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.5px', textTransform:'uppercase' }}><span data-statusdot style={{ width:'6px', height:'6px', borderRadius:'50%' }}></span>{detailsUser.estado || 'Activo'}</span>
                     </div>
                   </div>
