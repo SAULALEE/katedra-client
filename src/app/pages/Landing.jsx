@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../hooks/useAuth';
+import { usePlanes } from '../hooks/usePlanes';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 // Animated Counter component that starts when it enters the viewport
 function AnimatedCounter({ target, prefix = '', suffix = '' }) {
@@ -51,15 +54,35 @@ function AnimatedCounter({ target, prefix = '', suffix = '' }) {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { planes, loading: planesLoading, error: planesError } = usePlanes();
+  const abrirCheckout = useSuscripcionStore((state) => state.abrirCheckout);
   const [selectedSubject, setSelectedSubject] = useState(0);
   const [selectedTab, setSelectedTab] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [billing, setBilling] = useState('monthly');
   const [openFaq, setOpenFaq] = useState(0);
 
+  const planesVisibles = planes.filter((plan) => !plan.ciclo || plan.ciclo === (billing === 'monthly' ? 'mensual' : 'anual'));
+
+  const comprarPlan = (plan) => {
+    if (plan.id === 'free') {
+      navigate(isAuthenticated ? '/dashboard' : '/register');
+      return;
+    }
+    const ciclo = plan.ciclo || (billing === 'monthly' ? 'mensual' : 'anual');
+    if (isAuthenticated) {
+      abrirCheckout(ciclo);
+      navigate('/dashboard');
+      return;
+    }
+    const checkoutIntent = { planId: plan.id, ciclo };
+    sessionStorage.setItem('katedra_checkout_intent', JSON.stringify(checkoutIntent));
+    navigate('/login', { state: { checkoutIntent } });
+  };
+
   // Simulated content generation when subject or tab changes
   useEffect(() => {
-    setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1150);
@@ -67,11 +90,13 @@ export default function Landing() {
   }, [selectedSubject, selectedTab]);
 
   const handleSelectSubject = (idx) => {
+    setIsLoading(true);
     setSelectedSubject(idx);
     setSelectedTab(0);
   };
 
   const handleSelectTab = (idx) => {
+    setIsLoading(true);
     setSelectedTab(idx);
   };
 
@@ -181,7 +206,7 @@ export default function Landing() {
 
   const INTEGRATIONS = [
     { 
-      name: 'PowerPoint', 
+      name: 'Presentación PPTX', 
       dotColor: '#EA580C',
       icon: (color) => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -191,7 +216,7 @@ export default function Landing() {
       )
     },
     { 
-      name: 'PDF', 
+      name: 'Documento PDF', 
       dotColor: '#DC2626',
       icon: (color) => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -203,7 +228,7 @@ export default function Landing() {
       )
     },
     { 
-      name: 'Google Classroom', 
+      name: 'Documento Word', 
       dotColor: '#10B981',
       icon: (color) => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -214,23 +239,13 @@ export default function Landing() {
       )
     },
     { 
-      name: 'Canvas LMS', 
+      name: 'Markdown', 
       dotColor: '#F43F5E',
       icon: (color) => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
           <path d="M2 12h20" />
-        </svg>
-      )
-    },
-    { 
-      name: 'Moodle', 
-      dotColor: '#F59E0B',
-      icon: (color) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-          <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
         </svg>
       )
     }
@@ -242,7 +257,7 @@ export default function Landing() {
   const FAQ_DATA = [
     { q: '¿Qué tan rigurosa es la teoría generada?', a: 'Cada nota de teoría se basa en fuentes académicas establecidas y se cita automáticamente para que puedas verificarla con un solo clic. Tú sigues siendo el editor en jefe — Katedra redacta y tú apruebas.' },
     { q: '¿Puedo editar todo lo que Katedra produce?', a: 'Sí. Los módulos, la teoría, las evaluaciones y las diapositivas son totalmente editables dentro de un editor de documentos limpio. Modifica oraciones, cambia preguntas o reestructura bloques antes de exportar.' },
-    { q: '¿A qué formatos puedo exportar mis cursos?', a: 'Soportamos exportación directa a PowerPoint (PPTX), PDF estructurado, Google Classroom, Canvas LMS y Moodle de manera nativa para integrarse a tu flujo de enseñanza diario.' },
+    { q: '¿A qué formatos puedo exportar mis cursos?', a: 'Según el tipo de material, Katedra exporta a Word (DOCX), PDF, Markdown y presentaciones PPTX.' },
     { q: '¿El motor funciona para cualquier materia?', a: 'Katedra maneja ciencias naturales, humanidades, matemáticas, ingeniería y más. Si puedes definir el tema, la inteligencia artificial puede estructurar el temario.' },
     { q: '¿Hay algún plan gratuito?', a: 'Sí, el plan Básico es gratuito para siempre e incluye la creación de cursos completos con un límite mensual. Puedes mejorar a Pro en cualquier momento.' }
   ];
@@ -1196,105 +1211,56 @@ export default function Landing() {
 
           {/* Pricing cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '22px', maxWidth: '760px', margin: '0 auto' }}>
-            
-            {/* Basic card */}
-            <motion.div 
-              initial={{ opacity: 0, y: 26 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-10%' }}
-              transition={{ duration: 0.75, ease: 'easeOut' }}
-              style={{ padding: '32px', borderRadius: '18px', border: '1px solid #E8EBF0', background: '#fff', display: 'flex', flexDirection: 'column' }}
-            >
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '14px', color: '#0F172A', marginBottom: '6px' }}>Básico</div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px', color: '#64748B', marginBottom: '22px' }}>Para probar la plataforma.</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
-                <span style={{ fontFamily: "'Inter'", fontWeight: 700, fontSize: '46px', letterSpacing: '-2px', color: '#0F172A' }}>$0</span>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#94A3B8' }}>/siempre</span>
-              </div>
-              <a 
-                href="/register" 
-                onClick={(e) => { e.preventDefault(); navigate('/register'); }}
-                style={{
-                  textAlign: 'center',
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '14.5px',
-                  color: '#0F172A',
-                  textDecoration: 'none',
-                  padding: '13px',
-                  borderRadius: '10px',
-                  border: '1px solid #E2E8F0',
-                  background: '#fff',
-                  marginBottom: '26px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#F8FAFC'; e.currentTarget.style.borderColor = '#CBD5E1'; }}
-                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.borderColor = '#E2E8F0'; }}
-              >
-                Comenzar gratis
-              </a>
-              {['3 cursos al mes', 'Teoría y evaluaciones', 'Exportación a PDF', 'Soporte de la comunidad'].map((bf, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '11px', padding: '7px 0', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#334155' }}>
-                  <span style={{ display: 'grid', placeItems: 'center', width: '19px', height: '19px', borderRadius: '50%', background: '#F1F5F9', color: '#64748B', fontSize: '11px', flex: 'none' }}>✓</span>
-                  {bf}
-                </div>
-              ))}
-            </motion.div>
-
-            {/* Pro card (Steel Blue theme) */}
-            <motion.div 
-              initial={{ opacity: 0, y: 26 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-10%' }}
-              transition={{ duration: 0.75, delay: 0.1, ease: 'easeOut' }}
-              style={{ position: 'relative', padding: '32px', borderRadius: '18px', background: 'linear-gradient(165deg, #1A365D, #0F172A)', boxShadow: '0 30px 60px rgba(15,23,42,0.35)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-            >
-              <div style={{ position: 'absolute', width: '280px', height: '280px', right: '-90px', top: '-90px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.32), transparent 68%)', pointerEvents: 'none' }}></div>
-              <div style={{ position: 'absolute', top: '22px', right: '22px', padding: '5px 11px', borderRadius: '100px', background: 'rgba(16,185,129,0.16)', border: '1px solid rgba(16,185,129,0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '10px', letterSpacing: '.5px', color: '#34D399' }}>RECOMENDADO</div>
-              
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '14px', color: '#fff', marginBottom: '6px' }}>Katedra Pro</div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px', color: '#94A3B8', marginBottom: '22px' }}>Para toda tu carga académica.</div>
-              
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', marginBottom: '4px' }}>
-                <span style={{ fontFamily: "'Inter'", fontWeight: 700, fontSize: '46px', letterSpacing: '-2px', color: '#fff' }}>{billing === 'monthly' ? '$19' : '$15'}</span>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#94A3B8' }}>/mes</span>
-              </div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12px', color: '#34D399', marginBottom: '24px', minHeight: '16px' }}>
-                {billing === 'monthly' ? 'Facturado mensualmente' : 'Facturado $180/año — ahorra $48'}
-              </div>
-              
-              <a 
-                href="/register" 
-                onClick={(e) => { e.preventDefault(); navigate('/register'); }}
-                style={{
-                  textAlign: 'center',
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '14.5px',
-                  color: '#0F172A',
-                  textDecoration: 'none',
-                  padding: '13px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #34D399, #10B981)',
-                  boxShadow: '0 8px 22px rgba(16, 185, 129, 0.4)',
-                  marginBottom: '26px',
-                  position: 'relative',
-                  zIndex: 1,
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.05)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.filter = 'none'; }}
-              >
-                Comenzar prueba Pro
-              </a>
-              {['Temarios ilimitados', 'Teoría avanzada y profunda', 'Diapositivas y claves de respuesta', 'Todos los formatos de exportación', 'Soporte prioritario'].map((pf, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '11px', padding: '7px 0', fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#E2E8F0', position: 'relative', zIndex: 1 }}>
-                  <span style={{ display: 'grid', placeItems: 'center', width: '19px', height: '19px', borderRadius: '50%', background: 'rgba(16,185,129,0.18)', color: '#34D399', fontSize: '11px', flex: 'none' }}>✓</span>
-                  {pf}
-                </div>
-              ))}
-            </motion.div>
-
+            {planesLoading && <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#64748B' }}>Consultando planes…</p>}
+            {planesError && <p role="alert" style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#B91C1C' }}>{planesError}</p>}
+            {planesVisibles.map((plan, index) => {
+              const pro = plan.id !== 'free';
+              const monto = new Intl.NumberFormat('es-MX', {
+                style: 'currency',
+                currency: (plan.moneda || 'mxn').toUpperCase(),
+                maximumFractionDigits: 0
+              }).format(plan.precio / 100);
+              return (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 26 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-10%' }}
+                  transition={{ duration: 0.75, delay: index * 0.1, ease: 'easeOut' }}
+                  style={{
+                    position: 'relative',
+                    padding: '32px',
+                    borderRadius: '18px',
+                    border: pro ? 'none' : '1px solid #E8EBF0',
+                    background: pro ? 'linear-gradient(165deg, #1A365D, #0F172A)' : '#fff',
+                    boxShadow: pro ? '0 30px 60px rgba(15,23,42,0.35)' : 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {plan.recomendado && <div style={{ position: 'absolute', top: '22px', right: '22px', padding: '5px 11px', borderRadius: '100px', background: 'rgba(16,185,129,0.16)', border: '1px solid rgba(16,185,129,0.4)', fontWeight: 700, fontSize: '10px', color: '#34D399' }}>RECOMENDADO</div>}
+                  <div style={{ fontWeight: 700, fontSize: '14px', color: pro ? '#fff' : '#0F172A', marginBottom: '22px' }}>{plan.nombre}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', marginBottom: '24px' }}>
+                    <span style={{ fontWeight: 700, fontSize: '46px', letterSpacing: '-2px', color: pro ? '#fff' : '#0F172A' }}>{monto}</span>
+                    <span style={{ fontWeight: 600, fontSize: '14px', color: '#94A3B8' }}>{plan.ciclo ? `/${plan.ciclo === 'mensual' ? 'mes' : 'año'}` : '/siempre'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => comprarPlan(plan)}
+                    style={{ fontWeight: 700, fontSize: '14.5px', color: '#0F172A', padding: '13px', borderRadius: '10px', border: pro ? 'none' : '1px solid #E2E8F0', background: pro ? 'linear-gradient(135deg, #34D399, #10B981)' : '#fff', marginBottom: '26px', cursor: 'pointer' }}
+                  >
+                    {pro ? 'Comprar Pro' : 'Comenzar gratis'}
+                  </button>
+                  {plan.caracteristicas.map((caracteristica) => (
+                    <div key={caracteristica} style={{ display: 'flex', alignItems: 'center', gap: '11px', padding: '7px 0', fontWeight: 600, fontSize: '14px', color: pro ? '#E2E8F0' : '#334155' }}>
+                      <span style={{ color: pro ? '#34D399' : '#64748B' }}>✓</span>
+                      {caracteristica}
+                    </div>
+                  ))}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

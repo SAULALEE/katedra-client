@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getDefaultRoute } from '../utils/roleUtils';
+import { useSuscripcionStore } from '../store/suscripcionStore';
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const justRegistered = Boolean(location.state?.registered);
   const { login, isAuthenticated, user, loading, error, clearError } = useAuth();
+  const abrirCheckout = useSuscripcionStore((state) => state.abrirCheckout);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,8 +21,16 @@ export default function Login() {
   useEffect(() => { clearError(); }, [clearError]);
   useEffect(() => {
     if (!isAuthenticated) return;
+    const checkoutIntent = location.state?.checkoutIntent
+      || JSON.parse(sessionStorage.getItem('katedra_checkout_intent') || 'null');
+    if (checkoutIntent?.ciclo) {
+      sessionStorage.removeItem('katedra_checkout_intent');
+      abrirCheckout(checkoutIntent.ciclo);
+      navigate('/dashboard');
+      return;
+    }
     navigate(user?.mustChangePassword ? '/cambiar-password' : getDefaultRoute(user));
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, location.state, abrirCheckout]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +41,7 @@ export default function Login() {
       return;
     }
     const success = await login(email, password);
-    if (success) navigate(getDefaultRoute(user));
+    if (!success) return;
   };
 
   return (
