@@ -11,9 +11,9 @@ export const esPro = (plan) => String(plan || '').toLowerCase() === PLAN_PRO;
 
 export const etiquetaPlan = (plan) => (esPro(plan) ? 'Pro' : 'Gratis');
 
-/** Badge colours, per the panel convention: amber for premium, slate for the free tier. */
+/** Badge colours: a discreet emerald wash for Pro (Katedra's one brand accent), slate for Free. */
 export const coloresPlan = (plan) => (esPro(plan)
-  ? { fondo: 'linear-gradient(120deg,#FBBF24,#D97706)', texto: '#FFFFFF', borde: 'rgba(217,119,6,.35)' }
+  ? { fondo: 'rgba(16,185,129,.14)', texto: '#10B981', borde: 'rgba(16,185,129,.35)' }
   : { fondo: 'var(--kt-chip-bg)', texto: 'var(--kt-muted)', borde: 'var(--kt-chip-border)' });
 
 /** Consumed percentage, clamped to 0-100 so the bar can never overflow. */

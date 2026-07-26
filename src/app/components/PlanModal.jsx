@@ -10,6 +10,7 @@ const CAPACIDADES = [
   { clave: 'diapositivas', etiqueta: 'Generar diapositivas', free: false, pro: true },
   { clave: 'archivo', etiqueta: 'Crear temario desde PDF', free: false, pro: true },
   { clave: 'url', etiqueta: 'Crear temario desde enlace web', free: false, pro: true },
+  { clave: 'exportacionAvanzada', etiqueta: 'Exportar a Markdown / Google Forms', free: false, pro: true },
   { clave: 'exportaciones', etiqueta: 'Exportaciones al día', free: '5', pro: '100' }
 ];
 
@@ -99,12 +100,25 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCerrar(); }}
       style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'grid', placeItems: 'center', padding: '24px', background: 'var(--kt-modal-backdrop)', backdropFilter: 'blur(8px)' }}
     >
+      {/* The scrolling element below carries no border-radius of its own — a native
+          scrollbar never clips to one — so this shell clips it via overflow:hidden instead,
+          keeping the thumb from overhanging the card's rounded corners. */}
+      <style>{`
+        .kt-plan-scroll{scrollbar-width:thin;scrollbar-color:var(--kt-scrollbar) transparent}
+        .kt-plan-scroll::-webkit-scrollbar{width:8px}
+        .kt-plan-scroll::-webkit-scrollbar-track{background:transparent}
+        .kt-plan-scroll::-webkit-scrollbar-thumb{background:var(--kt-scrollbar);border-radius:100px;border:2px solid transparent;background-clip:content-box}
+      `}</style>
+      <div
+        style={{ width: '100%', maxWidth: '520px', maxHeight: '90vh', overflow: 'hidden', borderRadius: '20px', border: '1px solid var(--kt-modal-border)', background: 'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2)), var(--kt-bg1)', boxShadow: 'var(--kt-shadow-modal)' }}
+      >
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Tu plan"
-        style={{ width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '20px', border: '1px solid var(--kt-modal-border)', background: 'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2)), var(--kt-bg1)', boxShadow: 'var(--kt-shadow-modal)', padding: '28px' }}
+        className="kt-plan-scroll"
+        style={{ maxHeight: '90vh', overflowY: 'auto', padding: '28px' }}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '18px' }}>
           <div style={{ minWidth: 0 }}>
@@ -140,7 +154,7 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 74px 74px', alignItems: 'center', padding: '10px 14px', background: 'var(--kt-chip-bg)', borderBottom: '1px solid var(--kt-border)' }}>
             <span style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: '11px', color: 'var(--kt-faint)', letterSpacing: '.4px' }}>FUNCIÓN</span>
             <span style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: '11px', color: 'var(--kt-muted)', textAlign: 'center' }}>GRATIS</span>
-            <span style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: '11px', color: '#D97706', textAlign: 'center' }}>PRO</span>
+            <span style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: '11px', color: '#10B981', textAlign: 'center' }}>PRO</span>
           </div>
           {CAPACIDADES.map((c, i) => (
             <div
@@ -219,13 +233,14 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
             <button
               type="button"
               onClick={() => onMejorar(ciclo)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '13px', borderRadius: '12px', border: 'none', background: 'linear-gradient(120deg,#FBBF24,#D97706)', color: '#fff', fontFamily: "'Manrope'", fontWeight: 700, fontSize: '13.5px', letterSpacing: '.2px', cursor: 'pointer', boxShadow: '0 10px 30px -8px rgba(217,119,6,.5)' }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '13px', borderRadius: '12px', border: 'none', background: 'linear-gradient(120deg,#10B981,#059669)', color: '#fff', fontFamily: "'Manrope'", fontWeight: 700, fontSize: '13.5px', letterSpacing: '.2px', cursor: 'pointer', boxShadow: '0 10px 30px -8px rgba(16,185,129,.5)' }}
             >
               <Zap size={16} />
               Mejorar a Pro
             </button>
           </>
         )}
+      </div>
       </div>
     </div>
   );

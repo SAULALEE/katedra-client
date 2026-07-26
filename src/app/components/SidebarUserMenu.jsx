@@ -127,22 +127,20 @@ export const SidebarUserMenu = ({ user, theme, onToggleTheme, onLogout, onAbrirP
         </div>
 
         {ajustesAbierto && (
-          // Opens upward: this block sits at the bottom of the sidebar, so a downward
-          // popover would fall off the window.
+          // Opens to the side (not upward/downward): the sidebar is a narrow rail against
+          // the left edge, so anchoring off its right edge always has room, regardless of
+          // where in the rail this row sits.
           <div
             role="menu"
             // Two background layers, with an opaque --kt-bg1 underneath on purpose: this
-            // popover overlaps the theme toggle and has no backdrop isolating it, so any
-            // translucency lets the switch show through the menu. --kt-panel-bg (66%) and
+            // popover has no backdrop isolating it from the page behind it, so any
+            // translucency lets content show through the menu. --kt-panel-bg (66%) and
             // even --kt-modal-bg (96%) both leaked it.
-            //
-            // Collapsed, the sidebar is 76px and the 240px menu cannot sit inside it, so it
-            // is anchored to the right edge instead of stretched to the rail's width.
             style={{
               position: 'absolute',
-              bottom: 'calc(100% + 8px)',
-              ...(colapsado ? { left: 0 } : { left: 0, right: 0 }),
-              minWidth: '240px',
+              left: 'calc(100% + 8px)',
+              bottom: 0,
+              width: '240px',
               zIndex: 60,
               borderRadius: '16px',
               border: '1px solid var(--kt-modal-border)',
@@ -158,7 +156,6 @@ export const SidebarUserMenu = ({ user, theme, onToggleTheme, onLogout, onAbrirP
               uso={uso}
               cargando={loading}
               onAbrirPlan={() => { setAjustesAbierto(false); onAbrirPlan?.(); }}
-              onLogout={onLogout}
             />
           </div>
         )}

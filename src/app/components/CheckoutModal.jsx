@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { ArrowLeft, Check, CreditCard, Info, Lock, Pencil, Sparkles } from 'lucide-react';
+import { Check, ChevronDown, CreditCard, Info, Lock, Pencil, ShieldCheck, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSuscripcion } from '../hooks/useSuscripcion';
-import { useThemeStore } from '../store/useThemeStore';
 import { AHORRO_ANUAL, PRECIOS, fechaRenovacion, formatearUSD } from '../utils/plan';
 import { FUENTES_STRIPE, construirAppearance } from '../utils/stripeAppearance';
 
@@ -33,27 +32,36 @@ const DATOS_VACIOS = {
   codigoPostal: ''
 };
 
-/** Theme tokens, duplicated here because the checkout renders outside any page `[data-root]`. */
+/**
+ * Theme tokens, duplicated here because CheckoutModal is mounted once in App.jsx, outside
+ * every page's `[data-root]` — it cannot inherit the panel pages' variables.
+ */
 const TOKENS = `
   [data-kt-checkout]{
-    --kt-bg1:#FFFFFF;--kt-bg2:#EEF2F7;--kt-bg3:#F8FAFC;
+    --kt-bg1:#FFFFFF;
     --kt-text:#334155;--kt-heading:#0F172A;--kt-muted:#64748B;--kt-faint:#94A3B8;
     --kt-border:rgba(15,23,42,.09);--kt-border-soft:rgba(15,23,42,.06);
     --kt-panel-bg:rgba(255,255,255,.85);--kt-panel-border:rgba(15,23,42,.08);
     --kt-chip-bg:rgba(15,23,42,.045);--kt-chip-border:rgba(15,23,42,.08);
     --kt-input-bg:rgba(241,245,249,.7);--kt-input-border:rgba(15,23,42,.12);
     --kt-scrollbar:rgba(15,23,42,.16);
-    --kt-shadow-panel:0 24px 50px -28px rgba(15,23,42,.16);
+    --kt-shadow-panel:0 14px 30px -18px rgba(15,23,42,.22);
+    --kt-modal-bg1:rgba(255,255,255,.98);--kt-modal-bg2:rgba(248,250,252,.98);
+    --kt-modal-border:rgba(15,23,42,.09);--kt-modal-backdrop:rgba(15,23,42,.25);
+    --kt-shadow-modal:0 30px 70px -25px rgba(15,23,42,.25);
   }
   [data-kt-checkout][data-kt-theme="dark"]{
-    --kt-bg1:#0F172A;--kt-bg2:#1E293B;--kt-bg3:#0F172A;
+    --kt-bg1:#0F172A;
     --kt-text:#E2E8F0;--kt-heading:#F8FAFC;--kt-muted:#94A3B8;--kt-faint:#64748B;
     --kt-border:rgba(148,163,184,.1);--kt-border-soft:rgba(148,163,184,.06);
     --kt-panel-bg:rgba(17,24,39,.66);--kt-panel-border:rgba(148,163,184,.12);
     --kt-chip-bg:rgba(148,163,184,.08);--kt-chip-border:rgba(148,163,184,.14);
     --kt-input-bg:rgba(15,23,42,.6);--kt-input-border:rgba(148,163,184,.14);
     --kt-scrollbar:rgba(148,163,184,.22);
-    --kt-shadow-panel:0 30px 60px -30px rgba(0,0,0,.6);
+    --kt-shadow-panel:0 20px 40px -22px rgba(0,0,0,.7);
+    --kt-modal-bg1:rgba(23,31,48,.96);--kt-modal-bg2:rgba(15,23,42,.96);
+    --kt-modal-border:rgba(148,163,184,.16);--kt-modal-backdrop:rgba(2,6,23,.6);
+    --kt-shadow-modal:0 40px 90px -30px rgba(0,0,0,.8);
   }
   [data-kt-checkout] .kt-co-input{
     width:100%;box-sizing:border-box;height:44px;padding:0 13px;border-radius:10px;
@@ -73,12 +81,19 @@ const TOKENS = `
   }
   [data-kt-checkout] .kt-co-cta:hover:not(:disabled){transform:translateY(-2px)}
   [data-kt-checkout] .kt-co-cta:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
-  [data-kt-checkout]::-webkit-scrollbar{width:10px}
-  [data-kt-checkout]::-webkit-scrollbar-thumb{background:var(--kt-scrollbar);border-radius:8px;border:2px solid transparent;background-clip:content-box}
-  @keyframes ktCoRise{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:translateY(0)}}
+  /* The scrolling element itself carries no border-radius (native scrollbars never clip to
+     one); the outer .kt-co-shell clips it instead via overflow:hidden, so the thumb never
+     overhangs the card's rounded corners. */
+  [data-kt-checkout] .kt-co-scroll{scrollbar-width:thin;scrollbar-color:var(--kt-scrollbar) transparent}
+  [data-kt-checkout] .kt-co-scroll::-webkit-scrollbar{width:8px}
+  [data-kt-checkout] .kt-co-scroll::-webkit-scrollbar-track{background:transparent}
+  [data-kt-checkout] .kt-co-scroll::-webkit-scrollbar-thumb{background:var(--kt-scrollbar);border-radius:100px;border:2px solid transparent;background-clip:content-box}
+  @keyframes ktCoRise{0%{opacity:0;transform:translateY(14px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
   @keyframes ktCoSpin{to{transform:rotate(360deg)}}
+  @keyframes ktCoPulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.35)}50%{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
   @media(max-width:560px){
-    [data-kt-checkout] .kt-co-col{padding:0 4px 40px !important}
+    [data-kt-checkout] .kt-co-scroll{padding:22px 16px !important}
+    [data-kt-checkout] .kt-co-shell{border-radius:16px !important}
     [data-kt-checkout] .kt-co-ciclos{grid-template-columns:1fr !important}
   }
 `;
@@ -109,6 +124,79 @@ const tarjeta = {
   background: 'var(--kt-panel-bg)',
   boxShadow: 'var(--kt-shadow-panel)'
 };
+
+/**
+ * Country picker matching the app's custom-select convention (button + floating panel with
+ * an inset chevron) instead of a native `<select>`, whose browser-rendered popup and
+ * edge-flush arrow don't match the rest of the form.
+ */
+function SelectPais({ value, onChange, disabled, error }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [open]);
+
+  const seleccionado = PAISES.find((p) => p.codigo === value);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen((o) => !o)}
+        disabled={disabled}
+        style={{
+          width: '100%', height: '44px', padding: '0 36px 0 13px', borderRadius: '10px',
+          border: `1px solid ${error ? '#F43F5E' : open ? '#10B981' : 'var(--kt-input-border)'}`,
+          background: 'var(--kt-input-bg)', color: 'var(--kt-text)',
+          fontFamily: "'Manrope',sans-serif", fontWeight: 500, fontSize: '14px',
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
+          boxShadow: open ? '0 0 0 3px rgba(16,185,129,.15)' : 'none',
+          cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .6 : 1,
+          transition: 'border-color .2s,box-shadow .2s'
+        }}
+      >
+        {seleccionado?.nombre}
+        <ChevronDown size={15} style={{ position: 'absolute', right: '13px', top: '50%', transform: open ? 'translateY(-50%) rotate(180deg)' : 'translateY(-50%)', transition: 'transform .2s', color: 'var(--kt-muted)' }} />
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          style={{
+            position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 20,
+            maxHeight: '220px', overflowY: 'auto', padding: '6px',
+            background: 'var(--kt-panel-bg)', border: '1px solid var(--kt-panel-border)',
+            borderRadius: '12px', boxShadow: 'var(--kt-shadow-modal)'
+          }}
+        >
+          {PAISES.map((p) => (
+            <div
+              key={p.codigo}
+              role="option"
+              aria-selected={p.codigo === value}
+              onClick={() => { onChange(p.codigo); setOpen(false); }}
+              style={{
+                padding: '9px 11px', borderRadius: '8px', cursor: 'pointer',
+                background: p.codigo === value ? 'var(--kt-chip-bg)' : 'transparent',
+                color: p.codigo === value ? 'var(--kt-heading)' : 'var(--kt-text)',
+                fontFamily: "'Manrope',sans-serif", fontWeight: p.codigo === value ? 700 : 500, fontSize: '13.5px'
+              }}
+              onMouseEnter={(e) => { if (p.codigo !== value) e.currentTarget.style.background = 'var(--kt-chip-bg)'; }}
+              onMouseLeave={(e) => { if (p.codigo !== value) e.currentTarget.style.background = 'transparent'; }}
+            >
+              {p.nombre}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const Fila = ({ etiqueta, sub, valor, destacado }) => (
   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', padding: '13px 0' }}>
@@ -199,14 +287,21 @@ export default function CheckoutModal() {
     cambiarCiclo,
     enviarDatosFacturacion
   } = useSuscripcion();
-  const isDarkMode = useThemeStore((state) => state.isDarkMode);
 
   const [datos, setDatos] = useState(facturacion || DATOS_VACIOS);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [faltantes, setFaltantes] = useState([]);
+  const cerrarRef = useRef(null);
 
   const activo = paso !== 'inactivo';
-  const theme = isDarkMode ? 'dark' : 'light';
+
+  // Every panel page (Dashboard, Generator, ContentViewer) keeps its OWN light/dark toggle
+  // in this same localStorage key rather than the global theme store — see the note in
+  // SidebarUserMenu.jsx. CheckoutModal has no page to inherit a prop from (it is mounted
+  // once in App.jsx, outside every page), so it reads that same key directly on every
+  // render to match whatever the page underneath is actually showing.
+  const theme = localStorage.getItem('katedra-theme') || 'light';
+
   const precio = PRECIOS[ciclo] || PRECIOS.mensual;
 
   // Captured once per mount of the card step: re-creating the appearance object on a theme
@@ -251,51 +346,82 @@ export default function CheckoutModal() {
       <div
         data-kt-checkout
         data-kt-theme={theme}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Suscripción a Katedra Pro"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 500,
-          overflowY: 'auto',
-          fontFamily: "'Manrope', sans-serif",
-          color: 'var(--kt-text)',
-          background: 'radial-gradient(130% 135% at 12% 6%, var(--kt-bg1) 0%, var(--kt-bg2) 40%, var(--kt-bg3) 100%)'
-        }}
+        style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
       >
-        <button
-          type="button"
+        <div
           onClick={cerrarCheckout}
-          aria-label="Volver"
-          style={{ position: 'absolute', top: '22px', left: '22px', width: '38px', height: '38px', display: 'grid', placeItems: 'center', borderRadius: '11px', border: '1px solid var(--kt-chip-border)', background: 'var(--kt-chip-bg)', color: 'var(--kt-muted)', cursor: 'pointer' }}
-        >
-          <ArrowLeft size={18} />
-        </button>
+          style={{ position: 'absolute', inset: 0, background: 'var(--kt-modal-backdrop)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+        />
 
-        <div className="kt-co-col" style={{ width: '100%', maxWidth: '520px', margin: '0 auto', padding: '86px 20px 56px', animation: 'ktCoRise .45s cubic-bezier(.16,1,.3,1) both' }}>
+        <div
+          className="kt-co-shell"
+          style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '640px',
+            maxHeight: '92vh',
+            overflow: 'hidden',
+            borderRadius: '20px',
+            border: '1px solid var(--kt-modal-border)',
+            background: 'linear-gradient(180deg,var(--kt-modal-bg1),var(--kt-modal-bg2))',
+            boxShadow: 'var(--kt-shadow-modal)',
+            animation: 'ktCoRise .35s cubic-bezier(.16,1,.3,1) both'
+          }}
+        >
+        <div
+          className="kt-co-scroll"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Suscripción a Katedra Pro"
+          style={{
+            maxHeight: '92vh',
+            overflowY: 'auto',
+            padding: '32px',
+            fontFamily: "'Manrope', sans-serif",
+            color: 'var(--kt-text)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
+            <h1 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '23px', letterSpacing: '-.8px', color: 'var(--kt-heading)', margin: 0 }}>
+              {paso === 'exito' ? 'Katedra Pro' : 'Plan Pro'}
+            </h1>
+            <button
+              ref={cerrarRef}
+              type="button"
+              onClick={cerrarCheckout}
+              aria-label="Cerrar"
+              style={{ flex: 'none', width: '34px', height: '34px', display: 'grid', placeItems: 'center', borderRadius: '10px', border: '1px solid var(--kt-chip-border)', background: 'var(--kt-chip-bg)', color: 'var(--kt-muted)', cursor: 'pointer' }}
+            >
+              <X size={17} />
+            </button>
+          </div>
+
           {paso === 'exito' ? (
-            <div style={{ ...tarjeta, textAlign: 'center', padding: '38px 24px' }}>
-              <div style={{ width: '54px', height: '54px', margin: '0 auto 18px', display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'linear-gradient(120deg,#FBBF24,#D97706)', boxShadow: '0 12px 30px -10px rgba(217,119,6,.6)' }}>
-                <Check size={26} color="#fff" />
+            <div style={{ ...tarjeta, textAlign: 'center', padding: '44px 30px 34px', overflow: 'hidden', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg,#10B981,#34D399)' }} />
+              <div style={{ width: '64px', height: '64px', margin: '0 auto 20px', display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'linear-gradient(140deg,#10B981,#059669)', boxShadow: '0 14px 32px -12px rgba(16,185,129,.55)', animation: 'ktCoPulse 2.4s ease-in-out infinite' }}>
+                <Check size={30} color="#fff" strokeWidth={3} />
               </div>
-              <h1 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '23px', letterSpacing: '-.9px', color: 'var(--kt-heading)', margin: '0 0 8px' }}>
-                Ya eres Pro
-              </h1>
-              <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '13.5px', lineHeight: 1.55, color: 'var(--kt-muted)', margin: '0 0 24px' }}>
-                Tu suscripción está activa. Se renueva el {fechaRenovacion(ciclo)}.
+              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '20px', letterSpacing: '-.6px', color: 'var(--kt-heading)', margin: '0 0 8px' }}>
+                ¡Ya eres Pro!
               </p>
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--kt-muted)', margin: '0 auto 26px', maxWidth: '340px' }}>
+                Tu suscripción está activa y ya tienes acceso a todo Katedra Pro.
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', padding: '14px 16px', borderRadius: '14px', background: 'var(--kt-chip-bg)', border: '1px solid var(--kt-chip-border)', marginBottom: '26px', textAlign: 'left' }}>
+                <ShieldCheck size={18} style={{ flex: 'none', color: '#10B981', marginTop: '1px' }} />
+                <p style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 500, fontSize: '12.5px', lineHeight: 1.55, color: 'var(--kt-muted)', margin: 0 }}>
+                  Plan Pro · {precio.etiqueta} · {formatearUSD(precio.total)}. Se renueva el {fechaRenovacion(ciclo)}.
+                </p>
+              </div>
+
               <button type="button" className="kt-co-cta" onClick={cerrarCheckout}>
-                <Sparkles size={16} />
                 Empezar a usar Pro
               </button>
             </div>
           ) : (
             <>
-              <h1 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '26px', letterSpacing: '-1.1px', color: 'var(--kt-heading)', margin: '0 0 20px' }}>
-                Plan Pro
-              </h1>
-
               {/* Billing period */}
               <div className="kt-co-ciclos" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '18px' }}>
                 {['mensual', 'anual'].map((opcion) => {
@@ -320,7 +446,7 @@ export default function CheckoutModal() {
                       }}
                     >
                       {opcion === 'anual' && (
-                        <span style={{ position: 'absolute', top: '13px', right: '13px', padding: '3px 8px', borderRadius: '100px', background: 'linear-gradient(120deg,#FBBF24,#D97706)', color: '#fff', fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '10.5px' }}>
+                        <span style={{ position: 'absolute', top: '13px', right: '13px', padding: '3px 8px', borderRadius: '100px', background: 'linear-gradient(120deg,#10B981,#059669)', color: '#fff', fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '10.5px' }}>
                           Ahorra {AHORRO_ANUAL}%
                         </span>
                       )}
@@ -385,10 +511,13 @@ export default function CheckoutModal() {
                     <input id="kt-co-email" className="kt-co-input" style={bordeCampo('email')} name="email" type="email" value={datos.email} onChange={actualizar} disabled={enTarjeta} autoComplete="email" />
                   </div>
                   <div>
-                    <label htmlFor="kt-co-pais" style={etiquetaEstilo}>País o región</label>
-                    <select id="kt-co-pais" className="kt-co-input" style={bordeCampo('pais')} name="pais" value={datos.pais} onChange={actualizar} disabled={enTarjeta}>
-                      {PAISES.map((p) => <option key={p.codigo} value={p.codigo}>{p.nombre}</option>)}
-                    </select>
+                    <label style={etiquetaEstilo}>País o región</label>
+                    <SelectPais
+                      value={datos.pais}
+                      onChange={(codigo) => setDatos((actuales) => ({ ...actuales, pais: codigo }))}
+                      disabled={enTarjeta}
+                      error={faltantes.includes('pais')}
+                    />
                   </div>
                   <div>
                     <label htmlFor="kt-co-direccion" style={etiquetaEstilo}>Dirección</label>
@@ -447,6 +576,7 @@ export default function CheckoutModal() {
               </p>
             </>
           )}
+        </div>
         </div>
       </div>
     </>

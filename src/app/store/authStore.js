@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useSuscripcionStore } from './suscripcionStore.js';
 import {
   changePasswordRequest,
   isSessionWithinTolerance,
@@ -228,6 +229,11 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         error: null
       });
+
+      // suscripcionStore is a module-level singleton: without this, the next account
+      // logged into this same tab would inherit this one's cached plan/usage until a
+      // full page reload, since cargarUso() only fetches when `uso` is still null.
+      useSuscripcionStore.getState().resetear();
     }
   },
 

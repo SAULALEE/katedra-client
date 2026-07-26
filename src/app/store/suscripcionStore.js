@@ -5,7 +5,28 @@ import {
   getMiSuscripcionRequest,
   getMiUsoRequest,
   iniciarSuscripcionRequest
-} from '../services/suscripcionService';
+} from '../services/suscripcionService.js';
+
+/**
+ * Fields reset on logout. This store is a module-level singleton — unlike component state,
+ * it survives a logout/login inside the same tab — so a stale `uso` from the previous
+ * account (including its plan) would otherwise sit here and block the next account's
+ * `cargarUso()` on mount, since that call only fires when `uso` is still null.
+ */
+const ESTADO_INICIAL = {
+  suscripcion: null,
+  uso: null,
+  loading: false,
+  error: null,
+
+  paso: 'inactivo',
+  clientSecret: null,
+  publishableKey: null,
+  suscripcionId: null,
+  ciclo: 'mensual',
+  facturacion: null,
+  procesando: false
+};
 
 /**
  * Billing state and the checkout step machine.
@@ -19,18 +40,7 @@ import {
  * subscription. Deliberately not solved with a flag here, since client state drifts.
  */
 export const useSuscripcionStore = create((set, get) => ({
-  suscripcion: null,
-  uso: null,
-  loading: false,
-  error: null,
-
-  paso: 'inactivo',
-  clientSecret: null,
-  publishableKey: null,
-  suscripcionId: null,
-  ciclo: 'mensual',
-  facturacion: null,
-  procesando: false,
+  ...ESTADO_INICIAL,
 
   /** Loads today's usage. The authoritative source for the plan. */
   cargarUso: async () => {
@@ -132,7 +142,10 @@ export const useSuscripcionStore = create((set, get) => ({
     }
   },
 
-  limpiarError: () => set({ error: null })
+  limpiarError: () => set({ error: null }),
+
+  /** Called on logout so the next account's session never inherits this one's plan/usage. */
+  resetear: () => set(ESTADO_INICIAL)
 }));
 
 export default useSuscripcionStore;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CreditCard, LogOut, Zap } from 'lucide-react';
+import { CreditCard, Zap } from 'lucide-react';
 import { PlanBadge } from './PlanBadge';
 import { colorUso, esPro, porcentajeUso } from '../utils/plan';
 
@@ -57,7 +57,7 @@ const MedidorUso = ({ etiqueta, usadas, limite }) => {
  * Lives inside SidebarUserMenu, which already handles opening, Escape and outside clicks.
  * This component only paints.
  */
-export const AjustesPopover = ({ uso, cargando, onAbrirPlan, onLogout }) => {
+export const AjustesPopover = ({ uso, cargando, onAbrirPlan }) => {
   const plan = uso?.plan;
   const pro = esPro(plan);
 
@@ -95,25 +95,15 @@ export const AjustesPopover = ({ uso, cargando, onAbrirPlan, onLogout }) => {
         style={{
           ...filaEstilo,
           // Free sees a sales CTA; Pro sees a neutral link to its own billing.
-          background: pro ? 'transparent' : 'linear-gradient(120deg,rgba(251,191,36,.14),rgba(217,119,6,.06))',
-          borderColor: pro ? 'transparent' : 'rgba(217,119,6,.28)',
+          background: pro ? 'transparent' : 'rgba(16,185,129,.1)',
+          borderColor: pro ? 'transparent' : 'rgba(16,185,129,.28)',
           color: pro ? 'var(--kt-text)' : 'var(--kt-heading)'
         }}
       >
         {pro
           ? <CreditCard size={16} style={{ flex: 'none', color: 'var(--kt-muted)' }} />
-          : <Zap size={16} style={{ flex: 'none', color: '#D97706' }} />}
+          : <Zap size={16} style={{ flex: 'none', color: '#10B981' }} />}
         <span>{pro ? 'Gestionar mi plan' : 'Mejorar a Pro'}</span>
-      </button>
-
-      <button
-        type="button"
-        role="menuitem"
-        onClick={onLogout}
-        style={{ ...filaEstilo, color: '#FB7185' }}
-      >
-        <LogOut size={16} style={{ flex: 'none' }} />
-        <span>Cerrar sesión</span>
       </button>
     </>
   );

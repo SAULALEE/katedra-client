@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, ChevronDown, Check } from 'lucide-react';
+import { Download, ChevronDown, Check, Lock } from 'lucide-react';
 import { IconDoc, IconPDF, IconMD, IconPPTX, IconGoogleForms } from './ExportFormatIcons';
 
 /** Icon per export format id, so every menu looks the same across views. */
@@ -14,7 +14,8 @@ const ICONO_POR_FORMATO = {
 /**
  * Export menu shared by the material view and the generator.
  *
- * @param {object[]} options - [{ id, label, hint?, disabled? }]
+ * @param {object[]} options - [{ id, label, hint?, disabled?, locked? }] — `locked` stays
+ *   clickable (unlike `disabled`): onSelect still fires so the caller can open the upgrade prompt.
  * @param {(option) => void} onSelect
  * @param {string|null} loadingOptionId - shows a spinner on that row and blocks further clicks
  * @param {boolean} disabled
@@ -96,6 +97,8 @@ export const ExportDropdown = ({
           {options.map((opt) => {
             const Icono = ICONO_POR_FORMATO[opt.id];
             const cargando = loadingOptionId === opt.id;
+            // `locked` (plan gate) stays clickable so onSelect can open the upgrade prompt;
+            // only `disabled` (no content yet) or a concurrent export blocks the click.
             const bloqueado = opt.disabled || (ocupado && !cargando);
 
             return (
@@ -109,12 +112,12 @@ export const ExportDropdown = ({
                   setOpen(false);
                   onSelect?.(opt);
                 }}
-                title={opt.disabled ? 'Genera este material primero' : undefined}
+                title={opt.disabled ? 'Genera este material primero' : opt.locked ? 'Exclusivo del plan Pro' : undefined}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '10px 12px', borderRadius: '8px',
                   background: 'transparent', border: 'none',
-                  color: 'var(--kt-text)',
+                  color: opt.locked && !bloqueado ? 'var(--kt-muted)' : 'var(--kt-text)',
                   fontFamily: "'Manrope'", fontWeight: 600, fontSize: '13px',
                   cursor: bloqueado ? 'not-allowed' : 'pointer',
                   opacity: bloqueado ? 0.45 : 1,
@@ -128,7 +131,8 @@ export const ExportDropdown = ({
                 {cargando && (
                   <span style={{ width: '12px', height: '12px', border: '2px solid var(--kt-muted)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                 )}
-                {opt.listo && !cargando && <Check size={13} style={{ color: '#10B981' }} />}
+                {opt.locked && !cargando && <Lock size={12} style={{ color: 'var(--kt-faint)', flex: 'none' }} />}
+                {opt.listo && !cargando && !opt.locked && <Check size={13} style={{ color: '#10B981' }} />}
               </button>
             );
           })}

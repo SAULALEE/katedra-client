@@ -13,7 +13,10 @@ const PALETA = {
     texto: '#334155',
     titulo: '#0F172A',
     tenue: '#94A3B8',
-    borde: 'rgb(15,23,42)'
+    // Solid approximation of the app's own --kt-input-border (rgba(15,23,42,.12) over
+    // white): Stripe rejects alpha channels, so the subtlety has to come from the literal
+    // shade instead, or the field reads as a much harsher border than every other input.
+    borde: '#E2E5EA'
   },
   dark: {
     fondo: '#111827',
@@ -21,7 +24,9 @@ const PALETA = {
     texto: '#E2E8F0',
     titulo: '#F8FAFC',
     tenue: '#64748B',
-    borde: 'rgb(148,163,184)'
+    // Same approximation for --kt-input-border in dark mode (rgba(148,163,184,.14) over
+    // the panel's dark background).
+    borde: '#2A3446'
   }
 };
 

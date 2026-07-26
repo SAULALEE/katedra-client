@@ -94,13 +94,13 @@ export default function Users() {
     if (!longRole) return 'Libre';
     const r = longRole.toUpperCase();
     if (r === 'ADMINISTRADOR' || r === 'ROLE_ADMIN' || r === 'ADMIN') return 'Admin';
-    if (r === 'DOCENTE PREMIUM' || r === 'ROLE_PROFESOR' || r === 'ROLE_PREMIUM' || r === 'PREMIUM') return 'Premium';
+    if (r === 'DOCENTE PREMIUM' || r === 'ROLE_PROFESOR' || r === 'ROLE_PREMIUM' || r === 'PREMIUM') return 'Docente';
     return 'Libre';
   };
 
-  // Display text only — keeps the "Premium"/"Libre" tokens above as the CSS/data-role key
-  // (styling hooks throughout the page key off them) without calling a teacher's *role*
-  // "Premium", which used to read as a billing claim. Billing is PlanBadge, below.
+  // Display text only — keeps the "Docente"/"Libre" tokens above as the CSS/data-role key
+  // (styling hooks throughout the page key off them). Billing tier is PlanBadge, below,
+  // in its own column: the role has never meant anything about billing.
   const getRoleLabel = (shortRole) => (shortRole === 'Admin' ? 'Admin' : 'Docente');
 
   const getInitial = (name) => {
@@ -347,10 +347,10 @@ export default function Users() {
   [data-statuspill]{background:var(--kt-chip-bg);color:var(--kt-muted);border:1px solid var(--kt-chip-border)}
   [data-statusdot]{background:var(--kt-muted)}
   .kt-row[data-role="Admin"] [data-rolepill], .kt-details-wrapper[data-role="Admin"] [data-rolepill]{background:rgba(56,189,248,.16);color:#0369A1;border-color:rgba(56,189,248,.35)}
-  .kt-row[data-role="Premium"] [data-rolepill], .kt-details-wrapper[data-role="Premium"] [data-rolepill]{background:rgba(245,158,11,.16);color:#B45309;border-color:rgba(245,158,11,.35)}
+  .kt-row[data-role="Docente"] [data-rolepill], .kt-details-wrapper[data-role="Docente"] [data-rolepill]{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
   .kt-row[data-role="Libre"] [data-rolepill], .kt-details-wrapper[data-role="Libre"] [data-rolepill]{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
   [data-root][data-kt-theme="dark"] .kt-row[data-role="Admin"] [data-rolepill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-role="Admin"] [data-rolepill]{color:#7DD3FC}
-  [data-root][data-kt-theme="dark"] .kt-row[data-role="Premium"] [data-rolepill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-role="Premium"] [data-rolepill]{color:#FBBF24}
+  [data-root][data-kt-theme="dark"] .kt-row[data-role="Docente"] [data-rolepill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-role="Docente"] [data-rolepill]{color:#CBD5E1}
   [data-root][data-kt-theme="dark"] .kt-row[data-role="Libre"] [data-rolepill], [data-root][data-kt-theme="dark"] .kt-details-wrapper[data-role="Libre"] [data-rolepill]{color:#CBD5E1}
   .kt-row[data-status="Activo"] [data-statuspill], .kt-details-wrapper[data-status="Activo"] [data-statuspill]{background:rgba(16,185,129,.16);color:#047857;border-color:rgba(16,185,129,.35)}
   .kt-row[data-status="Inactivo"] [data-statuspill], .kt-details-wrapper[data-status="Inactivo"] [data-statuspill]{background:rgba(244,63,94,.16);color:#BE123C;border-color:rgba(244,63,94,.35)}
@@ -359,10 +359,10 @@ export default function Users() {
   .kt-row[data-status="Activo"] [data-statusdot], .kt-details-wrapper[data-status="Activo"] [data-statusdot]{background:#10B981;box-shadow:0 0 8px #10B981}
   .kt-row[data-status="Inactivo"] [data-statusdot], .kt-details-wrapper[data-status="Inactivo"] [data-statusdot]{background:#F43F5E;box-shadow:0 0 8px #F43F5E}
   .kt-row[data-role="Admin"] [data-avatar]{background:linear-gradient(150deg,#38BDF8,#2563EB)}
-  .kt-row[data-role="Premium"] [data-avatar]{background:linear-gradient(150deg,#FBBF24,#D97706)}
+  .kt-row[data-role="Docente"] [data-avatar]{background:linear-gradient(150deg,#94A3B8,#475569)}
   .kt-row[data-role="Libre"] [data-avatar]{background:linear-gradient(150deg,#34D399,#059669)}
   .kt-details-wrapper[data-role="Admin"] [data-avatar-lg]{background:linear-gradient(150deg,#38BDF8,#2563EB)}
-  .kt-details-wrapper[data-role="Premium"] [data-avatar-lg]{background:linear-gradient(150deg,#FBBF24,#D97706)}
+  .kt-details-wrapper[data-role="Docente"] [data-avatar-lg]{background:linear-gradient(150deg,#94A3B8,#475569)}
   .kt-details-wrapper[data-role="Libre"] [data-avatar-lg]{background:linear-gradient(150deg,#34D399,#059669)}
 
   /* notifications dropdown */
@@ -597,10 +597,11 @@ export default function Users() {
 
                 <div className="kt-tablewrap">
                   <div className="kt-table">
-                    <div style={{ display:'grid', gridTemplateColumns:'2fr 2.2fr 1.6fr 1.1fr 1.2fr', gap:'12px', padding:'14px 24px', borderBottom:'1px solid var(--kt-border-soft)' }}>
+                    <div style={{ display:'grid', gridTemplateColumns:'1.8fr 2fr 1.2fr 0.9fr 1fr 1.2fr', gap:'12px', padding:'14px 24px', borderBottom:'1px solid var(--kt-border-soft)' }}>
                       <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'1px', color:'var(--kt-label)' }}>NOMBRE COMPLETO</div>
                       <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'1px', color:'var(--kt-label)' }}>CORREO ELECTRÓNICO</div>
                       <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'1px', color:'var(--kt-label)' }}>ROL ASIGNADO</div>
+                      <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'1px', color:'var(--kt-label)' }}>PLAN</div>
                       <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'1px', color:'var(--kt-label)' }}>ESTADO</div>
                       <div style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'1px', color:'var(--kt-label)', textAlign:'right' }}>ACCIONES</div>
                     </div>
@@ -614,17 +615,17 @@ export default function Users() {
                           data-role={getRoleShort(u.rol)} 
                           data-status={u.estado || 'Activo'} 
                           onClick={() => handleViewDetails(u)}
-                          style={{ display:'grid', gridTemplateColumns:'2fr 2.2fr 1.6fr 1.1fr 1.2fr', gap:'12px', alignItems:'center', padding:'14px 24px', borderBottom:'1px solid var(--kt-border-soft)', overflow:'hidden', cursor:'pointer' }}
+                          style={{ display:'grid', gridTemplateColumns:'1.8fr 2fr 1.2fr 0.9fr 1fr 1.2fr', gap:'12px', alignItems:'center', padding:'14px 24px', borderBottom:'1px solid var(--kt-border-soft)', overflow:'hidden', cursor:'pointer' }}
                         >
                           <div style={{ display:'flex', alignItems:'center', gap:'12px', minWidth:0 }}>
                             <div data-avatar style={{ width:'36px', height:'36px', flex:'none', borderRadius:'10px', display:'grid', placeItems:'center', fontFamily:"'Manrope'", fontWeight:800, fontSize:'13px', color:'#fff', transition:'opacity .2s' }}>{getInitial(u.nombre)}</div>
                             <span style={{ fontFamily:"'Manrope'", fontWeight:700, fontSize:'13.5px', color:'var(--kt-heading)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.nombre}</span>
                           </div>
                           <div style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13px', color:'var(--kt-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.email}</div>
-                          <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                          <div>
                             <span data-rolepill style={{ display:'inline-flex', alignItems:'center', padding:'5px 11px', borderRadius:'8px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.6px', textTransform:'uppercase' }}>{getRoleLabel(getRoleShort(u.rol))}</span>
-                            <PlanBadge plan={u.plan} size="sm" />
                           </div>
+                          <div><PlanBadge plan={u.plan} size="sm" /></div>
                           <div><span data-statuspill style={{ display:'inline-flex', alignItems:'center', gap:'7px', padding:'5px 11px', borderRadius:'20px', fontFamily:"'Manrope'", fontWeight:700, fontSize:'10.5px', letterSpacing:'.5px', textTransform:'uppercase' }}><span data-statusdot style={{ width:'6px', height:'6px', borderRadius:'50%', animation:'ktPulse 2s ease-in-out infinite' }}></span>{u.estado || 'Activo'}</span></div>
                           <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:'6px' }} onClick={(e) => e.stopPropagation()}>
                             <button className="kt-actbtn" onClick={() => handleViewDetails(u)} aria-label="Ver" style={{ width:'32px', height:'32px', display:'grid', placeItems:'center', border:'none', background:'var(--kt-chip-bg)', borderRadius:'9px', color:'var(--kt-muted)', cursor:'pointer', transition:'background .18s,color .18s' }}><Eye size={16} /></button>
