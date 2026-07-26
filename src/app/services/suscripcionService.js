@@ -8,6 +8,16 @@ import api from './api';
  * of an axios response.
  */
 
+/** Public plan catalog. Prices and currency are resolved by the backend from Stripe. */
+export const getPlanesRequest = async () => {
+  try {
+    const { data } = await api.get('/suscripciones/planes');
+    return data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'No pudimos consultar los planes', { cause: error });
+  }
+};
+
 /**
  * Plan, today's usage and enabled capabilities.
  *
@@ -19,7 +29,7 @@ export const getMiUsoRequest = async () => {
     const { data } = await api.get('/suscripciones/me/uso');
     return data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al consultar tu plan');
+    throw new Error(error.response?.data?.message || 'Error al consultar tu plan', { cause: error });
   }
 };
 
@@ -29,7 +39,7 @@ export const getMiSuscripcionRequest = async () => {
     const { data } = await api.get('/suscripciones/me');
     return data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error al consultar tu suscripción');
+    throw new Error(error.response?.data?.message || 'Error al consultar tu suscripción', { cause: error });
   }
 };
 
@@ -45,7 +55,7 @@ export const iniciarSuscripcionRequest = async ({ ciclo, facturacion }) => {
     const { data } = await api.post('/suscripciones', { ciclo, facturacion });
     return data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'No pudimos iniciar el pago');
+    throw new Error(error.response?.data?.message || 'No pudimos iniciar el pago', { cause: error });
   }
 };
 
@@ -60,7 +70,7 @@ export const confirmarSuscripcionRequest = async (suscripcionId) => {
     const { data } = await api.post(`/suscripciones/${suscripcionId}/confirmar`);
     return data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'No pudimos confirmar tu pago');
+    throw new Error(error.response?.data?.message || 'No pudimos confirmar tu pago', { cause: error });
   }
 };
 
@@ -70,6 +80,6 @@ export const cancelarSuscripcionRequest = async () => {
     const { data } = await api.delete('/suscripciones/me');
     return data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'No pudimos cancelar tu suscripción');
+    throw new Error(error.response?.data?.message || 'No pudimos cancelar tu suscripción', { cause: error });
   }
 };

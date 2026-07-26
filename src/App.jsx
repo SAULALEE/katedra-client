@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './app/pages/Landing';
 import Dashboard from './app/pages/Dashboard';
@@ -13,6 +13,7 @@ import ContentViewer from './app/pages/ContentViewer';
 import GeneratedContents from './app/pages/GeneratedContents';
 import ProtectedRoute from './app/components/ProtectedRoute';
 import { useThemeStore } from './app/store/useThemeStore';
+import CheckoutModal from './app/components/CheckoutModal';
 
 function App() {
   const isDarkMode = useThemeStore(state => state.isDarkMode);
@@ -28,7 +29,9 @@ function App() {
         if (parsed && parsed.state && typeof parsed.state.isDarkMode === 'boolean') {
           actualIsDark = parsed.state.isDarkMode;
         }
-      } catch (e) {}
+      } catch {
+        actualIsDark = isDarkMode;
+      }
     }
 
     if (actualIsDark) {
@@ -91,6 +94,7 @@ function App() {
           } 
         />
       </Routes>
+      <CheckoutModal />
     </BrowserRouter>
   );
 }
