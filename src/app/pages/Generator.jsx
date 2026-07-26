@@ -238,7 +238,7 @@ export default function Generator() {
   };
 
   const triggerGeneration = async () => {
-    notify('success', 'Generación Iniciada', 'La IA está creando el contenido...');
+    notify('success', 'Generación iniciada', 'Estamos creando el contenido…');
     const ok = await handleGenerate();
     if (ok) {
       const details = [];
@@ -261,7 +261,7 @@ export default function Generator() {
       else if (details.length === 3) summary += details[0] + ', ' + details[1] + ' y ' + details[2] + '.';
       else summary = 'Contenido generado correctamente.';
 
-      notify('success', 'Generación Completada', summary);
+      notify('success', 'Contenido generado', summary);
     }
   };
 
@@ -565,7 +565,7 @@ export default function Generator() {
           <header className="kt-main-pad" style={{ display:'flex', alignItems:'center', gap:'18px', padding:'26px 32px', borderBottom:'1px solid var(--kt-border-soft)' }}>
             <div style={{ minWidth:0 }}>
               <h1 className="kt-headtitle" style={{ fontFamily:"'Inter'", fontWeight:600, fontSize:'27px', lineHeight:1.15, letterSpacing:'-1.2px', color:'var(--kt-heading)', margin:0 }}>Generador de Contenido</h1>
-              <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', color:'var(--kt-muted)', margin:'3px 0 0' }}>Editor de Temarios con Inteligencia Artificial</p>
+              <p style={{ fontFamily:"'Manrope'", fontWeight:500, fontSize:'13.5px', color:'var(--kt-muted)', margin:'3px 0 0' }}>Crea y edita materiales para tus Temarios</p>
             </div>
             
             <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'12px' }}>
@@ -630,7 +630,7 @@ export default function Generator() {
                     <button
                       onClick={() => {
                         handleSave();
-                        notify('success', 'Contenido Guardado', 'El material se ha guardado en tu temario.');
+                        notify('success', 'Contenido guardado', 'El material se guardó en tu Temario.');
                       }}
                       style={{ height:'36px', padding:'0 16px', display:'flex', alignItems:'center', gap:'8px', border:'1px solid #10B981', borderRadius:'9px', background:'rgba(16,185,129,0.1)', color:'#10B981', cursor:'pointer', fontFamily:"'Manrope'", fontWeight:700, fontSize:'13px', transition:'all .2s' }}
                     >

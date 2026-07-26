@@ -255,7 +255,7 @@ export default function Landing() {
   const INTEGRATIONS_LOOP = [...INTEGRATIONS, ...INTEGRATIONS, ...INTEGRATIONS, ...INTEGRATIONS];
 
   const FAQ_DATA = [
-    { q: '¿Qué tan rigurosa es la teoría generada?', a: 'Cada nota de teoría se basa en fuentes académicas establecidas y se cita automáticamente para que puedas verificarla con un solo clic. Tú sigues siendo el editor en jefe — Katedra redacta y tú apruebas.' },
+    { q: '¿Puedo revisar la teoría generada?', a: 'Sí. La teoría incluye referencias para que puedas verificarla y editarla antes de usarla en clase.' },
     { q: '¿Puedo editar todo lo que Katedra produce?', a: 'Sí. Los módulos, la teoría, las evaluaciones y las diapositivas son totalmente editables dentro de un editor de documentos limpio. Modifica oraciones, cambia preguntas o reestructura bloques antes de exportar.' },
     { q: '¿A qué formatos puedo exportar mis cursos?', a: 'Según el tipo de material, Katedra exporta a Word (DOCX), PDF, Markdown y presentaciones PPTX.' },
     { q: '¿El motor funciona para cualquier materia?', a: 'Katedra maneja ciencias naturales, humanidades, matemáticas, ingeniería y más. Si puedes definir el tema, la inteligencia artificial puede estructurar el temario.' },
@@ -455,7 +455,7 @@ export default function Landing() {
             transition={{ duration: 0.75, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
             style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 'clamp(38px, 6.6vw, 76px)', lineHeight: 1.02, letterSpacing: '-2px', color: '#fff', margin: '0 0 22px', textWrap: 'balance' }}
           >
-            Diseña temarios con el poder de la IA.
+            Diseña temarios con apoyo de IA.
           </motion.h1>
 
           <motion.p 
@@ -464,7 +464,7 @@ export default function Landing() {
             transition={{ duration: 0.75, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 'clamp(16px, 2vw, 20px)', lineHeight: 1.55, color: 'rgba(255, 255, 255, 0.86)', maxWidth: '620px', margin: '0 auto 36px', textWrap: 'pretty' }}
           >
-            Teoría rigurosa, exámenes con clave y diapositivas de clase — generadas en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#ffffff' }}>segundos</span> para educadores.
+            Crea Teoría docente, evaluaciones con respuestas y diapositivas para tus clases en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#ffffff' }}>menos tiempo</span>.
           </motion.p>
 
           <motion.div 
@@ -893,7 +893,7 @@ export default function Landing() {
           >
             <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '1.35px', textTransform: 'uppercase', color: '#10B981', marginBottom: '14px' }}>Todo Incluido</div>
             <h2 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: 'clamp(30px, 4.6vw, 50px)', lineHeight: 1.06, letterSpacing: '-1.6px', margin: '0 auto', maxWidth: '680px', color: '#0F172A' }}>
-              Tres entregables, <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>un solo prompt</span>.
+              Materiales para preparar <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>cada clase</span>.
             </h2>
           </motion.div>
 
@@ -932,7 +932,7 @@ export default function Landing() {
               <div style={{ padding: '24px 26px 28px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '22px', letterSpacing: '-0.7px', margin: '0 0 9px', color: '#0F172A' }}>Teoría Estructurada</h3>
                 <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14.5px', lineHeight: 1.6, color: '#475569', margin: '0 0 16px', flex: 1 }}>
-                  Notas de clase rigurosas y citables organizadas en módulos limpios — nunca un bloque de texto genérico.
+                  Teoría docente organizada por módulos, con referencias que puedes revisar y editar.
                 </p>
                 <a className="explore-link" href="#playground" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '14px', color: '#059669', textDecoration: 'none', width: 'fit-content' }}>
                   Explorar teoría <span style={{ display: 'inline-block', transition: 'transform .25s ease' }}>›</span>
@@ -963,7 +963,7 @@ export default function Landing() {
               <div style={{ padding: '24px 26px 28px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '22px', letterSpacing: '-0.7px', margin: '0 0 9px', color: '#0F172A' }}>Exámenes y Evaluaciones</h3>
                 <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14.5px', lineHeight: 1.6, color: '#475569', margin: '0 0 16px', flex: 1 }}>
-                  Opción múltiple, preguntas abiertas y exámenes completos — cada uno con su respectiva clave de respuestas.
+                  Evaluaciones de opción múltiple y preguntas abiertas, con sus respuestas.
                 </p>
                 <a className="explore-link" href="#playground" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '14px', color: '#D97706', textDecoration: 'none', width: 'fit-content' }}>
                   Explorar evaluaciones <span style={{ display: 'inline-block', transition: 'transform .25s ease' }}>›</span>
@@ -991,7 +991,7 @@ export default function Landing() {
               <div style={{ padding: '24px 26px 28px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '22px', letterSpacing: '-0.7px', margin: '0 0 9px', color: '#0F172A' }}>Diapositivas Listas</h3>
                 <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14.5px', lineHeight: 1.6, color: '#475569', margin: '0 0 16px', flex: 1 }}>
-                  Una presentación pulida y lista para cada módulo — exportable directamente a PowerPoint.
+                  Diapositivas organizadas por módulo que puedes exportar a PowerPoint.
                 </p>
                 <a className="explore-link" href="#playground" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '14px', color: '#2B6CB0', textDecoration: 'none', width: 'fit-content' }}>
                   Explorar diapositivas <span style={{ display: 'inline-block', transition: 'transform .25s ease' }}>›</span>
@@ -1355,10 +1355,10 @@ export default function Landing() {
           
           <div style={{ position: 'relative', zIndex: 1 }}>
             <h2 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: 'clamp(30px, 5vw, 52px)', lineHeight: 1.04, letterSpacing: '-1.8px', color: '#fff', margin: '0 auto 16px', maxWidth: '620px', textWrap: 'balance' }}>
-              Tu siguiente temario está a <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#ffffff' }}>un solo prompt</span> de distancia.
+              Empieza a preparar tu <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#ffffff' }}>siguiente temario</span>.
             </h2>
             <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '18px', color: 'rgba(255, 255, 255, 0.86)', margin: '0 auto 30px', maxWidth: '480px' }}>
-              Únete a más de 10,000 educadores que diseñan mejores clases en menos tiempo.
+              Organiza tus contenidos y dedica más tiempo a tus clases.
             </p>
             <a 
               href="/register" 
@@ -1395,7 +1395,7 @@ export default function Landing() {
                 <span style={{ fontFamily: "'Inter'", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.9px', color: '#fff' }}>Katedra</span>
               </div>
               <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: 1.6, color: '#94A3B8', margin: '0 0 20px', maxWidth: '260px' }}>
-                El coautor de IA para educadores. Temarios, teoría y diapositivas estructuradas en segundos.
+                Herramientas para crear Temarios, Teoría docente, Evaluaciones y Diapositivas.
               </p>
               <div style={{ display: 'flex', gap: '10px' }}>
                 {['𝕏', 'in', '✉'].map((so, idx) => (

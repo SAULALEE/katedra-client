@@ -115,7 +115,7 @@ export const PlanModal = ({ abierto, onCerrar, onMejorar }) => {
               <PlanBadge plan={uso?.plan} />
             </div>
             <p style={{ fontFamily: "'Manrope'", fontWeight: 500, fontSize: '13px', color: 'var(--kt-muted)', margin: 0 }}>
-              {yaEsPro ? 'Tienes acceso a todas las funciones.' : 'Mejora a Pro para desbloquear todo Katedra.'}
+              {yaEsPro ? 'Tienes acceso a todas las funciones.' : 'Mejora a Pro para acceder a más funciones.'}
             </p>
           </div>
           <button
