@@ -245,7 +245,7 @@ export const startGoogleLogin = () => {
 };
 
 export const startMicrosoftLogin = () => {
-  window.location.href = '/api/v1/auth/microsoft';
+  window.location.assign(`${API_BASE_URL}/auth/microsoft`);
 };
 
 /**

@@ -4,3 +4,4 @@ dist
 .katedra
 .claude
 *.md
+**/*.test.js
