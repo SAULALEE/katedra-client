@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  test:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 22 to match the build stage of the Dockerfile.
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Plain `node --test`; the suite has no external runner and needs no browser.
+      - name: Test
+        run: npm test
+
+      # `build:local` rather than `build`, which wraps Vite in `doppler run` and would
+      # need Doppler credentials CI does not have.
+      - name: Build
+        run: npm run build:local
