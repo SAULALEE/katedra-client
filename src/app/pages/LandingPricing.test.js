@@ -19,10 +19,12 @@ test('el CTA conserva ciclo e intención de compra para usuarios sin sesión', (
 });
 
 test('el carrusel sólo anuncia formatos soportados por exportOptions', () => {
-  for (const formato of ['Documento Word', 'Documento PDF', 'Markdown', 'Presentación PPTX']) {
+  // Google Forms is a real export (FormatoExportacion.APPS_SCRIPT -> exportOptions 'gs'),
+  // so the landing may advertise it. Classroom/Canvas/Moodle are not integrations we ship.
+  for (const formato of ['Documento Word', 'Documento PDF', 'Markdown', 'Presentación PPTX', 'Google Forms']) {
     assert.match(landing, new RegExp(formato));
   }
-  for (const integracion of ['Google Forms', 'Google Classroom', 'Canvas LMS', 'Moodle']) {
+  for (const integracion of ['Google Classroom', 'Canvas LMS', 'Moodle']) {
     assert.doesNotMatch(landing, new RegExp(integracion));
   }
 });

@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+// Optional chaining matters: `import.meta.env` is injected by Vite and is undefined when these
+// modules are imported by the plain `node --test` suite. Without it, every test that transitively
+// imports this file dies on a TypeError before running a single assertion.
+export const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

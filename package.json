@@ -5,9 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "doppler run -- vite",
+    "dev:local": "vite",
     "build": "doppler run -- vite build",
+    "build:local": "vite build",
+    "preview": "doppler run -- vite preview",
+    "preview:local": "vite preview",
     "lint": "eslint .",
-    "preview": "doppler run -- vite preview"
+    "test": "node --test src/"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
