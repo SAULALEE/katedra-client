@@ -3,59 +3,59 @@
 [![CI](https://github.com/SAULALEE/katedra-client/actions/workflows/ci.yml/badge.svg)](https://github.com/SAULALEE/katedra-client/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Frontend for **Katedra**, an AI-driven academic content generator for teachers. React 19,
-Vite, Tailwind CSS, Zustand, Stripe Elements.
+Frontend de **Katedra**, un generador de contenido académico impulsado por IA para
+profesores. React 19, Vite, Tailwind CSS, Zustand, Stripe Elements.
 
-Spanish version: [README.es.md](README.es.md) · Backend: [katedra-server](https://github.com/SAULALEE/katedra-server)
+Versión en inglés: [README.en.md](README.en.md) · Backend: [katedra-server](https://github.com/SAULALEE/katedra-server)
 
 ---
 
-## Live demo
+## Demo en vivo
 
 - **App:** https://katedra-client.vercel.app
 - **API:** https://katedra-server.onrender.com/api/v1
 
-> **Demo credentials:** not published yet. Register your own account from the app's
-> Register page to try it immediately — a public seeded demo (Free + Pro) is planned. The
-> API runs on Render's free tier, so the first request after inactivity can take up to a
-> minute.
+> **Credenciales de demo:** aún no publicadas. Regístrate desde la página de Registro de la
+> app para probarla de inmediato — una demo pública sembrada (Free + Pro) está planeada. El
+> API corre en el plan gratuito de Render, así que la primera petición tras un período de
+> inactividad puede tardar hasta un minuto.
 
 ---
 
-## Architecture
+## Arquitectura
 
 ```mermaid
 flowchart LR
-    UI["UI Component (.jsx)"] --> Hook["Custom Hook"]
+    UI["Componente UI (.jsx)"] --> Hook["Custom Hook"]
     Hook --> Store["Zustand Store"]
     Hook --> Service["Service (src/app/services)"]
     Store --> Service
     Service -->|Axios, REST /api/v1| API[("katedra-server")]
 ```
 
-Unidirectional flow, zero direct Axios/fetch calls inside components — every request goes
-through a Hook and a Service file. Details in
+Flujo unidireccional, cero llamadas directas a Axios/fetch dentro de componentes — cada
+petición pasa por un Hook y un archivo Service. Detalles en
 [katedra-server/docs/2_ARCHITECTURE_AND_TECH_STACK.md](https://github.com/SAULALEE/katedra-server/blob/main/docs/2_ARCHITECTURE_AND_TECH_STACK.md).
 
 ---
 
-## Tech stack
+## Stack tecnológico
 
 | | |
 |---|---|
 | Framework | React 19, Vite |
-| Styling | Tailwind CSS, shadcn/ui-style components, Framer Motion |
-| State | Zustand |
+| Estilos | Tailwind CSS, componentes estilo shadcn/ui, Framer Motion |
+| Estado | Zustand |
 | HTTP | Axios |
-| Payments UI | Stripe Elements (`@stripe/react-stripe-js`) |
-| Tests | Node's built-in `node:test` — 68 tests |
-| Container | Multi-stage Dockerfile → nginx, SPA fallback routing |
+| UI de pagos | Stripe Elements (`@stripe/react-stripe-js`) |
+| Tests | `node:test` (nativo de Node) — 68 tests |
+| Contenedor | Dockerfile multi-etapa → nginx, ruteo con fallback de SPA |
 
 ---
 
-## Quickstart (no Doppler account needed)
+## Inicio rápido (sin necesitar cuenta de Doppler)
 
-Requires Node 22+ and npm.
+Requiere Node 22+ y npm.
 
 ```bash
 git clone https://github.com/SAULALEE/katedra-client.git
@@ -65,25 +65,26 @@ cp .env.example .env.local
 npm run dev:local
 ```
 
-Opens at `http://localhost:5173`. Leave `VITE_API_BASE_URL` unset in `.env.local` — Vite's
-dev server proxies `/api/v1` to `http://localhost:8080`, so it talks to a locally running
-[katedra-server](https://github.com/SAULALEE/katedra-server) with no CORS setup. Point it at
-the live API instead by setting `VITE_API_BASE_URL=https://katedra-server.onrender.com/api/v1`.
+Se abre en `http://localhost:5173`. Deja `VITE_API_BASE_URL` sin definir en `.env.local` — el
+servidor de desarrollo de Vite hace proxy de `/api/v1` hacia `http://localhost:8080`, así que
+habla con un [katedra-server](https://github.com/SAULALEE/katedra-server) corriendo
+localmente sin configurar CORS. Para apuntar al API en vivo, define
+`VITE_API_BASE_URL=https://katedra-server.onrender.com/api/v1`.
 
-Contributors with access to the project's Doppler org can skip `.env.local` and use
-`npm run dev` instead.
+Quienes tengan acceso a la organización de Doppler del proyecto pueden omitir `.env.local` y
+usar `npm run dev` en su lugar.
 
 ---
 
 ## Scripts
 
-| Script | What it does |
+| Script | Qué hace |
 |---|---|
-| `npm run dev` / `dev:local` | Vite dev server, with/without Doppler |
-| `npm run build` / `build:local` | Production build, with/without Doppler |
-| `npm run preview` / `preview:local` | Preview a production build locally |
+| `npm run dev` / `dev:local` | Servidor de desarrollo Vite, con/sin Doppler |
+| `npm run build` / `build:local` | Build de producción, con/sin Doppler |
+| `npm run preview` / `preview:local` | Previsualiza un build de producción localmente |
 | `npm run lint` | ESLint |
-| `npm test` | Runs the test suite (`node --test src/`) |
+| `npm test` | Corre la suite de tests (`node --test src/`) |
 
 ---
 
@@ -93,34 +94,35 @@ Contributors with access to the project's Doppler org can skip `.env.local` and 
 npm test
 ```
 
-68 tests written against Node's built-in `node:test` — no extra test runner dependency. CI
-runs this, `npm run lint`, and `npm run build:local` on every push to `main` and `staging`.
+68 tests escritos con `node:test` (nativo de Node) — sin dependencia extra de test runner. CI
+ejecuta esto, `npm run lint` y `npm run build:local` en cada push a `main` y `staging`.
 
 ---
 
-## API documentation
+## Documentación de la API
 
-This client consumes [katedra-server](https://github.com/SAULALEE/katedra-server)'s REST API.
-See that repo for Swagger UI (generated live from the code) and a runnable Bruno collection
-covering all 37 endpoints.
+Este cliente consume el API REST de
+[katedra-server](https://github.com/SAULALEE/katedra-server). Consulta ese repositorio para
+Swagger UI (generado en vivo desde el código) y una colección de Bruno ejecutable que cubre
+los 37 endpoints.
 
 ---
 
-## Project structure
+## Estructura del proyecto
 
 ```
 src/app/
-  components/   shared UI components
-  hooks/        one hook per feature area — the only thing components call
-  pages/        route-level components
-  services/     Axios calls — the only place that talks to the API
-  store/        Zustand stores
-  utils/        pure helpers
+  components/   componentes de UI compartidos
+  hooks/        un hook por área de funcionalidad — lo único que llaman los componentes
+  pages/        componentes de nivel de ruta
+  services/     llamadas Axios — el único lugar que habla con el API
+  store/        stores de Zustand
+  utils/        funciones auxiliares puras
 ```
 
 ---
 
 ## Roadmap
 
-See [katedra-server/docs/3_STATUS_AND_ROADMAP.md](https://github.com/SAULALEE/katedra-server/blob/main/docs/3_STATUS_AND_ROADMAP.md)
-for what's shipped and what's next across both repos.
+Ver [katedra-server/docs/3_STATUS_AND_ROADMAP.md](https://github.com/SAULALEE/katedra-server/blob/main/docs/3_STATUS_AND_ROADMAP.md)
+para lo que ya está publicado y lo que sigue en ambos repositorios.
