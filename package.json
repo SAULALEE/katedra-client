@@ -4,14 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "doppler run -- vite",
-    "dev:local": "vite",
-    "build": "doppler run -- vite build",
-    "build:local": "vite build",
-    "preview": "doppler run -- vite preview",
-    "preview:local": "vite preview",
-    "lint": "eslint .",
-    "test": "node --test src/"
+    "dev": "npm run dev:local",
+    "dev:local": "doppler run --project katedra-client --config local -- vite",
+    "dev:production": "doppler run --project katedra-client --config production -- vite",
+    "build": "npm run build:production",
+    "build:local": "doppler run --project katedra-client --config local -- vite build",
+    "build:production": "doppler run --project katedra-client --config production -- vite build",
+    "preview": "npm run preview:production",
+    "preview:local": "doppler run --project katedra-client --config local -- vite preview",
+    "preview:production": "doppler run --project katedra-client --config production -- vite preview",
+    "lint": "doppler run --project katedra-client --config local -- eslint .",
+    "test": "doppler run --project katedra-client --config local -- node --test src/"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
