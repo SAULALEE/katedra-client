@@ -53,25 +53,31 @@ through a Hook and a Service file. Details in
 
 ---
 
-## Quickstart (no Doppler account needed)
+## Quickstart
 
-Requires Node 22+ and npm.
+Requires Node 22+, npm, and access to the `katedra-client` Doppler project.
 
 ```bash
 git clone https://github.com/SAULALEE/katedra-client.git
 cd katedra-client
+doppler login
 npm install
-cp .env.example .env.local
 npm run dev:local
 ```
 
-Opens at `http://localhost:5173`. Leave `VITE_API_BASE_URL` unset in `.env.local` — Vite's
-dev server proxies `/api/v1` to `http://localhost:8080`, so it talks to a locally running
-[katedra-server](https://github.com/SAULALEE/katedra-server) with no CORS setup. Point it at
-the live API instead by setting `VITE_API_BASE_URL=https://katedra-server.onrender.com/api/v1`.
+`dev:local` uses the Doppler `local` configuration. It must define
+`VITE_API_BASE_URL=/api/v1`; Vite then proxies to `http://localhost:8080`.
 
-Contributors with access to the project's Doppler org can skip `.env.local` and use
-`npm run dev` instead.
+To test against the hosted backend and production database:
+
+```bash
+npm run dev:production
+```
+
+The Doppler `production` configuration must define `VITE_API_BASE_URL` with the public API
+URL, such as `https://katedra-server.onrender.com/api/v1`.
+
+No `.env`, `.env.local`, or local fallback values are used.
 
 ---
 
@@ -79,11 +85,15 @@ Contributors with access to the project's Doppler org can skip `.env.local` and 
 
 | Script | What it does |
 |---|---|
-| `npm run dev` / `dev:local` | Vite dev server, with/without Doppler |
-| `npm run build` / `build:local` | Production build, with/without Doppler |
-| `npm run preview` / `preview:local` | Preview a production build locally |
-| `npm run lint` | ESLint |
-| `npm test` | Runs the test suite (`node --test src/`) |
+| `npm run dev:local` | Local client → local backend |
+| `npm run dev:production` | Local client → hosted backend |
+| `npm run build:local` | Build with local configuration |
+| `npm run build:production` | Build with production configuration |
+| `npm run lint` | ESLint through Doppler |
+| `npm test` | Test suite through Doppler |
+
+Scripts explicitly use the `katedra-client` Doppler project and the `local` or `production`
+configuration.
 
 ---
 

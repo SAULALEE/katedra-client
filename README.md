@@ -53,26 +53,31 @@ petición pasa por un Hook y un archivo Service. Detalles en
 
 ---
 
-## Inicio rápido (sin necesitar cuenta de Doppler)
+## Inicio rápido
 
-Requiere Node 22+ y npm.
+Requiere Node 22+, npm y acceso al proyecto `katedra-client` en Doppler.
 
 ```bash
 git clone https://github.com/SAULALEE/katedra-client.git
 cd katedra-client
+doppler login
 npm install
-cp .env.example .env.local
 npm run dev:local
 ```
 
-Se abre en `http://localhost:5173`. Deja `VITE_API_BASE_URL` sin definir en `.env.local` — el
-servidor de desarrollo de Vite hace proxy de `/api/v1` hacia `http://localhost:8080`, así que
-habla con un [katedra-server](https://github.com/SAULALEE/katedra-server) corriendo
-localmente sin configurar CORS. Para apuntar al API en vivo, define
-`VITE_API_BASE_URL=https://katedra-server.onrender.com/api/v1`.
+`dev:local` usa la configuración Doppler `local`. Esa configuración debe definir
+`VITE_API_BASE_URL=/api/v1`; Vite hará proxy hacia `http://localhost:8080`.
 
-Quienes tengan acceso a la organización de Doppler del proyecto pueden omitir `.env.local` y
-usar `npm run dev` en su lugar.
+Para probar la aplicación contra el backend y la base alojados:
+
+```bash
+npm run dev:production
+```
+
+La configuración Doppler `production` debe definir `VITE_API_BASE_URL` con la URL pública
+del backend, por ejemplo `https://katedra-server.onrender.com/api/v1`.
+
+No se usan `.env`, `.env.local` ni valores locales alternativos.
 
 ---
 
@@ -80,11 +85,15 @@ usar `npm run dev` en su lugar.
 
 | Script | Qué hace |
 |---|---|
-| `npm run dev` / `dev:local` | Servidor de desarrollo Vite, con/sin Doppler |
-| `npm run build` / `build:local` | Build de producción, con/sin Doppler |
-| `npm run preview` / `preview:local` | Previsualiza un build de producción localmente |
-| `npm run lint` | ESLint |
-| `npm test` | Corre la suite de tests (`node --test src/`) |
+| `npm run dev:local` | Cliente local → backend local |
+| `npm run dev:production` | Cliente local → backend alojado |
+| `npm run build:local` | Build con configuración local |
+| `npm run build:production` | Build con configuración de producción |
+| `npm run lint` | ESLint mediante Doppler |
+| `npm test` | Suite de tests mediante Doppler |
+
+Los scripts usan explícitamente el proyecto `katedra-client` y las configuraciones Doppler
+`local` o `production`.
 
 ---
 
