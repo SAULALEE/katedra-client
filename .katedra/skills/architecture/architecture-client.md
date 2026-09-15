@@ -14,7 +14,7 @@ description: General architecture of the project
   - **Flow:** `UI Component` → `Custom Hook` → `Zustand Store` (if global) / `API Service (Axios)`.
   - **Rule:** ZERO direct Axios or `fetch` calls inside `.jsx`/`.tsx` UI components. Always delegate to a dedicated service file (`src/services/`).
 - **Backend Paradigm (Spring Boot 3.x):** Layered Monolith architecture.
-  - **Flow:** `REST Controller` ↔ `DTO` ↔ `Service` ↔ `Entity` ↔ `Repository` ↔ `MySQL`.
+  - **Flow:** `REST Controller` ↔ `DTO` ↔ `Service` ↔ `Entity` ↔ `Repository` ↔ `PostgreSQL`.
   - **Rule:** Entities NEVER leave the `Service` layer. Controllers only accept and return `DTO`s.
 - **Communication:** Asynchronous REST over HTTP using JSON. Strict HTTP status codes mapping (200, 201, 400, 401, 403, 404, 500).
 

@@ -65,7 +65,7 @@ npm install
 npm run dev:local
 ```
 
-`dev:local` uses the Doppler `local` configuration. It must define
+`dev:local` uses the Doppler `dev` configuration. It must define
 `VITE_API_BASE_URL=/api/v1`; Vite then proxies to `http://localhost:8080`.
 
 To test against the hosted backend and production database:
@@ -74,7 +74,7 @@ To test against the hosted backend and production database:
 npm run dev:production
 ```
 
-The Doppler `production` configuration must define `VITE_API_BASE_URL` with the public API
+The Doppler `prd` configuration must define `VITE_API_BASE_URL` with the public API
 URL, such as `https://katedra-server.onrender.com/api/v1`.
 
 No `.env`, `.env.local`, or local fallback values are used.
@@ -92,7 +92,7 @@ No `.env`, `.env.local`, or local fallback values are used.
 | `npm run lint` | ESLint through Doppler |
 | `npm test` | Test suite through Doppler |
 
-Scripts explicitly use the `katedra-client` Doppler project and the `local` or `production`
+Scripts explicitly use the `katedra-client` Doppler project and the `dev` or `prd`
 configuration.
 
 ---

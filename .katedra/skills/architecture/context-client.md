@@ -14,7 +14,7 @@ description: Business and domain context
 - **Target Audience:** Teachers (designed specifically to save 30-40% of manual preparation time).
 - **Frontend Stack:** React 18+ (Vite), Tailwind CSS, shadcn/ui (Linear aesthetic), Zustand, Axios.
 - **Backend Stack:** Spring Boot 3.x (Java 21) with Spring AI integration, Modular Monolith architecture.
-- **Database Stack:** MySQL 8.0, Flyway migrations, UUIDs (`CHAR(36)`), soft deletes (`deleted_at`).
+- **Database Stack:** PostgreSQL, Flyway migrations, UUIDs (`VARCHAR(36)`), soft deletes (`deleted_at`).
 - **AI Integration Architecture:**
   - **Primary AI Provider:** OpenAI (GPT-4, GPT-4-turbo, GPT-4o) with structured JSON output
   - **Spring AI Integration:** ChatClient abstracts OpenAI communication, enabling provider-agnostic design
@@ -36,6 +36,6 @@ Output Expected:
 > - **Frontend (React):** Displays syllabi, triggers content generation, shows generated theory/exercises/quizzes in real-time
 > - **Backend API (Spring Boot 3.x with Spring AI):** Manages users, authentication, syllabi storage, orchestrates content generation with async ChatClient calls
 > - **AI Integration (Spring AI ChatClient):** Abstracts OpenAI API communication, all calls non-blocking (CompletableFuture/Mono)
-> - **Database (MySQL):** Stores users, syllabi, and generated content with soft-delete support
+> - **Database (PostgreSQL):** Stores users, syllabi, and generated content with soft-delete support
 > 
 > **Data Flow:** Frontend calls Spring API → Spring uses ChatClient → OpenAI (async, non-blocking) → Returns structured JSON → Spring saves to DB → Frontend displays
