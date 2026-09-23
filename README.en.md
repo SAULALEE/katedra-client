@@ -28,7 +28,7 @@ Spanish version: [README.md](README.md) · Backend: [katedra-server](https://git
 flowchart LR
     UI["UI Component (.jsx)"] --> Hook["Custom Hook"]
     Hook --> Store["Zustand Store"]
-    Hook --> Service["Service (src/app/services)"]
+    Hook --> Service["Service (src/modules/teacher/services or src/app/services)"]
     Store --> Service
     Service -->|Axios, REST /api/v1| API[("katedra-server")]
 ```

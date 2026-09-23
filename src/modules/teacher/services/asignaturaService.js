@@ -1,4 +1,4 @@
-import api from './api.js';
+import api from '../../../app/services/api.js';
 
 export const getAsignaturas = async () => {
   try {

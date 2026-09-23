@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../../app/hooks/useAuth';
 import { useHistorial } from '../hooks/useHistorial';
-import { isAdmin } from '../utils/roleUtils';
+import { isAdmin } from '../../../app/utils/roleUtils';
 import {
   Users as UsersIcon,
   FolderDot,
@@ -14,9 +14,9 @@ import {
   Heart,
   ChevronDown
 } from 'lucide-react';
-import { SidebarUserMenu } from '../components/SidebarUserMenu';
-import { PlanModal } from '../components/PlanModal';
-import { useSuscripcionStore } from '../store/suscripcionStore';
+import { SidebarUserMenu } from '../../../app/components/SidebarUserMenu';
+import { PlanModal } from '../../../app/components/PlanModal';
+import { useSuscripcionStore } from '../../../app/store/suscripcionStore';
 
 export default function GeneratedContents() {
   const navigate = useNavigate();

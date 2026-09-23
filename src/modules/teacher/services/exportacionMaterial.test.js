@@ -7,7 +7,7 @@ const leer = (ruta) => readFileSync(fileURLToPath(new URL(ruta, import.meta.url)
 
 const temarioService = leer('./temarioService.js');
 const useExport = leer('../hooks/useExport.js');
-const exportDropdown = leer('../components/ExportDropdown.jsx');
+const exportDropdown = leer('../../../app/components/ExportDropdown.jsx');
 
 test('el servicio pide el archivo como blob al endpoint de exportaciones', () => {
   assert.match(temarioService, /\/temarios\/\$\{id\}\/exportaciones/);

@@ -1,4 +1,4 @@
-import api from './api.js';
+import api from '../../../app/services/api.js';
 import { nombreDesdeContentDisposition } from '../utils/descargarArchivo.js';
 import { EXTENSION_POR_FORMATO } from '../utils/exportOptions.js';
 
