@@ -20,7 +20,7 @@ test('los stores solo eliminan tarjetas después de un DELETE exitoso', async ()
 
 test('Dashboard usa confirmación visual para asignaturas y temarios', async () => {
   const source = await readFile(new URL('../pages/Dashboard.jsx', import.meta.url), 'utf8');
-  const modal = await readFile(new URL('../components/DeleteConfirmationModal.jsx', import.meta.url), 'utf8');
+  const modal = await readFile(new URL('../../../app/components/DeleteConfirmationModal.jsx', import.meta.url), 'utf8');
 
   assert.doesNotMatch(source, /window\.confirm/);
   assert.match(source, /<DeleteConfirmationModal/);

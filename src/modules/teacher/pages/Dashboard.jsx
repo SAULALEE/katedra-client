@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../../app/hooks/useAuth';
 import { useTemarios } from '../hooks/useTemarios';
 import { useAsignaturas } from '../hooks/useAsignaturas';
 import { useAsignaturaVisual } from '../hooks/useAsignaturaVisual';
-import { isAdmin } from '../utils/roleUtils';
-import { formatTimeAgo } from '../utils/timeAgo';
+import { isAdmin } from '../../../app/utils/roleUtils';
+import { formatTimeAgo } from '../../../app/utils/timeAgo';
 import {
   filtrarTemarios
 } from '../utils/asignaturas';
@@ -13,7 +13,7 @@ import { SUBJECT_COLORS, SUBJECT_ICONS, ICON_NAMES_ES, rgbFromHex, darkenHex } f
 import { applyAsignaturaOrder, moveAsignaturaBefore, moveAsignaturaToEnd } from '../utils/asignaturaOrder';
 import { prepararContenidoFuente } from '../utils/contenidoFuente';
 import { getModulosOptions, isModulosValueValidForModelo } from '../utils/modulosOptions';
-import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../../../app/components/DeleteConfirmationModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -33,10 +33,10 @@ import {
   Zap,
   Lock
 } from 'lucide-react';
-import { SidebarUserMenu } from '../components/SidebarUserMenu';
-import { PlanModal } from '../components/PlanModal';
-import { useSuscripcionStore } from '../store/suscripcionStore';
-import { useSuscripcion } from '../hooks/useSuscripcion';
+import { SidebarUserMenu } from '../../../app/components/SidebarUserMenu';
+import { PlanModal } from '../../../app/components/PlanModal';
+import { useSuscripcionStore } from '../../../app/store/suscripcionStore';
+import { useSuscripcion } from '../../../app/hooks/useSuscripcion';
 
 const ICON_KEYS = Object.keys(SUBJECT_ICONS);
 

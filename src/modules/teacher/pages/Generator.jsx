@@ -3,14 +3,14 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useGenerator, PIEZAS, MODELOS } from '../hooks/useGenerator';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../../app/hooks/useAuth';
 import { useExport } from '../hooks/useExport';
-import { isAdmin } from '../utils/roleUtils';
+import { isAdmin } from '../../../app/utils/roleUtils';
 import { SUBJECT_COLORS, darkenHex } from '../utils/asignaturaVisual';
 import { opcionesDePieza } from '../utils/exportOptions';
-import { formatTimeAgo } from '../utils/timeAgo';
-import { ExportDropdown } from '../components/ExportDropdown';
-import { ResponseCountField } from '../components/ResponseCountField';
+import { formatTimeAgo } from '../../../app/utils/timeAgo';
+import { ExportDropdown } from '../../../app/components/ExportDropdown';
+import { ResponseCountField } from '../../../app/components/ResponseCountField';
 import {
   Users as UsersIcon,
   FolderDot,
@@ -31,10 +31,10 @@ import {
   Heart,
   Lock
 } from 'lucide-react';
-import { SidebarUserMenu } from '../components/SidebarUserMenu';
-import { PlanModal } from '../components/PlanModal';
-import { useSuscripcionStore } from '../store/suscripcionStore';
-import { useSuscripcion } from '../hooks/useSuscripcion';
+import { SidebarUserMenu } from '../../../app/components/SidebarUserMenu';
+import { PlanModal } from '../../../app/components/PlanModal';
+import { useSuscripcionStore } from '../../../app/store/suscripcionStore';
+import { useSuscripcion } from '../../../app/hooks/useSuscripcion';
 
 const IconZap = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>

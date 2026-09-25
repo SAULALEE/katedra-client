@@ -3,7 +3,7 @@ import { useSearchParams, useLocation } from 'react-router-dom';
 import { generarMaterialParaTemario, getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from './useTemarios';
 import { useAsignaturas } from './useAsignaturas';
-import { useSuscripcionStore } from '../store/suscripcionStore';
+import { useSuscripcionStore } from '../../../app/store/suscripcionStore';
 
 export const PIEZAS = [
   { id: 'teoria', label: 'Teoría Docente' },

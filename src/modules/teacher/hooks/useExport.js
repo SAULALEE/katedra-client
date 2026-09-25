@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { exportarMaterialTemario } from '../services/temarioService';
 import { descargarBlob } from '../utils/descargarArchivo';
-import { useSuscripcionStore } from '../store/suscripcionStore';
+import { useSuscripcionStore } from '../../../app/store/suscripcionStore';
 
 /**
  * Downloads a generated material piece, tracking which piece/format is in flight so the UI can

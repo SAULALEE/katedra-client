@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { getContenidoTemario } from '../services/temarioService';
 import { useTemarios } from '../hooks/useTemarios';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../../app/hooks/useAuth';
 import { useExport } from '../hooks/useExport';
-import { useSuscripcion } from '../hooks/useSuscripcion';
+import { useSuscripcion } from '../../../app/hooks/useSuscripcion';
 import { SUBJECT_COLORS, darkenHex } from '../utils/asignaturaVisual';
-import { isAdmin } from '../utils/roleUtils';
+import { isAdmin } from '../../../app/utils/roleUtils';
 import { opcionesDePieza } from '../utils/exportOptions';
-import { formatTimeAgo } from '../utils/timeAgo';
-import { ExportDropdown } from '../components/ExportDropdown';
+import { formatTimeAgo } from '../../../app/utils/timeAgo';
+import { ExportDropdown } from '../../../app/components/ExportDropdown';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
@@ -28,9 +28,9 @@ import {
   Heart,
   ChevronDown
 } from 'lucide-react';
-import { SidebarUserMenu } from '../components/SidebarUserMenu';
-import { PlanModal } from '../components/PlanModal';
-import { useSuscripcionStore } from '../store/suscripcionStore';
+import { SidebarUserMenu } from '../../../app/components/SidebarUserMenu';
+import { PlanModal } from '../../../app/components/PlanModal';
+import { useSuscripcionStore } from '../../../app/store/suscripcionStore';
 
 export default function ContentViewer() {
   const { id } = useParams();
