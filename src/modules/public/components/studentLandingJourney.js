@@ -35,8 +35,8 @@ export const nextDemoStep = (index) => Math.min(index + 1, DEMO_STEPS.length - 1
 export const previousDemoStep = (index) => Math.max(index - 1, 0);
 
 export const PRIMARY_CTA = {
-  label: 'Explorar la clase demo',
-  href: '#como-funciona',
+  label: 'Crear cuenta',
+  href: '/alumnos/crear-cuenta',
 };
 
 export const getDemoStep = (index) => DEMO_STEPS[Math.max(0, Math.min(index, DEMO_STEPS.length - 1))];

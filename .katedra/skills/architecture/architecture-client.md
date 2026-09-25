@@ -10,7 +10,7 @@ description: General architecture of the project
 - **Exclusion:** Does not handle UI/UX styling (use `ui-design-linear.md`) or database schema migrations (use `database-jpa-architect.md`).
 
 ## 2. STRICT ARCHITECTURAL RULES (T_σ)
-- **Product Experiences:** Keep teacher and student journeys as distinct feature domains in the client. Teacher authoring/generation is operational; class sharing and student learning workflows remain planned. The student site at `/alumnos` has a conceptual landing, local search, static chatbot, demo access forms, and a Forms 404 page. These do not create student accounts, sessions, messages, or saved data. Never imply demo data is live.
+- **Product Experiences:** Keep teacher and student journeys as distinct feature domains in the client. Teacher authoring/generation is operational; class sharing and student learning workflows remain planned. The student site at `/alumnos` has real account registration and login backed by shared JWT auth and `ROLE_ALUMNO`, plus a protected account page. The local search, static chatbot, conceptual class preview, and Forms 404 do not create classes, submissions, or messages. Never imply preview data is live.
 - **Role-aware routing:** Route authenticated users to their authorized experience based on server-validated roles and class membership. Hiding a button or route in React is not authorization.
 - **Frontend Paradigm (React 19 + Vite):** Unidirectional data flow and separation of concerns.
   - **Flow:** `UI Component` → `Custom Hook` → `Zustand Store` (if global) / `API Service (Axios)`.

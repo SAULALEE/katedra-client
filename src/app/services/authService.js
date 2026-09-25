@@ -283,6 +283,15 @@ export const registerRequest = async (email, password, nombre) => {
   }
 };
 
+export const registerStudentRequest = async (email, password, nombre) => {
+  try {
+    const response = await api.post('/auth/students/register', { email, password, nombre });
+    return normalizeAuthResponse(response.data);
+  } catch (error) {
+    throw new Error(getAuthErrorMessage(error, 'register'), { cause: error });
+  }
+};
+
 /**
  * Changes the password of the currently authenticated user.
  *

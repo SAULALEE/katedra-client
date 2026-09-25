@@ -10,7 +10,7 @@ description: Business and domain context
 - **Exclusion:** Does not handle component-level styling (use `DESIGN.md`) or specific architectural data flows (use `ARCHITECTURE.md`).
 
 ## 2. STRICT BUSINESS & TECH RULES (T_σ)
-- **Product Scope:** Katedra connects two experiences: teachers prepare materials today, with class publishing/sharing and student learning workflows planned. The teacher workspace is operational. The student landing, static chatbot, local search, and demo access forms exist. Student accounts, classes, submissions, and feedback are still planned product capabilities. Student Help and Inbox pages are not part of the current site.
+- **Product Scope:** Katedra connects two experiences: teachers prepare materials today, with class publishing/sharing and student learning workflows planned. The teacher workspace is operational. Student registration, login, and a protected account page use the shared auth service with `ROLE_ALUMNO`. Student classes, submissions, and feedback remain planned. The landing, static chatbot, and local search are public; Help and Inbox pages are not part of the current site.
 - **Teacher Journey:** Prepare a syllabus, generate theory/evaluations/slides with AI, and organize materials. Class publishing/sharing is future work.
 - **Student Methodology:** Keep class → topic/material → activity → student response → teacher feedback → next step together. Contextual AI may explain a prompt or feedback and suggest practice; student work remains the student's, and the teacher controls grades and attempts.
 - **Target Audience:** Teachers preparing instruction and students learning/responding within shared classes.

@@ -6,11 +6,11 @@ import { isAdmin, getDefaultRoute } from '../utils/roleUtils';
  * Route protection wrapper component.
  * Verifies global authentication state and redirects to the user's role home route if unauthorized.
  */
-export default function ProtectedRoute({ children, allowedRoles, adminOnly = false }) {
-  const { user, isAuthenticated, loading } = useAuth();
+export default function ProtectedRoute({ children, allowedRoles, adminOnly = false, loginPath = '/login' }) {
+  const { user, isAuthenticated, initialized, loading } = useAuth();
 
   // If still restoring session or loading credentials
-  if (loading) {
+  if (loading || !initialized) {
     return (
       <div className="w-full min-h-screen bg-canvas flex items-center justify-center text-ink select-none">
         <div className="flex flex-col items-center gap-3">
@@ -23,7 +23,7 @@ export default function ProtectedRoute({ children, allowedRoles, adminOnly = fal
 
   // If not authenticated, redirect to login page
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={loginPath} replace />;
   }
 
   // Admin-created accounts must replace their temporary password before using the app
@@ -32,7 +32,7 @@ export default function ProtectedRoute({ children, allowedRoles, adminOnly = fal
   }
 
   const effectiveAllowedRoles = allowedRoles || (adminOnly ? ['ROLE_ADMIN'] : ['ROLE_PROFESOR']);
-  const userRole = isAdmin(user) ? 'ROLE_ADMIN' : 'ROLE_PROFESOR';
+  const userRole = user?.rol || (isAdmin(user) ? 'ROLE_ADMIN' : 'ROLE_PROFESOR');
 
   if (!effectiveAllowedRoles.includes(userRole)) {
     return <Navigate to={getDefaultRoute(user)} replace />;
@@ -40,4 +40,3 @@ export default function ProtectedRoute({ children, allowedRoles, adminOnly = fal
 
   return children;
 }
-

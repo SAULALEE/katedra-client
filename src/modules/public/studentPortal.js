@@ -1,8 +1,8 @@
 import { validateLoginFields, validateRegisterFields } from '../../app/services/authService.js';
 
 export const STUDENT_FAQ = [
-  ['¿Ya puedo crear una cuenta de alumno?', 'Aún no. Los formularios de acceso son una demostración: no crean cuentas ni inician sesión.'],
-  ['¿Cuándo estará disponible?', 'Aún no hay una fecha anunciada. Esta página muestra una vista conceptual de la experiencia prevista.'],
+  ['¿Ya puedo crear una cuenta de alumno?', 'Sí. Regístrate con tu nombre, correo y contraseña en Katedra Alumnos.'],
+  ['¿Ya puedo ver mis clases?', 'La cuenta ya está disponible. Las clases y actividades aparecerán cuando se habilite el acceso a una clase.'],
   ['¿La IA hace mis tareas?', 'No. Puede explicar consignas, aclarar comentarios y proponer práctica. Tus respuestas siguen siendo tuyas.'],
   ['¿Quién controla los materiales?', 'El profesor selecciona y organiza los materiales y define las reglas de las actividades.'],
   ['¿Cómo recibiré la retroalimentación?', 'La propuesta reúne el comentario del profesor con tu actividad y señala material relacionado para continuar.'],
@@ -39,7 +39,7 @@ export const STUDENT_CHAT_SUGGESTIONS = [
 export function getStudentChatReply(input) {
   const query = normalize(input);
   if (query.includes('contrasena') || query.includes('recuper')) {
-    return 'La recuperación de contraseña para alumnos todavía no está habilitada. Puedes consultar la pantalla de recuperación para conocer su estado.';
+    return 'El restablecimiento de contraseña por correo todavía no está disponible. Si recuerdas tu contraseña, inicia sesión desde Katedra Alumnos.';
   }
   if (query.includes('forms') || query.includes('evaluacion')) {
     return 'Katedra Forms será la experiencia de evaluación dentro de la clase. Por ahora puedes explorar su demo conceptual en la página de alumnos.';
@@ -48,7 +48,7 @@ export function getStudentChatReply(input) {
     return 'La propuesta coloca los comentarios del profesor junto a tu respuesta y el material relacionado para que sepas qué mejorar.';
   }
   if (query.includes('cuenta') || query.includes('registro') || query.includes('sesion')) {
-    return 'Las cuentas de alumnos aún no están disponibles. Los formularios de acceso que ves son demostrativos.';
+    return 'Puedes crear tu cuenta o iniciar sesión desde la parte superior de Katedra Alumnos.';
   }
   if (query.includes('material') || query.includes('clase')) {
     return 'En la demo puedes ver cómo se conectan tema, material, actividad, respuesta y siguiente paso dentro de una clase.';
@@ -61,7 +61,6 @@ export function validateStudentAccess(mode, fields) {
   if (mode === 'register') {
     const error = validateRegisterFields(fields.nombre, fields.email, fields.password, fields.confirmPassword);
     if (error) return error;
-    if (!fields.acceptedTerms) return 'Debes aceptar las condiciones de esta demostración.';
     return null;
   }
   return 'Formulario de acceso no reconocido.';

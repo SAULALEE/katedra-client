@@ -3,12 +3,15 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { ArrowRight, Menu, MessageCircle, Search, Send, X } from 'lucide-react';
 import { getStudentChatReply, STUDENT_CHAT_SUGGESTIONS } from '../studentPortal.js';
+import { useAuth } from '../../../app/hooks/useAuth.js';
 import './StudentLandingExperience.css';
 import './StudentPortal.css';
 
 const MAIN_LINKS = [
   { label: 'Cómo funciona', to: '/alumnos#como-funciona' },
+  { label: 'Materiales', to: '/alumnos#beneficios' },
   { label: 'IA para aprender', to: '/alumnos#ia-para-aprender' },
+  { label: 'Preguntas', to: '/alumnos#preguntas' },
 ];
 
 function Brand() {
@@ -16,6 +19,8 @@ function Brand() {
 }
 
 function StudentHeader({ auth = false }) {
+  const { user, isAuthenticated } = useAuth();
+  const studentSignedIn = isAuthenticated && user?.rol === 'ROLE_ALUMNO';
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -65,8 +70,10 @@ function StudentHeader({ auth = false }) {
         <Link className="sl-site-forms" to="/alumnos/forms">Katedra Forms <ArrowRight size={14} aria-hidden="true" /></Link>
       </>}
       <div className="sl-site-tools">
+        {studentSignedIn ? <Link className="sl-site-register" to="/alumnos/mi-cuenta">Mi cuenta</Link> : <>
         <Link className="sl-site-login" to="/alumnos/iniciar-sesion" aria-current={location.pathname === '/alumnos/iniciar-sesion' ? 'page' : undefined}>Iniciar sesión</Link>
         <Link className="sl-site-register" to="/alumnos/crear-cuenta" aria-current={location.pathname === '/alumnos/crear-cuenta' ? 'page' : undefined}>Crear cuenta</Link>
+        </>}
       </div>
       {!auth && <button ref={menuButton} className="sl-site-menu-button" type="button" aria-expanded={open} aria-controls="sl-site-mobile-nav" aria-label={open ? 'Cerrar menú' : 'Abrir menú'} onClick={() => { setOpen(!open); setSearchOpen(false); }}>{open ? <X size={23} /> : <Menu size={23} />}</button>}
     </div>
@@ -79,8 +86,10 @@ function StudentHeader({ auth = false }) {
         {MAIN_LINKS.map(({ label, to }) => <Link key={to} to={to} onClick={() => setOpen(false)}>{label}</Link>)}
         <button type="button" onClick={() => { setOpen(false); setSearchOpen(true); }}>Buscar en Alumnos <Search size={17} aria-hidden="true" /></button>
         <Link className="sl-site-forms" to="/alumnos/forms" onClick={() => setOpen(false)}>Katedra Forms <ArrowRight size={15} aria-hidden="true" /></Link>
-        <Link to="/alumnos/iniciar-sesion" onClick={() => setOpen(false)}>Iniciar sesión</Link>
-        <Link to="/alumnos/crear-cuenta" onClick={() => setOpen(false)}>Crear cuenta</Link>
+        {studentSignedIn ? <Link to="/alumnos/mi-cuenta" onClick={() => setOpen(false)}>Mi cuenta</Link> : <>
+          <Link to="/alumnos/iniciar-sesion" onClick={() => setOpen(false)}>Iniciar sesión</Link>
+          <Link to="/alumnos/crear-cuenta" onClick={() => setOpen(false)}>Crear cuenta</Link>
+        </>}
         <Link to="/alumnos/mapa-del-sitio" onClick={() => setOpen(false)}>Mapa del sitio</Link>
         <Link to="/alumnos/contacto" onClick={() => setOpen(false)}>Contáctanos</Link>
       </nav>
@@ -92,7 +101,7 @@ function StudentFooter() {
   return <footer className="sl-footer">
     <div className="sl-container">
       <div className="sl-footer-main">
-        <div><Brand /><p>Katedra reúne la clase, el trabajo y la retroalimentación para ayudarte a reconocer tu siguiente paso.</p><span>Experiencia para alumnos en desarrollo.</span></div>
+        <div><Brand /><p>Katedra reúne la clase, el trabajo y la retroalimentación para ayudarte a reconocer tu siguiente paso.</p></div>
         <nav aria-label="Navegación del pie de página">
           <Link to="/alumnos#como-funciona">Cómo funciona</Link>
           <Link to="/alumnos#ia-para-aprender">IA para aprender</Link>
@@ -106,8 +115,8 @@ function StudentFooter() {
       </div>
       <div className="sl-footer-bottom"><span>© {new Date().getFullYear()} Katedra</span><a href="#privacidad">Privacidad</a><a href="#terminos">Términos</a></div>
       <div className="sl-footer-disclosures">
-        <p id="privacidad"><strong>Privacidad:</strong> esta vista no envía ni almacena datos de los formularios, la búsqueda o el chat. Publicaremos la información aplicable antes de habilitar cuentas de alumnos.</p>
-        <p id="terminos"><strong>Términos:</strong> la experiencia para alumnos aún no está disponible. Sus formularios y chat son demostraciones.</p>
+        <p id="privacidad"><strong>Privacidad:</strong> el registro y el inicio de sesión envían tus datos al servidor de Katedra. La búsqueda y el chat de esta página funcionan en tu navegador.</p>
+        <p id="terminos"><strong>Términos:</strong> tu cuenta te permite acceder a Katedra Alumnos. La incorporación a clases y las actividades se habilitan por separado.</p>
       </div>
     </div>
   </footer>;
@@ -143,20 +152,20 @@ function StudentChatbot() {
   };
 
   return <div className="sl-chatbot">
-    {open && <section className="sl-chat-panel" role="dialog" aria-label="Asistente de ejemplo de Katedra Alumnos">
-      <div className="sl-chat-heading"><div><strong>Ayuda de ejemplo</strong><span>Respuestas predefinidas · sin IA activa</span></div><button type="button" aria-label="Cerrar chat" onClick={() => { setOpen(false); launcher.current?.focus(); }}><X size={18} /></button></div>
+    {open && <section className="sl-chat-panel" role="dialog" aria-label="Ayuda de Katedra Alumnos">
+      <div className="sl-chat-heading"><div><strong>Ayuda</strong><span>Respuestas rápidas</span></div><button type="button" aria-label="Cerrar chat" onClick={() => { setOpen(false); launcher.current?.focus(); }}><X size={18} /></button></div>
       <div className="sl-chat-messages" aria-live="polite">
-        <p className="sl-chat-greeting">Hola. Puedo orientarte sobre esta demostración de Katedra Alumnos.</p>
+        <p className="sl-chat-greeting">Hola. ¿En qué puedo ayudarte?</p>
         {messages.map(({ question, answer }, index) => <div className="sl-chat-exchange" key={index}><p className="sl-chat-question">{question}</p><p className="sl-chat-answer">{answer}</p></div>)}
       </div>
       <div className="sl-chat-suggestions">{STUDENT_CHAT_SUGGESTIONS.map((question) => <button type="button" key={question} onClick={() => send(question)}>{question}</button>)}</div>
       <form className="sl-chat-entry" onSubmit={(event) => { event.preventDefault(); send(input); }}>
-        <label className="sl-sr-only" htmlFor="sl-chat-input">Escribe una pregunta para la demostración</label>
+        <label className="sl-sr-only" htmlFor="sl-chat-input">Escribe una pregunta</label>
         <input id="sl-chat-input" ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribe una pregunta" maxLength={180} />
         <button type="submit" disabled={!input.trim()} aria-label="Enviar pregunta"><Send size={17} /></button>
       </form>
     </section>}
-    <button ref={launcher} className="sl-chat-launcher" type="button" aria-label={open ? 'Cerrar asistente de ejemplo' : 'Abrir asistente de ejemplo'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X size={23} /> : <MessageCircle size={23} />}<span>Chat</span></button>
+    <button ref={launcher} className="sl-chat-launcher" type="button" aria-label={open ? 'Cerrar ayuda' : 'Abrir ayuda'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X size={23} /> : <MessageCircle size={23} />}<span>Chat</span></button>
   </div>;
 }
 

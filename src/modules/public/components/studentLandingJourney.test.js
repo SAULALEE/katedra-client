@@ -17,10 +17,10 @@ test('la navegación de la demo se detiene en ambos extremos', () => {
   assert.equal(nextDemoStep(DEMO_STEPS.length - 1), DEMO_STEPS.length - 1);
 });
 
-test('la acción principal lleva a la demo disponible', () => {
+test('la acción principal lleva al registro de alumnos', () => {
   assert.deepEqual(journey.PRIMARY_CTA, {
-    label: 'Explorar la clase demo',
-    href: '#como-funciona',
+    label: 'Crear cuenta',
+    href: '/alumnos/crear-cuenta',
   });
 });
 
