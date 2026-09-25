@@ -21,19 +21,22 @@ export const isAdmin = (user) => {
 };
 
 export const isProfesor = (user) => {
-  return !isAdmin(user);
+  return user?.rol === 'ROLE_PROFESOR' || (Array.isArray(user?.roles) && user.roles.includes('ROLE_PROFESOR'));
 };
 
 export const getDefaultRoute = (user) => {
-  return isAdmin(user) ? '/usuarios' : '/dashboard';
+  if (isAdmin(user)) return '/usuarios';
+  if (isProfesor(user)) return '/dashboard';
+  if (user?.rol === 'ROLE_ALUMNO') return '/alumnos/mi-cuenta';
+  return '/alumnos';
 };
 
 export const formatRoleDisplay = (roleCode) => {
   const roleMap = {
     'ROLE_ADMIN': 'Administrador',
-    'ROLE_PROFESOR': 'Profesor'
+    'ROLE_PROFESOR': 'Profesor',
+    'ROLE_ALUMNO': 'Alumno'
   };
   return roleMap[roleCode] || 'Profesor';
 };
-
 

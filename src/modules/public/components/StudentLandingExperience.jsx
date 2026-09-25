@@ -958,7 +958,7 @@ function Waitlist() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <div>
-          <span className="sl-pill">PRÓXIMAMENTE PARA ALUMNOS</span>
+          <span className="sl-pill">KATEDRA ALUMNOS</span>
           <h2 id="sl-final-title">Cuando sabes qué sigue, puedes seguir aprendiendo.</h2>
           <p>Estamos preparando una experiencia que reúna el material, tu trabajo y la ruta para mejorar.</p>
           <motion.a
@@ -975,9 +975,9 @@ function Waitlist() {
         </div>
         <div className="sl-availability">
           <span className="sl-availability-icon"><Compass size={25} /></span>
-          <strong>La experiencia para alumnos está en desarrollo.</strong>
-          <p>El registro de interés aún no está habilitado. Mientras tanto, explora la clase de ejemplo y conoce la ruta que estamos preparando.</p>
-          <span>Vista conceptual · No recopilamos tu correo</span>
+          <strong>Tu cuenta de alumno ya está disponible.</strong>
+          <p>Crea tu cuenta para acceder. Las clases y actividades se incorporarán por separado.</p>
+          <span>Registro con correo y contraseña</span>
         </div>
       </motion.div>
     </section>

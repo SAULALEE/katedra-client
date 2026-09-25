@@ -7,6 +7,7 @@ import {
   logoutRequest,
   parseOAuthCallback,
   registerRequest,
+  registerStudentRequest,
   SESSION_LAST_ACTIVE_KEY,
   startGoogleLogin,
   startMicrosoftLogin
@@ -28,6 +29,7 @@ export const useAuthStore = create((set, get) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  initialized: false,
   loading: false,
   error: null,
 
@@ -49,6 +51,7 @@ export const useAuthStore = create((set, get) => ({
           user: JSON.parse(storedUser),
           token: storedToken,
           isAuthenticated: true,
+          initialized: true,
           error: null
         });
         return;
@@ -59,21 +62,26 @@ export const useAuthStore = create((set, get) => ({
         user: null,
         token: null,
         isAuthenticated: false,
+        initialized: true,
         error: null
       });
     } catch (e) {
       console.error('Failed to restore auth session from localStorage:', e);
       clearLocalSession();
+      set({ user: null, token: null, isAuthenticated: false, initialized: true, error: null });
     }
   },
 
   /**
    * Attempts to authenticate user with email and password.
    */
-  login: async (email, password, now = Date.now()) => {
+  login: async (email, password, now = Date.now(), expectedRole = null) => {
     set({ loading: true, error: null });
     try {
       const data = await loginRequest(email, password);
+      if (expectedRole && data.user.rol !== expectedRole) {
+        throw new Error('Esta cuenta pertenece a otra sección de Katedra. Usa el acceso correspondiente.');
+      }
       
       saveLocalSession(data, now);
 
@@ -81,15 +89,20 @@ export const useAuthStore = create((set, get) => ({
         user: data.user,
         token: data.token,
         isAuthenticated: true,
+        initialized: true,
         loading: false,
         error: null
       });
       return true;
     } catch (err) {
+      clearLocalSession();
       set({
         error: err.message || 'Error al iniciar sesión',
         loading: false,
-        isAuthenticated: false
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        initialized: true
       });
       return false;
     }
@@ -111,6 +124,20 @@ export const useAuthStore = create((set, get) => ({
         loading: false,
         isAuthenticated: false
       });
+      return false;
+    }
+  },
+
+  registerStudent: async (email, password, nombre) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await registerStudentRequest(email, password, nombre);
+      if (data.user.rol !== 'ROLE_ALUMNO') throw new Error('No se pudo crear una cuenta de alumno.');
+      saveLocalSession(data);
+      set({ user: data.user, token: data.token, isAuthenticated: true, initialized: true, loading: false, error: null });
+      return true;
+    } catch (err) {
+      set({ error: err.message || 'Error al crear la cuenta', loading: false });
       return false;
     }
   },

@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './app/pages/Landing';
 import StudentLanding from './modules/public/pages/StudentLanding';
 import StudentLayout from './modules/public/components/StudentLayout';
-import { StudentAuthPage, StudentRecoveryPage, StudentSearchPage, StudentContactPage, StudentSitemapPage, StudentMissingPage } from './modules/public/pages/StudentPages';
+import { StudentAccountPage, StudentAuthPage, StudentRecoveryPage, StudentSearchPage, StudentContactPage, StudentSitemapPage, StudentMissingPage } from './modules/public/pages/StudentPages';
 import Dashboard from './modules/teacher/pages/Dashboard';
 import Generator from './modules/teacher/pages/Generator';
 import Login from './app/pages/Login';
@@ -55,6 +55,7 @@ function App() {
           <Route path="forms" element={<StudentMissingPage forms />} />
           <Route path="iniciar-sesion" element={<StudentAuthPage key="login" mode="login" />} />
           <Route path="crear-cuenta" element={<StudentAuthPage key="register" mode="register" />} />
+          <Route path="mi-cuenta" element={<ProtectedRoute allowedRoles={['ROLE_ALUMNO']} loginPath="/alumnos/iniciar-sesion"><StudentAccountPage /></ProtectedRoute>} />
           <Route path="recuperar-contrasena" element={<StudentRecoveryPage />} />
           <Route path="buscar" element={<StudentSearchPage />} />
           <Route path="contacto" element={<StudentContactPage />} />
@@ -118,4 +119,3 @@ function App() {
 }
 
 export default App;
-
