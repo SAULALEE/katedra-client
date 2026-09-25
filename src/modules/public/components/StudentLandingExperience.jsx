@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
-  AnimatePresence, MotionConfig, motion, useReducedMotion, useScroll, useSpring, useTransform,
+  AnimatePresence, motion, useReducedMotion, useScroll, useSpring, useTransform,
 } from 'framer-motion';
 import {
   ArrowDown, ArrowLeft, ArrowRight, BookOpen, Check, CheckCircle2,
   ChevronDown, CircleHelp, ClipboardCheck, Compass, FileText,
-  GraduationCap, Layers3, LockKeyhole, Menu, MessageSquareText,
+  GraduationCap, Layers3, LockKeyhole, MessageSquareText,
   Play, RotateCcw, Search, Sparkles, X,
 } from 'lucide-react';
 import {
@@ -15,61 +15,7 @@ import {
   editorialItem, editorialStagger, indicatorSpring, panelSwap, previewItem, previewSequence,
 } from './studentLandingMotion.js';
 import { BsMicrosoftTeams } from 'react-icons/bs';
-
-const NAV = [
-  ['Cómo funciona', '#como-funciona'],
-  ['IA para aprender', '#ia-para-aprender'],
-  ['Katedra Forms', '#katedra-forms'],
-  ['Preguntas', '#preguntas'],
-];
-
-function Brand() {
-  return <a className="sl-brand" href="#inicio" aria-label="Katedra, volver al inicio"><span>Katedra</span></a>;
-}
-
-function Header() {
-  const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
-  const menuButtonRef = useRef(null);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 28);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    const onEscape = (event) => {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        menuButtonRef.current?.focus();
-      }
-    };
-    document.addEventListener('keydown', onEscape);
-    return () => document.removeEventListener('keydown', onEscape);
-  }, [open]);
-
-  return <header className={`sl-header${scrolled || open ? ' is-scrolled' : ''}`}>
-    <nav className="sl-nav" aria-label="Navegación de alumnos">
-      <Brand />
-      <div className="sl-nav-links sl-nav-desktop">
-        {NAV.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
-        <a className="sl-nav-teachers" href="/">Para profesores</a>
-      </div>
-      <a className="sl-nav-cta" href={PRIMARY_CTA.href} onClick={() => setOpen(false)}>{PRIMARY_CTA.label} <ArrowRight size={16} aria-hidden="true" /></a>
-      <motion.button ref={menuButtonRef} className="sl-menu-toggle" type="button" aria-label={open ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={open} aria-controls="sl-nav-links" onClick={() => setOpen(!open)} whileTap={reduceMotion ? undefined : { scale: 0.94 }}>{open ? <X size={22} /> : <Menu size={22} />}</motion.button>
-      <AnimatePresence initial={false}>
-        {open && <motion.div id="sl-nav-links" className="sl-nav-links sl-mobile-links" initial={reduceMotion ? false : { opacity: 0.9, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-          {NAV.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
-          <a className="sl-nav-teachers" href="/" onClick={() => setOpen(false)}>Para profesores</a>
-        </motion.div>}
-      </AnimatePresence>
-    </nav>
-  </header>;
-}
+import { STUDENT_FAQ } from '../studentPortal.js';
 
 function ProductPreview() {
   const reduceMotion = useReducedMotion();
@@ -941,16 +887,6 @@ function Trust() {
   );
 }
 
-const FAQ = [
-  ['¿Ya puedo crear una cuenta de alumno?', 'Todavía no. La experiencia para alumnos está en desarrollo; el registro disponible actualmente es para profesores.'],
-  ['¿Cuándo estará disponible?', 'Aún no hay una fecha anunciada. Esta página muestra una vista conceptual de la experiencia prevista.'],
-  ['¿La IA hace mis tareas?', 'No. Puede explicar consignas, aclarar comentarios y proponer práctica. Tus respuestas siguen siendo tuyas.'],
-  ['¿Quién controla los materiales?', 'El profesor selecciona y organiza los materiales y define las reglas de las actividades.'],
-  ['¿Cómo recibiré la retroalimentación?', 'La propuesta reúne el comentario del profesor con tu actividad y señala material relacionado para continuar.'],
-  ['¿Katedra reemplaza al profesor?', 'No. El profesor dirige la clase y conserva el criterio sobre actividades, evaluación e intentos.'],
-  ['¿Qué es Katedra Forms?', 'Es la experiencia de evaluaciones prevista para la clase: pregunta, respuesta y, cuando el profesor lo permita, explicación y refuerzo.'],
-];
-
 function Faq() {
   const [open, setOpen] = useState(0);
   const reduceMotion = useReducedMotion();
@@ -968,7 +904,7 @@ function Faq() {
           <p>La experiencia para alumnos sigue en desarrollo.</p>
         </motion.div>
         <div className="sl-faq-list">
-          {FAQ.map(([question, answer], index) => (
+          {STUDENT_FAQ.map(([question, answer], index) => (
             <motion.div className="sl-faq-item" key={question} layout={!reduceMotion}>
               <h3>
                 <button
@@ -1048,40 +984,27 @@ function Waitlist() {
   );
 }
 
-function Footer() {
-  return <footer className="sl-footer"><div className="sl-container"><div className="sl-footer-main"><div><Brand /><p>Katedra reúne la clase, el trabajo y la retroalimentación para ayudarte a reconocer tu siguiente paso.</p><span>Experiencia para alumnos en desarrollo.</span></div><nav aria-label="Navegación del pie de página"><a href="#como-funciona">Cómo funciona</a><a href="#ia-para-aprender">IA para aprender</a><a href="#katedra-forms">Katedra Forms</a><a href="#preguntas">Preguntas</a><a href="/">Para profesores</a></nav></div><div className="sl-footer-bottom"><span>© {new Date().getFullYear()} Katedra</span><a href="#privacidad">Privacidad</a><a href="#terminos">Términos</a></div><div className="sl-footer-disclosures"><p id="privacidad"><strong>Privacidad:</strong> esta vista no recibe ni almacena datos. Publicaremos la información aplicable antes de habilitar el registro.</p><p id="terminos"><strong>Términos:</strong> la experiencia para alumnos aún no está disponible. La demo es conceptual.</p></div></div></footer>;
-}
-
 export default function StudentLandingExperience() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
   const reduceMotion = useReducedMotion();
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="sl-page">
-        <motion.div
-          className="sl-scroll-progress"
-          style={reduceMotion ? undefined : { scaleX }}
-          aria-hidden="true"
-        />
-        <a className="sl-skip" href="#contenido">Saltar al contenido</a>
-        <Header />
-        <main id="contenido">
-          <Hero />
-          <Problem />
-          <Demo />
-          <Benefits />
-          <AiSupport />
-          <Forms />
-          <Connection />
-          <Comparison />
-          <Trust />
-          <Faq />
-          <Waitlist />
-        </main>
-        <Footer />
-      </div>
-    </MotionConfig>
+    <>
+      <motion.div className="sl-scroll-progress" style={reduceMotion ? undefined : { scaleX }} aria-hidden="true" />
+      <main id="contenido">
+        <Hero />
+        <Problem />
+        <Demo />
+        <Benefits />
+        <AiSupport />
+        <Forms />
+        <Connection />
+        <Comparison />
+        <Trust />
+        <Faq />
+        <Waitlist />
+      </main>
+    </>
   );
 }

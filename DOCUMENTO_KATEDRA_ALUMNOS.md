@@ -2,7 +2,7 @@
 
 **Proyecto:** Katedra Alumnos
 **Documento:** Definición de requerimientos y especificaciones de la aplicación futura
-**Versión:** 0.1 · Borrador
+**Versión:** 0.2 · Borrador
 **Fecha:** 2026-09-24
 **Responsable:** Pendiente de asignar
 **Repositorio:** [SAULALEE/katedra-client](https://github.com/SAULALEE/katedra-client)
@@ -14,7 +14,8 @@ Cada revisión del documento debe indicar qué requerimientos cambiaron y enlaza
 
 | Versión | Fecha | Responsable | Cambios | Estado | Commit o PR en GitHub |
 | --- | --- | --- | --- | --- | --- |
-| 0.1 | 2026-09-24 | Pendiente de asignar | Definición inicial del alcance y los requerimientos RF-01 a RF-17 y RNF-01 a RNF-07. | Borrador, pendiente de revisión | Pendiente: este archivo aún no tiene commit. |
+| 0.1 | 2026-09-24 | Pendiente de asignar | Definición inicial del alcance y los requerimientos RF-01 a RF-17 y RNF-01 a RNF-07. | Borrador | `50f133e` — landing y documento inicial |
+| 0.2 | 2026-09-25 | Pendiente de asignar | Añade Motion for React al stack y criterios de movimiento, accesibilidad y respuesta de las interacciones basados en el plan de animaciones. | Borrador, pendiente de revisión | Incluido en este commit |
 
 # Diagnóstico y justificación
 
@@ -36,7 +37,36 @@ Este documento define **funciones de la futura aplicación para alumnos**: cuent
 
 La landing no ofrece hoy registro de alumnos, clases operativas, respuestas guardadas, IA activa para alumnos ni evaluaciones reales. Crear cuenta e iniciar sesión se incluyen como funciones futuras solicitadas para el producto. Quedan por definir el método de registro e invitación, los permisos, la persistencia, las reglas de resultados e intentos, el tratamiento de datos y los contratos de IA y Forms. No se especifica un plan comercial para alumnos.
 
-Las fuentes de esta definición son la landing activa (`src/modules/public/pages/StudentLanding.jsx`, `src/modules/public/components/StudentLandingExperience.jsx`, `src/modules/public/components/studentLandingJourney.js`) y `DESIGN-student-landing.md`.
+Las fuentes de esta definición son la landing activa (`src/modules/public/pages/StudentLanding.jsx`, `src/modules/public/components/StudentLandingExperience.jsx`, `src/modules/public/components/studentLandingJourney.js`), `DESIGN-student-landing.md` y `PLAN-animaciones-landing-alumnos.md`.
+
+## Stack de experiencia
+
+La interfaz se construye con React y Vite. La experiencia usa **Motion for React de [Motion.dev](https://motion.dev/)** para animar transiciones de contenido, progreso, gestos y escenas ligadas al desplazamiento cuando ayuden a explicar el recorrido.
+
+El cliente ya incluye `framer-motion` y la landing actual importa desde ese paquete. Motion.dev es la evolución oficial de Framer Motion; su paquete actual se instala como `motion` y se importa desde `motion/react`. La migración del paquete no forma parte de estos requerimientos y no se deben instalar ambas bibliotecas a la vez.
+
+## Metodología de movimiento e interacción
+
+El movimiento acompaña el recorrido de aprendizaje, confirma una acción y dirige la atención. No debe ocultar información esencial, simular operaciones reales ni obligar al alumno a esperar una animación.
+
+| Momento | Respuesta de interfaz prevista | Criterio de aceptación |
+| --- | --- | --- |
+| Entrada a la experiencia | Presentar promesa, explicación, acciones y vista conceptual en secuencia breve. | El título y las acciones están disponibles desde el primer render; sin movimiento, el contenido conserva su jerarquía. |
+| Duda → ruta | Relacionar preguntas dispersas con clase/tema, material/actividad y siguiente paso mediante una escena vinculada al scroll. | No bloquea el desplazamiento; en móvil se ordena verticalmente y con movimiento reducido muestra directamente la ruta completa. |
+| Demo de clase | Animar el paso activo, el panel de contenido y el indicador de progreso al navegar por las cinco etapas. | Anterior, siguiente y selección directa respetan límites; el contenido corresponde al paso activo y no salta de forma brusca. |
+| Ayuda contextual con IA | Cambiar pregunta, explicación y acción sugerida como una unidad. | Los tres elementos siempre pertenecen al mismo ejemplo; el texto se presenta completo, sin efecto de escritura. |
+| Katedra Forms | Confirmar selección y revelar explicación y refuerzo después de comprobar. | Se puede cambiar y volver a comprobar la respuesta; resultado se comunica con texto e icono además del color. |
+| Retroalimentación y siguiente paso | Mostrar la relación entre respuesta, comentario del profesor y acción para continuar. | Se distinguen la respuesta del alumno, el comentario del profesor y la ayuda de IA. |
+| FAQ y menú móvil | Expandir/contraer contenido y confirmar apertura, cierre o selección. | Se conservan `aria-expanded`, teclado, Escape, foco predecible y contenido no enfocable cuando está cerrado. |
+
+### Reglas de movimiento y accesibilidad
+
+- Usar `opacity` y desplazamientos pequeños como base. Reservar `layout`/`layoutId`, gestos y trazos SVG para cambios que aclaren estado o relación.
+- Usar transiciones breves para feedback (120–180 ms), cambios de panel (220–360 ms) y entradas editoriales (450–750 ms). El scroll controla escenas sin duración forzada.
+- Respetar `prefers-reduced-motion`: quitar parallax, desplazamientos grandes y secuencias; dejar visible el estado final. El significado y las acciones no dependen de Motion.
+- Mantener orden semántico y foco visible; anunciar un solo cambio de contenido a lectores de pantalla.
+- No aplicar a un mismo elemento transformaciones simultáneas de CSS y Motion. Evitar loops decorativos, efectos de máquina de escribir y animaciones que causen overflow o cambios de altura bruscos.
+- Las animaciones no convierten elementos decorativos en controles ni deben implicar que la demo guarda entregas, consulta IA real o evalúa una respuesta en un servidor.
 
 # Definición de requerimientos y especificaciones
 

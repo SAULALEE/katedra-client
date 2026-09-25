@@ -3,8 +3,7 @@
 [![CI](https://github.com/SAULALEE/katedra-client/actions/workflows/ci.yml/badge.svg)](https://github.com/SAULALEE/katedra-client/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Frontend de **Katedra**, un generador de contenido académico impulsado por IA para
-profesores. React 19, Vite, Tailwind CSS, Zustand, Stripe Elements.
+Frontend de **Katedra**, que hoy permite a profesores preparar materiales y contempla una futura experiencia de aprendizaje para alumnos. La landing `/alumnos` y sus requerimientos ya existen; las funciones de clase y entregas de alumnos siguen en desarrollo. React 19, Vite, Tailwind CSS, Zustand, Stripe Elements y Motion for React (Motion.dev).
 
 Versión en inglés: [README.en.md](README.en.md) · Backend: [katedra-server](https://github.com/SAULALEE/katedra-server)
 
@@ -44,7 +43,7 @@ petición pasa por un Hook y un archivo Service. Detalles en
 | | |
 |---|---|
 | Framework | React 19, Vite |
-| Estilos | Tailwind CSS, componentes estilo shadcn/ui, Framer Motion |
+| Estilos | Tailwind CSS, componentes estilo shadcn/ui, Motion for React (`framer-motion` actual) |
 | Estado | Zustand |
 | HTTP | Axios |
 | UI de pagos | Stripe Elements (`@stripe/react-stripe-js`) |
