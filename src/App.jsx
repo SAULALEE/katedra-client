@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './app/pages/Landing';
+import StudentLanding from './modules/public/pages/StudentLanding';
 import Dashboard from './app/pages/Dashboard';
 import Generator from './app/pages/Generator';
 import Login from './app/pages/Login';
@@ -47,6 +48,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
+        <Route path="/alumnos" element={<StudentLanding />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
@@ -104,5 +106,4 @@ function App() {
 }
 
 export default App;
-
 

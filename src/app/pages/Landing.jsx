@@ -1256,6 +1256,32 @@ export default function Landing() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <a
+            href="/alumnos"
+            onClick={(e) => { e.preventDefault(); navigate('/alumnos'); }}
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 700,
+              fontSize: '14px',
+              color: scrolled ? '#475569' : '#FFFFFF',
+              textDecoration: 'none',
+              padding: '9px 15px',
+              borderRadius: '9px',
+              border: scrolled ? '1px solid #E2E8F0' : '1px solid rgba(255, 255, 255, 0.15)',
+              background: scrolled ? '#fff' : 'rgba(255, 255, 255, 0.08)',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = scrolled ? '#F8FAFC' : 'rgba(255, 255, 255, 0.15)';
+              e.currentTarget.style.borderColor = scrolled ? '#CBD5E1' : 'rgba(255, 255, 255, 0.3)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = scrolled ? '#fff' : 'rgba(255, 255, 255, 0.08)';
+              e.currentTarget.style.borderColor = scrolled ? '#E2E8F0' : 'rgba(255, 255, 255, 0.15)';
+            }}
+          >
+            Para alumnos
+          </a>
+          <a
             href="/login"
             onClick={(e) => { e.preventDefault(); navigate('/login'); }}
             style={{
