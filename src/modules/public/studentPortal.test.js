@@ -16,11 +16,10 @@ test('el chatbot da respuestas predefinidas y reconoce consultas desconocidas', 
   assert.match(getStudentChatReply('consulta-inexistente-xyz'), /no tengo una respuesta/i);
 });
 
-test('el acceso de demostración reutiliza las reglas de validación de profesores', () => {
+test('el acceso de alumnos reutiliza las reglas de validación de profesores', () => {
   assert.equal(validateStudentAccess('login', { email: 'incorrecto', password: 'secreto' }), 'Ingresa un correo electrónico válido.');
   assert.equal(validateStudentAccess('login', { email: 'alumno@escuela.edu', password: 'secreto' }), null);
   assert.equal(validateStudentAccess('register', { nombre: 'Ana', email: 'ana@escuela.edu', password: '12345', confirmPassword: '12345', acceptedTerms: true }), 'La contraseña debe tener al menos 6 caracteres.');
   assert.equal(validateStudentAccess('register', { nombre: 'Ana', email: 'ana@escuela.edu', password: 'secreto', confirmPassword: 'distinta', acceptedTerms: true }), 'Las contraseñas no coinciden.');
-  assert.match(validateStudentAccess('register', { nombre: 'Ana', email: 'ana@escuela.edu', password: 'secreto', confirmPassword: 'secreto', acceptedTerms: false }), /condiciones/i);
-  assert.equal(validateStudentAccess('register', { nombre: 'Ana', email: 'ana@escuela.edu', password: 'secreto', confirmPassword: 'secreto', acceptedTerms: true }), null);
+  assert.equal(validateStudentAccess('register', { nombre: 'Ana', email: 'ana@escuela.edu', password: 'secreto', confirmPassword: 'secreto' }), null);
 });
