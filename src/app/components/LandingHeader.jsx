@@ -72,6 +72,12 @@ export default function LandingHeader({ navigate }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <a
+            className="landing-students-link"
+            href="/alumnos"
+            onClick={(event) => { event.preventDefault(); navigate('/alumnos'); }}
+            style={{ padding: '9px 12px', borderRadius: '9px', background: '#F5F3FF', border: '1px solid #DDD6FE', color: '#5B21B6', fontSize: '13px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >Para alumnos</a>
+          <a
             href="/login"
             onClick={(e) => { e.preventDefault(); navigate('/login'); }}
             style={{

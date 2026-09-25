@@ -28,7 +28,7 @@ export default function LandingModalStyles() {
             background: rgba(0, 0, 0, 0.7);
           }
         }
-            
+
         @media (max-width: 760px) {
           .kt-mock-panel { height: auto !important; min-height: 460px !important; }
           .kt-mock-row { flex-direction: column !important; }

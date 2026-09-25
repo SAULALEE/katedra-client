@@ -30,6 +30,9 @@ export default function LandingGlobalStyles() {
           0% { background-position: -400px 0; }
           100% { background-position: 400px 0; }
         }
+        @media (max-width: 1000px) {
+          .landing-students-link { display: none !important; }
+        }
         @media (max-width: 820px) {
           .nav-links { display: none !important; }
           .floating-doodles { display: none !important; }

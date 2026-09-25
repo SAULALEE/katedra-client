@@ -18,7 +18,7 @@ export default function LandingHero({ navigate }) {
           inset: 0,
           opacity: 0.15,
           backgroundImage: `
-            radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px), 
+            radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
             radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px, 20px 20px',
@@ -82,7 +82,7 @@ export default function LandingHero({ navigate }) {
             >
               Comenzar Gratis
             </a>
-            
+
           </motion.div>
         </div>
 

@@ -20,7 +20,7 @@
     "preview:production": "npm run preview:prd",
     "preview:prd": "doppler run --project katedra-client --config prd -- vite preview",
     "lint": "doppler run --project katedra-client --config dev -- eslint .",
-    "test": "doppler run --project katedra-client --config dev -- node --test src/"
+    "test": "doppler run --project katedra-client --config dev -- node --test"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

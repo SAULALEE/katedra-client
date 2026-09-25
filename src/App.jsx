@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './app/pages/Landing';
+import StudentLanding from './modules/public/pages/StudentLanding';
+import StudentLayout from './modules/public/components/StudentLayout';
+import { StudentAuthPage, StudentRecoveryPage, StudentSearchPage, StudentContactPage, StudentSitemapPage, StudentMissingPage } from './modules/public/pages/StudentPages';
 import Dashboard from './modules/teacher/pages/Dashboard';
 import Generator from './modules/teacher/pages/Generator';
 import Login from './app/pages/Login';
@@ -47,6 +50,17 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
+        <Route path="/alumnos" element={<StudentLayout />}>
+          <Route index element={<StudentLanding />} />
+          <Route path="forms" element={<StudentMissingPage forms />} />
+          <Route path="iniciar-sesion" element={<StudentAuthPage key="login" mode="login" />} />
+          <Route path="crear-cuenta" element={<StudentAuthPage key="register" mode="register" />} />
+          <Route path="recuperar-contrasena" element={<StudentRecoveryPage />} />
+          <Route path="buscar" element={<StudentSearchPage />} />
+          <Route path="contacto" element={<StudentContactPage />} />
+          <Route path="mapa-del-sitio" element={<StudentSitemapPage />} />
+          <Route path="*" element={<StudentMissingPage />} />
+        </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
@@ -104,5 +118,4 @@ function App() {
 }
 
 export default App;
-
 

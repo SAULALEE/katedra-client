@@ -12,6 +12,7 @@ export default function LandingFooter() {
               <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14px', lineHeight: 1.6, color: '#94A3B8', margin: '0 0 20px', maxWidth: '260px' }}>
                 Herramientas para crear Temarios, Teoría docente, Evaluaciones y Diapositivas.
               </p>
+              <a href="/alumnos" style={{ display: 'inline-block', marginBottom: '20px', color: '#C4B5FD', fontSize: '14px', fontWeight: 700, textDecoration: 'none' }}>Conoce Katedra para alumnos →</a>
               <div style={{ display: 'flex', gap: '10px' }}>
                 {['𝕏', 'in', '✉'].map((so, idx) => (
                   <a
