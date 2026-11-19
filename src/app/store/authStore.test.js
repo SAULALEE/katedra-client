@@ -141,3 +141,41 @@ test('changePassword llama al servicio y limpia mustChangePassword en el usuario
   assert.match(source, /changePasswordRequest/);
   assert.match(source, /mustChangePassword:\s*false/);
 });
+
+test('sincroniza login y logout de alumno desde eventos storage de otra pestaña', () => {
+  const originalWindow = globalThis.window;
+  let storageListener;
+  globalThis.window = {
+    addEventListener: (type, listener) => {
+      if (type === 'storage') storageListener = listener;
+    }
+  };
+
+  try {
+    const now = Date.now();
+    useAuthStore.getState().initAuth(now);
+    assert.equal(typeof storageListener, 'function');
+
+    const student = { id: 'alumno-1', nombre: 'Ada', rol: 'ROLE_ALUMNO' };
+    localStorage.setItem('katedra_user', JSON.stringify(student));
+    localStorage.setItem('katedra_token', 'student-jwt');
+    localStorage.setItem(SESSION_LAST_ACTIVE_KEY, String(now));
+    storageListener({ key: 'katedra_user' });
+
+    assert.equal(useAuthStore.getState().isAuthenticated, true);
+    assert.deepEqual(useAuthStore.getState().user, student);
+    assert.equal(useAuthStore.getState().token, 'student-jwt');
+
+    localStorage.removeItem('katedra_user');
+    localStorage.removeItem('katedra_token');
+    localStorage.removeItem(SESSION_LAST_ACTIVE_KEY);
+    storageListener({ key: 'katedra_user' });
+
+    assert.equal(useAuthStore.getState().isAuthenticated, false);
+    assert.equal(useAuthStore.getState().user, null);
+    assert.equal(useAuthStore.getState().token, null);
+  } finally {
+    if (originalWindow === undefined) delete globalThis.window;
+    else globalThis.window = originalWindow;
+  }
+});

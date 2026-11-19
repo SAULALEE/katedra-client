@@ -6,7 +6,7 @@ import { formatRoleDisplay, isAdmin } from '../utils/roleUtils';
 
 const KICKER = 'text-[10px] font-extrabold uppercase tracking-[1.35px] text-ink-muted select-none';
 
-export default function ResponsiveSidebar() {
+export default function ResponsiveSidebar({ navigationItems, homePath = '/', logoutPath = '/' } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -14,7 +14,7 @@ export default function ResponsiveSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [asignaturasOpen, setAsignaturasOpen] = useState(true);
 
-  const menuItems = isAdmin(user) ? [
+  const menuItems = navigationItems || (isAdmin(user) ? [
     {
       name: 'Usuarios',
       path: '/usuarios',
@@ -63,7 +63,7 @@ export default function ResponsiveSidebar() {
         </svg>
       )
     }
-  ];
+  ]);
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -73,7 +73,7 @@ export default function ResponsiveSidebar() {
   const handleLogout = async () => {
     setIsOpen(false);
     await logout();
-    navigate('/');
+    navigate(logoutPath);
   };
 
   const renderSidebarContent = () => (
@@ -81,7 +81,7 @@ export default function ResponsiveSidebar() {
       {/* Top Section */}
       <div className="p-5 flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-none">
         {/* Logo */}
-        <div className="flex items-center gap-3 cursor-pointer group px-1" onClick={() => handleNavigation('/')}>
+        <div className="flex items-center gap-3 cursor-pointer group px-1" onClick={() => handleNavigation(homePath)}>
           <span className="font-sans font-bold tracking-tight text-lg text-ink group-hover:text-blue-600 transition-colors duration-300">
             Katedra
           </span>
@@ -210,7 +210,7 @@ export default function ResponsiveSidebar() {
     <>
       {/* Mobile Top Navbar with Hamburger menu button */}
       <div className="md:hidden flex items-center justify-between w-full h-[60px] border-b border-hairline px-4 bg-canvas/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNavigation(homePath)}>
           <span className="font-sans font-bold tracking-tight text-sm text-ink group-hover:text-blue-600 transition-colors duration-300">Katedra</span>
         </div>
         

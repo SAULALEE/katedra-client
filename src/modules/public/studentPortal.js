@@ -39,7 +39,7 @@ export const STUDENT_CHAT_SUGGESTIONS = [
 export function getStudentChatReply(input) {
   const query = normalize(input);
   if (query.includes('contrasena') || query.includes('recuper')) {
-    return 'El restablecimiento de contraseña por correo todavía no está disponible. Si recuerdas tu contraseña, inicia sesión desde Katedra Alumnos.';
+    return 'Abre /alumnos/recuperar-contrasena e ingresa el correo de tu cuenta para recibir un enlace.';
   }
   if (query.includes('forms') || query.includes('evaluacion')) {
     return 'Katedra Forms será la experiencia de evaluación dentro de la clase. Por ahora puedes explorar su demo conceptual en la página de alumnos.';
@@ -64,4 +64,21 @@ export function validateStudentAccess(mode, fields) {
     return null;
   }
   return 'Formulario de acceso no reconocido.';
+}
+
+export function validateStudentRecoveryEmail(email) {
+  if (!email?.trim()) return 'Ingresa tu correo electrónico.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return 'Ingresa un correo electrónico válido.';
+  }
+  return null;
+}
+
+export function validateStudentPasswordReset(password, confirmPassword) {
+  if (!password || !confirmPassword) return 'Completa ambos campos de contraseña.';
+  if (password.length < 8 || password.length > 100) {
+    return 'La contraseña debe tener entre 8 y 100 caracteres.';
+  }
+  if (password !== confirmPassword) return 'Las contraseñas no coinciden.';
+  return null;
 }

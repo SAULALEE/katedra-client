@@ -24,10 +24,23 @@ export const isProfesor = (user) => {
   return user?.rol === 'ROLE_PROFESOR' || (Array.isArray(user?.roles) && user.roles.includes('ROLE_PROFESOR'));
 };
 
+export const getUserRole = (user) => {
+  if (typeof user?.rol === 'string' && user.rol.length > 0) {
+    return user.rol;
+  }
+
+  if (Array.isArray(user?.roles)) {
+    return user.roles.find((role) => ['ROLE_ADMIN', 'ROLE_PROFESOR', 'ROLE_ALUMNO'].includes(role)) || null;
+  }
+
+  return null;
+};
+
 export const getDefaultRoute = (user) => {
-  if (isAdmin(user)) return '/usuarios';
-  if (isProfesor(user)) return '/dashboard';
-  if (user?.rol === 'ROLE_ALUMNO') return '/alumnos/mi-cuenta';
+  const role = getUserRole(user);
+  if (role === 'ROLE_ADMIN') return '/usuarios';
+  if (role === 'ROLE_PROFESOR') return '/dashboard';
+  if (role === 'ROLE_ALUMNO') return '/alumnos/mi-cuenta';
   return '/alumnos';
 };
 

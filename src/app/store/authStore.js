@@ -25,6 +25,19 @@ const saveLocalSession = (session, now = Date.now()) => {
   localStorage.setItem(SESSION_LAST_ACTIVE_KEY, String(now));
 };
 
+const authStorageKeys = new Set(['katedra_user', 'katedra_token', SESSION_LAST_ACTIVE_KEY]);
+let storageSyncRegistered = false;
+
+const registerStorageSync = () => {
+  if (storageSyncRegistered || typeof window === 'undefined') return;
+
+  window.addEventListener('storage', (event) => {
+    if (event.key !== null && !authStorageKeys.has(event.key)) return;
+    useAuthStore.getState().syncFromStorage();
+  });
+  storageSyncRegistered = true;
+};
+
 export const useAuthStore = create((set, get) => ({
   user: null,
   token: null,
@@ -37,6 +50,8 @@ export const useAuthStore = create((set, get) => ({
    * Initializes authentication state by restoring credentials from localStorage.
    */
   initAuth: (now = Date.now()) => {
+    registerStorageSync();
+
     try {
       const storedUser = localStorage.getItem('katedra_user');
       const storedToken = localStorage.getItem('katedra_token');
@@ -70,6 +85,37 @@ export const useAuthStore = create((set, get) => ({
       clearLocalSession();
       set({ user: null, token: null, isAuthenticated: false, initialized: true, error: null });
     }
+  },
+
+  syncFromStorage: (now = Date.now()) => {
+    try {
+      const storedUser = localStorage.getItem('katedra_user');
+      const storedToken = localStorage.getItem('katedra_token');
+      const lastActive = localStorage.getItem(SESSION_LAST_ACTIVE_KEY);
+
+      if (storedUser && storedToken && isSessionWithinTolerance(lastActive, now)) {
+        set({
+          user: JSON.parse(storedUser),
+          token: storedToken,
+          isAuthenticated: true,
+          initialized: true,
+          loading: false,
+          error: null
+        });
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to sync auth session from localStorage:', e);
+    }
+
+    set({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      initialized: true,
+      loading: false,
+      error: null
+    });
   },
 
   /**
