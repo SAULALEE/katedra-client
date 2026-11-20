@@ -66,19 +66,7 @@ export function validateStudentAccess(mode, fields) {
   return 'Formulario de acceso no reconocido.';
 }
 
-export function validateStudentRecoveryEmail(email) {
-  if (!email?.trim()) return 'Ingresa tu correo electrónico.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    return 'Ingresa un correo electrónico válido.';
-  }
-  return null;
-}
-
-export function validateStudentPasswordReset(password, confirmPassword) {
-  if (!password || !confirmPassword) return 'Completa ambos campos de contraseña.';
-  if (password.length < 8 || password.length > 100) {
-    return 'La contraseña debe tener entre 8 y 100 caracteres.';
-  }
-  if (password !== confirmPassword) return 'Las contraseñas no coinciden.';
-  return null;
-}
+export {
+  validateRecoveryEmail as validateStudentRecoveryEmail,
+  validatePasswordReset as validateStudentPasswordReset
+} from '../../app/services/passwordRecoveryService.js';
