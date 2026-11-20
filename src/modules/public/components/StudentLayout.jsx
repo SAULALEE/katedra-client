@@ -1,41 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
-import { ArrowRight, Menu, MessageCircle, Search, Send, X } from 'lucide-react';
+import { Menu, MessageCircle, Search, Send, X } from 'lucide-react';
 import { getStudentChatReply, STUDENT_CHAT_SUGGESTIONS } from '../studentPortal.js';
 import { useAuth } from '../../../app/hooks/useAuth.js';
+import LandingHeader from '../../../app/components/LandingHeader';
+import { ghostButtonHover, ghostButtonStyle } from '../../../app/components/landing/landingStyles';
+import LandingFooter from '../../../app/components/landing/LandingFooter';
+import LandingGlobalStyles from '../../../app/components/landing/LandingGlobalStyles';
+import { STUDENT_THEME } from '../../../app/components/landing/landingTheme';
+import { STUDENT_FAQ_LINK, STUDENT_FOOTER_BOTTOM_LINKS, STUDENT_FOOTER_COLUMNS, STUDENT_LINKS } from './landing/studentLandingContent';
 import './StudentLandingExperience.css';
 import './StudentPortal.css';
 
-const MAIN_LINKS = [
-  { label: 'Cómo funciona', to: '/alumnos#como-funciona' },
-  { label: 'Materiales', to: '/alumnos#beneficios' },
-  { label: 'IA para aprender', to: '/alumnos#ia-para-aprender' },
-  { label: 'Preguntas', to: '/alumnos#preguntas' },
-];
-
-function Brand() {
-  return <Link className="sl-brand" to="/alumnos" aria-label="Katedra Alumnos, ir al inicio"><span className="sl-brand-mark" aria-hidden="true">K</span>Katedra <span className="sl-brand-sub">Alumnos</span></Link>;
-}
+const SECTION_LINKS = [...STUDENT_LINKS, STUDENT_FAQ_LINK];
+const SEARCH_QUICK_LINKS = [...SECTION_LINKS, { label: 'Mapa del sitio', to: '/alumnos/mapa-del-sitio' }];
+const MENU_PANEL_STYLE = { position: 'absolute', top: 'calc(100% + 10px)', left: 0, width: '100%' };
 
 function StudentHeader({ auth = false }) {
   const { user, isAuthenticated } = useAuth();
   const studentSignedIn = isAuthenticated && user?.rol === 'ROLE_ALUMNO';
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const menuButton = useRef(null);
   const searchButton = useRef(null);
   const searchInput = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 28);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
   useEffect(() => { if (searchOpen) searchInput.current?.focus(); }, [searchOpen]);
   useEffect(() => {
     if (!open && !searchOpen) return undefined;
@@ -43,7 +35,7 @@ function StudentHeader({ auth = false }) {
       if (event.key === 'Escape') {
         setOpen(false);
         setSearchOpen(false);
-        if (searchOpen && window.innerWidth > 1180) searchButton.current?.focus();
+        if (searchOpen && window.innerWidth > 820) searchButton.current?.focus();
         else menuButton.current?.focus();
       }
     };
@@ -59,68 +51,70 @@ function StudentHeader({ auth = false }) {
     navigate('/alumnos/buscar' + (query ? '?q=' + encodeURIComponent(query) : ''));
   };
 
-  return <header className={'sl-header sl-site-header' + (auth ? ' sl-site-header-auth' : '') + (scrolled || open || searchOpen || location.pathname !== '/alumnos' ? ' is-scrolled' : '')}>
-    <div className="sl-site-nav">
-      <Brand />
-      {!auth && <>
-        <nav className="sl-site-main-links" aria-label="Secciones de Katedra Alumnos">
-          {MAIN_LINKS.map(({ label, to }) => <Link key={to} to={to}>{label}</Link>)}
-        </nav>
-        <button ref={searchButton} className="sl-site-search-toggle" type="button" aria-label="Abrir búsqueda" aria-expanded={searchOpen} aria-controls="sl-site-search-panel" onClick={() => { setSearchOpen(!searchOpen); setOpen(false); }}><Search size={18} aria-hidden="true" /><span>Buscar</span></button>
-        <Link className="sl-site-forms" to="/alumnos/forms">Katedra Forms <ArrowRight size={14} aria-hidden="true" /></Link>
-      </>}
-      <div className="sl-site-tools">
-        {studentSignedIn ? <Link className="sl-site-register" to="/alumnos/mi-cuenta">Mi cuenta</Link> : <>
-        <Link className="sl-site-login" to="/alumnos/iniciar-sesion" aria-current={location.pathname === '/alumnos/iniciar-sesion' ? 'page' : undefined}>Iniciar sesión</Link>
-        <Link className="sl-site-register" to="/alumnos/crear-cuenta" aria-current={location.pathname === '/alumnos/crear-cuenta' ? 'page' : undefined}>Crear cuenta</Link>
-        </>}
-      </div>
-      {!auth && <button ref={menuButton} className="sl-site-menu-button" type="button" aria-expanded={open} aria-controls="sl-site-mobile-nav" aria-label={open ? 'Cerrar menú' : 'Abrir menú'} onClick={() => { setOpen(!open); setSearchOpen(false); }}>{open ? <X size={23} /> : <Menu size={23} />}</button>}
-    </div>
+  const current = (path) => location.pathname === path;
+  const actions = studentSignedIn
+    ? [{ label: 'Mi cuenta', to: '/alumnos/mi-cuenta', variant: 'primary', current: current('/alumnos/mi-cuenta') }]
+    : [
+      { label: 'Acceder', to: '/alumnos/iniciar-sesion', variant: 'ghost', current: current('/alumnos/iniciar-sesion') },
+      { label: 'Registrarse', to: '/alumnos/crear-cuenta', variant: 'primary', current: current('/alumnos/crear-cuenta') },
+    ];
+
+  return <LandingHeader
+    navigate={navigate}
+    theme={STUDENT_THEME}
+    ariaLabel="Navegación de Katedra Alumnos"
+    brandTo="/alumnos"
+    brandSuffix="Alumnos"
+    links={auth ? [] : STUDENT_LINKS}
+    crossLink={auth ? null : { label: 'Para profesores', to: '/' }}
+    actions={actions}
+    forceScrolled={open || searchOpen || location.pathname !== '/alumnos'}
+    renderExtraActions={auth ? undefined : (scrolled) => <button ref={searchButton} className="sl-search-toggle" type="button" aria-label="Buscar en Katedra Alumnos" aria-expanded={searchOpen} aria-controls="sl-site-search-panel" onClick={() => { setSearchOpen(!searchOpen); setOpen(false); }} style={{ ...ghostButtonStyle(scrolled), display: 'grid', placeItems: 'center', width: '38px', height: '38px', padding: 0, cursor: 'pointer' }} {...ghostButtonHover(scrolled)}><Search size={17} aria-hidden="true" /></button>}
+    renderTrailing={auth ? undefined : (scrolled) => <button ref={menuButton} className="sl-menu-button" type="button" aria-expanded={open} aria-controls="sl-site-mobile-nav" aria-label={open ? 'Cerrar menú' : 'Abrir menú'} onClick={() => { setOpen(!open); setSearchOpen(false); }} style={{ ...ghostButtonStyle(scrolled), padding: '8px', cursor: 'pointer' }}>{open ? <X size={20} /> : <Menu size={20} />}</button>}
+  >
     {!auth && <>
       <div id="sl-site-search-panel" className="sl-site-search-panel" hidden={!searchOpen}>
-        <form role="search" onSubmit={submitSearch}><label htmlFor="sl-site-search-input">Buscar en Katedra Alumnos</label><div><Search size={20} aria-hidden="true" /><input id="sl-site-search-input" ref={searchInput} name="q" type="search" placeholder="Busca temas, IA, Forms o materiales" /><button type="submit">Buscar <ArrowRight size={16} aria-hidden="true" /></button></div></form>
-        <p>Busca entre las secciones y preguntas de la experiencia de alumnos.</p>
+        <form role="search" onSubmit={submitSearch}>
+          <label htmlFor="sl-site-search-input">Buscar en Katedra Alumnos</label>
+          <div className="sl-search-field"><Search size={18} aria-hidden="true" /><input id="sl-site-search-input" ref={searchInput} name="q" type="search" placeholder="Busca temas, IA, Forms o materiales" autoComplete="off" /><button type="submit">Buscar</button></div>
+        </form>
+        <div className="sl-search-quick"><span>Ir a</span>{SEARCH_QUICK_LINKS.map(({ label, to }) => <Link key={to} to={to} onClick={() => setSearchOpen(false)}>{label}</Link>)}</div>
       </div>
-      <nav id="sl-site-mobile-nav" className="sl-site-mobile-nav" aria-label="Menú de Katedra Alumnos" hidden={!open}>
-        {MAIN_LINKS.map(({ label, to }) => <Link key={to} to={to} onClick={() => setOpen(false)}>{label}</Link>)}
+      <div id="sl-site-mobile-nav" className="sl-site-mobile-nav" style={MENU_PANEL_STYLE} hidden={!open}>
+        {SECTION_LINKS.map(({ label, to }) => <Link key={to} to={to} onClick={() => setOpen(false)}>{label}</Link>)}
         <button type="button" onClick={() => { setOpen(false); setSearchOpen(true); }}>Buscar en Alumnos <Search size={17} aria-hidden="true" /></button>
-        <Link className="sl-site-forms" to="/alumnos/forms" onClick={() => setOpen(false)}>Katedra Forms <ArrowRight size={15} aria-hidden="true" /></Link>
         {studentSignedIn ? <Link to="/alumnos/mi-cuenta" onClick={() => setOpen(false)}>Mi cuenta</Link> : <>
-          <Link to="/alumnos/iniciar-sesion" onClick={() => setOpen(false)}>Iniciar sesión</Link>
-          <Link to="/alumnos/crear-cuenta" onClick={() => setOpen(false)}>Crear cuenta</Link>
+          <Link to="/alumnos/iniciar-sesion" onClick={() => setOpen(false)}>Acceder</Link>
+          <Link to="/alumnos/crear-cuenta" onClick={() => setOpen(false)}>Registrarse</Link>
         </>}
         <Link to="/alumnos/mapa-del-sitio" onClick={() => setOpen(false)}>Mapa del sitio</Link>
         <Link to="/alumnos/contacto" onClick={() => setOpen(false)}>Contáctanos</Link>
-      </nav>
+        <Link to="/" onClick={() => setOpen(false)}>Para profesores</Link>
+      </div>
     </>}
-  </header>;
+  </LandingHeader>;
 }
 
 function StudentFooter() {
-  return <footer className="sl-footer">
-    <div className="sl-container">
-      <div className="sl-footer-main">
-        <div><Brand /><p>Katedra reúne la clase, el trabajo y la retroalimentación para ayudarte a reconocer tu siguiente paso.</p></div>
-        <nav aria-label="Navegación del pie de página">
-          <Link to="/alumnos#como-funciona">Cómo funciona</Link>
-          <Link to="/alumnos#ia-para-aprender">IA para aprender</Link>
-          <Link to="/alumnos/forms">Katedra Forms</Link>
-          <Link to="/alumnos/buscar">Buscar</Link>
-          <Link to="/alumnos/contacto">Contáctanos</Link>
-          <Link to="/alumnos/mapa-del-sitio">Mapa del sitio</Link>
-          <Link to="/alumnos/recuperar-contrasena">Recuperar contraseña</Link>
-          <Link to="/">Para profesores</Link>
-        </nav>
-      </div>
-      <div className="sl-footer-bottom"><span>© {new Date().getFullYear()} Katedra</span><a href="#privacidad">Privacidad</a><a href="#terminos">Términos</a></div>
-      <div className="sl-footer-disclosures">
-        <p id="privacidad"><strong>Privacidad:</strong> el registro y el inicio de sesión envían tus datos al servidor de Katedra. La búsqueda y el chat de esta página funcionan en tu navegador.</p>
-        <p id="terminos"><strong>Términos:</strong> tu cuenta te permite acceder a Katedra Alumnos. La incorporación a clases y las actividades se habilitan por separado.</p>
-      </div>
+  const navigate = useNavigate();
+  return <LandingFooter
+    navigate={navigate}
+    theme={STUDENT_THEME}
+    brandSuffix="Alumnos"
+    description="Katedra reúne la clase, el trabajo y la retroalimentación para ayudarte a reconocer tu siguiente paso."
+    crossLink={{ label: 'Conoce Katedra para profesores →', to: '/' }}
+    columns={STUDENT_FOOTER_COLUMNS}
+    copyright={`© ${new Date().getFullYear()} Katedra. Todos los derechos reservados.`}
+    bottomLinks={STUDENT_FOOTER_BOTTOM_LINKS}
+  >
+    <div className="sl-footer-disclosures">
+      <p id="privacidad"><strong>Privacidad:</strong> el registro y el inicio de sesión envían tus datos al servidor de Katedra. La búsqueda y el chat de esta página funcionan en tu navegador.</p>
+      <p id="terminos"><strong>Términos:</strong> tu cuenta te permite acceder a Katedra Alumnos. La incorporación a clases y las actividades se habilitan por separado.</p>
     </div>
-  </footer>;
+  </LandingFooter>;
 }
+
+const REPLY_DELAY_MS = 650;
 
 function StudentChatbot() {
   const [open, setOpen] = useState(false);
@@ -128,10 +122,20 @@ function StudentChatbot() {
   const [messages, setMessages] = useState([]);
   const launcher = useRef(null);
   const inputRef = useRef(null);
+  const scroller = useRef(null);
+  const timers = useRef(new Set());
+  const nextId = useRef(0);
 
+  useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach(clearTimeout);
+  }, []);
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+  useEffect(() => {
+    scroller.current?.scrollTo({ top: scroller.current.scrollHeight });
+  }, [messages, open]);
   useEffect(() => {
     if (!open) return undefined;
     const onEscape = (event) => {
@@ -144,28 +148,46 @@ function StudentChatbot() {
     return () => document.removeEventListener('keydown', onEscape);
   }, [open]);
 
+  const typing = messages.some((message) => message.answer === null);
+
   const send = (question) => {
     const cleaned = question.trim();
-    if (!cleaned) return;
-    setMessages((current) => [...current, { question: cleaned, answer: getStudentChatReply(cleaned) }]);
+    if (!cleaned || typing) return;
+    const id = nextId.current++;
+    const answer = getStudentChatReply(cleaned);
+    const instant = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    setMessages((current) => [...current, { id, question: cleaned, answer: instant ? answer : null }]);
     setInput('');
+    if (instant) return;
+    const timer = setTimeout(() => {
+      timers.current.delete(timer);
+      setMessages((current) => current.map((message) => (message.id === id ? { ...message, answer } : message)));
+    }, REPLY_DELAY_MS);
+    timers.current.add(timer);
   };
 
   return <div className="sl-chatbot">
     {open && <section className="sl-chat-panel" role="dialog" aria-label="Ayuda de Katedra Alumnos">
-      <div className="sl-chat-heading"><div><strong>Ayuda</strong><span>Respuestas rápidas</span></div><button type="button" aria-label="Cerrar chat" onClick={() => { setOpen(false); launcher.current?.focus(); }}><X size={18} /></button></div>
-      <div className="sl-chat-messages" aria-live="polite">
-        <p className="sl-chat-greeting">Hola. ¿En qué puedo ayudarte?</p>
-        {messages.map(({ question, answer }, index) => <div className="sl-chat-exchange" key={index}><p className="sl-chat-question">{question}</p><p className="sl-chat-answer">{answer}</p></div>)}
+      <div className="sl-chat-heading">
+        <span className="sl-chat-avatar" aria-hidden="true">K</span>
+        <div><strong>Katedra Ayuda</strong><span><i aria-hidden="true" /> Respuestas rápidas</span></div>
+        <button type="button" aria-label="Cerrar chat" onClick={() => { setOpen(false); launcher.current?.focus(); }}><X size={18} /></button>
       </div>
-      <div className="sl-chat-suggestions">{STUDENT_CHAT_SUGGESTIONS.map((question) => <button type="button" key={question} onClick={() => send(question)}>{question}</button>)}</div>
+      <div className="sl-chat-messages" ref={scroller} aria-live="polite">
+        <p className="sl-chat-bot">Hola. Soy la ayuda de Katedra Alumnos. ¿En qué puedo ayudarte?</p>
+        {messages.map(({ id, question, answer }) => <div className="sl-chat-exchange" key={id}>
+          <p className="sl-chat-user">{question}</p>
+          {answer === null ? <p className="sl-chat-bot sl-chat-typing" role="status" aria-label="Escribiendo respuesta"><span /><span /><span /></p> : <p className="sl-chat-bot">{answer}</p>}
+        </div>)}
+      </div>
+      <div className="sl-chat-suggestions">{STUDENT_CHAT_SUGGESTIONS.map((question) => <button type="button" key={question} disabled={typing} onClick={() => send(question)}>{question}</button>)}</div>
       <form className="sl-chat-entry" onSubmit={(event) => { event.preventDefault(); send(input); }}>
         <label className="sl-sr-only" htmlFor="sl-chat-input">Escribe una pregunta</label>
-        <input id="sl-chat-input" ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribe una pregunta" maxLength={180} />
-        <button type="submit" disabled={!input.trim()} aria-label="Enviar pregunta"><Send size={17} /></button>
+        <input id="sl-chat-input" ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribe una pregunta" maxLength={180} autoComplete="off" />
+        <button type="submit" disabled={!input.trim() || typing} aria-label="Enviar pregunta"><Send size={16} /></button>
       </form>
     </section>}
-    <button ref={launcher} className="sl-chat-launcher" type="button" aria-label={open ? 'Cerrar ayuda' : 'Abrir ayuda'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X size={23} /> : <MessageCircle size={23} />}<span>Chat</span></button>
+    <button ref={launcher} className="sl-chat-launcher" type="button" aria-label={open ? 'Cerrar ayuda' : 'Abrir ayuda'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X size={20} /> : <MessageCircle size={20} />}<span>Ayuda</span></button>
   </div>;
 }
 
@@ -183,6 +205,7 @@ export default function StudentLayout() {
 
   return <MotionConfig reducedMotion="user"><div className={auth ? "sl-page sl-auth-shell" : "sl-page"}>
     <a className="sl-skip" href="#contenido">Saltar al contenido</a>
+    <LandingGlobalStyles />
     <StudentHeader key={location.pathname + location.hash} auth={auth} />
     <Outlet />
     {!auth && <StudentFooter />}

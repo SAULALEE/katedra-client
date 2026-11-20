@@ -12,7 +12,7 @@ export const STUDENT_FAQ = [
 
 const SECTIONS = [
   { title: 'Cómo funciona', description: 'Sigue la consigna, el material, tu respuesta, la retroalimentación y el siguiente paso.', href: '/alumnos#como-funciona' },
-  { title: 'Material y actividades', description: 'Encuentra el recurso relacionado con una actividad de clase.', href: '/alumnos#beneficios' },
+  { title: 'Material y actividades', description: 'Encuentra el recurso relacionado con una actividad de clase.', href: '/alumnos#como-funciona' },
   { title: 'IA para aprender', description: 'Aclara consignas y comentarios y practica con ejemplos, sin copiar respuestas.', href: '/alumnos#ia-para-aprender' },
   { title: 'Demo de Katedra Forms', description: 'Explora una evaluación conceptual y su explicación.', href: '/alumnos#katedra-forms' },
   { title: 'Preguntas frecuentes', description: 'Respuestas sobre cuentas de alumnos, profesores y Katedra Forms.', href: '/alumnos#preguntas' },
