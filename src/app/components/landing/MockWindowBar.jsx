@@ -1,5 +1,5 @@
 
-export default function MockWindowBar({ colors, isDarkMode }) {
+export default function MockWindowBar({ colors, isDarkMode, url = 'app.katedra.com/dashboard' }) {
   return (
       <div style={{
         display: 'flex',
@@ -29,7 +29,7 @@ export default function MockWindowBar({ colors, isDarkMode }) {
           overflow: 'hidden',
           textOverflow: 'ellipsis'
         }}>
-          app.katedra.com/dashboard
+          {url}
         </div>
       </div>
   );

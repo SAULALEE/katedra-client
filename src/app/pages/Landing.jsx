@@ -78,7 +78,7 @@ export default function Landing() {
       <LandingFinalCta navigate={navigate} />
 
       {/* ============ FOOTER ============ */}
-      <LandingFooter />
+      <LandingFooter navigate={navigate} />
 
       {/*
         Landing has no [data-root]/dark-mode toggle of its own, so PlanModal's `--kt-*`

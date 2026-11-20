@@ -1,94 +1,15 @@
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import MockAdminPanel from './MockAdminPanel';
+import LandingLink from './LandingLink';
+import { TEACHER_THEME, NOISE_OVERLAY, HIGHLIGHT_STYLE } from './landingTheme';
 
-export default function LandingHero({ navigate }) {
+const ENTER = { initial: { opacity: 0, y: 26 }, animate: { opacity: 1, y: 0 } };
+const enterTransition = (delay = 0) => ({ duration: 0.75, delay, ease: [0.16, 1, 0.3, 1] });
+
+export function TeacherHeroDecorations() {
   return (
-      <header id="top" style={{ position: 'relative', padding: '148px 24px 0', background: 'radial-gradient(125% 140% at 18% 8%, #1E3A8A 0%, #2563EB 22%, #06B6D4 42%, #10B981 66%, #34D399 88%, #FCD34D 116%)', overflow: 'hidden' }}>
-
-        {/* Noise overlay */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', mixBlendMode: 'overlay', opacity: 0.45, backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n2'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n2)'/></svg>")` }}></div>
-
-        {/* Subtle glow blob */}
-        <div style={{ position: 'absolute', width: '380px', height: '380px', left: '-80px', bottom: '-160px', borderRadius: '50%', background: 'radial-gradient(circle, #10B981, transparent 68%)', opacity: 0.5, filter: 'blur(10px)', pointerEvents: 'none' }}></div>
-
-        {/* Grid mesh backdrop overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          opacity: 0.15,
-          backgroundImage: `
-            radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
-            radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px, 20px 20px',
-          pointerEvents: 'none'
-        }}></div>
-
-        <div style={{ relative: 'zIndex', zIndex: 2, maxWidth: '920px', margin: '0 auto', textAlign: 'center', position: 'relative' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '100px', background: 'rgba(255, 255, 255, 0.16)', border: '1px solid rgba(255, 255, 255, 0.28)', backdropFilter: 'blur(8px)', marginBottom: '26px' }}
-          >
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34D399', boxShadow: '0 0 8px #34D399' }}></span>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '1.35px', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.92)', whiteSpace: 'nowrap' }}>
-              IA para Educadores
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
-            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 'clamp(38px, 6.6vw, 76px)', lineHeight: 1.02, letterSpacing: '-2px', color: '#fff', margin: '0 0 22px', textWrap: 'balance' }}
-          >
-            Diseña temarios con apoyo de IA.
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 'clamp(16px, 2vw, 20px)', lineHeight: 1.55, color: 'rgba(255, 255, 255, 0.86)', maxWidth: '620px', margin: '0 auto 36px', textWrap: 'pretty' }}
-          >
-            Crea Teoría docente, evaluaciones con respuestas y diapositivas para tus clases en <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#ffffff' }}>menos tiempo</span>.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: '13px', justifyContent: 'center' }}
-          >
-            <a
-              href="/register"
-              onClick={(e) => { e.preventDefault(); navigate('/register'); }}
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 700,
-                fontSize: '16px',
-                color: '#0F172A',
-                textDecoration: 'none',
-                padding: '15px 28px',
-                borderRadius: '11px',
-                background: '#fff',
-                boxShadow: '0 10px 30px rgba(15, 23, 42, 0.28)',
-                transition: 'all 0.2s'
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(15, 23, 42, 0.34)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(15, 23, 42, 0.28)'; }}
-            >
-              Comenzar Gratis
-            </a>
-
-          </motion.div>
-        </div>
-
-        {/* Floating Doc Mockup */}
-        <div style={{ zIndex: 2, maxWidth: '840px', margin: '64px auto -120px', paddingBottom: 0, position: 'relative' }}>
-
+    <>
           {/* Floating Sticker Doodles */}
           <div className="floating-doodles" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
             {/* Apple */}
@@ -228,8 +149,105 @@ export default function LandingHero({ navigate }) {
             <path d="M 860 440 Q 760 410 680 390" fill="none" stroke="url(#glowGrad1)" strokeWidth="1.5" strokeDasharray="3 3" />
           </svg>
 
-          <MockAdminPanel />
+    </>
+  );
+}
 
+export default function LandingHero({
+  navigate,
+  theme = TEACHER_THEME,
+  badge = 'IA para Educadores',
+  title = 'Diseña temarios con apoyo de IA.',
+  highlight,
+  titleSuffix,
+  subtitle = <>Crea Teoría docente, evaluaciones con respuestas y diapositivas para tus clases en <span style={{ ...HIGHLIGHT_STYLE, color: '#ffffff' }}>menos tiempo</span>.</>,
+  cta = { label: 'Comenzar Gratis', to: '/register' },
+  decorations = <TeacherHeroDecorations />,
+  mockup = <MockAdminPanel />,
+}) {
+  return (
+      <header id="top" style={{ position: 'relative', padding: '148px 24px 0', background: theme.heroGradient, overflow: 'hidden' }}>
+
+        {/* Noise overlay */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', mixBlendMode: 'overlay', opacity: 0.45, backgroundImage: NOISE_OVERLAY }}></div>
+
+        {/* Subtle glow blob */}
+        <div style={{ position: 'absolute', width: '380px', height: '380px', left: '-80px', bottom: '-160px', borderRadius: '50%', background: `radial-gradient(circle, ${theme.glowBlob}, transparent 68%)`, opacity: 0.5, filter: 'blur(10px)', pointerEvents: 'none' }}></div>
+
+        {/* Grid mesh backdrop overlay */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: 0.15,
+          backgroundImage: `
+            radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+            radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px, 20px 20px',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div style={{ zIndex: 2, maxWidth: '920px', margin: '0 auto', textAlign: 'center', position: 'relative' }}>
+          <motion.div
+            {...ENTER}
+            transition={enterTransition()}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '100px', background: 'rgba(255, 255, 255, 0.16)', border: '1px solid rgba(255, 255, 255, 0.28)', backdropFilter: 'blur(8px)', marginBottom: '26px' }}
+          >
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: theme.badgeDot, boxShadow: `0 0 8px ${theme.badgeDot}` }}></span>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '1.35px', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.92)', whiteSpace: 'nowrap' }}>
+              {badge}
+            </span>
+          </motion.div>
+
+          <motion.h1
+            {...ENTER}
+            transition={enterTransition(0.04)}
+            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 'clamp(38px, 6.6vw, 76px)', lineHeight: 1.02, letterSpacing: '-2px', color: '#fff', margin: '0 0 22px', textWrap: 'balance' }}
+          >
+            {title}{highlight && <span style={{ ...HIGHLIGHT_STYLE, color: '#ffffff' }}>{highlight}</span>}{titleSuffix}
+          </motion.h1>
+
+          <motion.p
+            {...ENTER}
+            transition={enterTransition(0.08)}
+            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 'clamp(16px, 2vw, 20px)', lineHeight: 1.55, color: 'rgba(255, 255, 255, 0.86)', maxWidth: '620px', margin: '0 auto 36px', textWrap: 'pretty' }}
+          >
+            {subtitle}
+          </motion.p>
+
+          <motion.div
+            {...ENTER}
+            transition={enterTransition(0.16)}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '13px', justifyContent: 'center' }}
+          >
+            <LandingLink
+              to={cta.to}
+              navigate={navigate}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                fontSize: '16px',
+                color: '#0F172A',
+                textDecoration: 'none',
+                padding: '15px 28px',
+                borderRadius: '11px',
+                background: '#fff',
+                boxShadow: '0 10px 30px rgba(15, 23, 42, 0.28)',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(15, 23, 42, 0.34)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(15, 23, 42, 0.28)'; }}
+            >
+              {cta.label}
+            </LandingLink>
+
+          </motion.div>
+        </div>
+
+        {/* Floating Doc Mockup */}
+        <div style={{ zIndex: 2, maxWidth: '840px', margin: '64px auto -120px', paddingBottom: 0, position: 'relative' }}>
+          {decorations}
+          {mockup}
         </div>
 
         <div style={{ height: '150px' }}></div>

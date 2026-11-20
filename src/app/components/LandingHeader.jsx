@@ -1,14 +1,45 @@
 import { useState, useEffect } from 'react';
+import LandingLink from './landing/LandingLink';
+import { TEACHER_THEME } from './landing/landingTheme';
+import { ghostButtonHover, ghostButtonStyle } from './landing/landingStyles';
 
-export default function LandingHeader({ navigate }) {
-  const [scrolled, setScrolled] = useState(false);
+const TEACHER_LINKS = [
+  { label: 'Características', to: '#features' },
+  { label: 'Integraciones', to: '#integrations' },
+  { label: 'Planes', to: '#pricing' },
+  { label: 'FAQs', to: '#faqs' },
+];
+
+const TEACHER_ACTIONS = [
+  { label: 'Acceder', to: '/login', variant: 'ghost' },
+  { label: 'Registrarse', to: '/register', variant: 'primary' },
+];
+
+export default function LandingHeader({
+  navigate,
+  theme = TEACHER_THEME,
+  brandTo = '#top',
+  brandSuffix,
+  links = TEACHER_LINKS,
+  crossLink = { label: 'Para alumnos', to: '/alumnos' },
+  actions = TEACHER_ACTIONS,
+  forceScrolled = false,
+  ariaLabel,
+  renderExtraActions,
+  renderTrailing,
+  children,
+}) {
+  const [scrolledByPage, setScrolled] = useState(false);
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  const scrolled = forceScrolled || scrolledByPage;
+
   return (
-      <nav style={{
+      <nav aria-label={ariaLabel} style={{
         position: 'fixed',
         top: '16px',
         left: '50%',
@@ -18,6 +49,7 @@ export default function LandingHeader({ navigate }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        gap: '8px',
         padding: '11px 14px 11px 20px',
         borderRadius: '16px',
         background: scrolled ? 'rgba(255, 255, 255, 0.72)' : 'rgba(15, 23, 42, 0.4)',
@@ -27,7 +59,7 @@ export default function LandingHeader({ navigate }) {
         boxShadow: scrolled ? '0 8px 30px rgba(15, 23, 42, 0.10)' : '0 8px 30px rgba(0, 0, 0, 0.2)',
         transition: 'all 0.3s ease'
       }}>
-        <a href="#top" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+        <LandingLink to={brandTo} navigate={navigate} style={{ display: 'flex', alignItems: 'baseline', gap: '7px', textDecoration: 'none', flexShrink: 0 }}>
           <span style={{
             fontFamily: "'Inter', sans-serif",
             fontWeight: 700,
@@ -36,95 +68,95 @@ export default function LandingHeader({ navigate }) {
             color: scrolled ? '#0F172A' : '#FFFFFF',
             transition: 'color 0.3s ease'
           }}>Katedra</span>
-        </a>
+          {brandSuffix && <span style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            fontSize: '13px',
+            color: scrolled ? theme.accent : 'rgba(255, 255, 255, 0.75)',
+            transition: 'color 0.3s ease'
+          }}>{brandSuffix}</span>}
+        </LandingLink>
 
-        <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {['Características', 'Integraciones', 'Planes', 'FAQs'].map((label, i) => {
-            const targets = ['#features', '#integrations', '#pricing', '#faqs'];
-            return (
-              <a
-                key={i}
-                href={targets[i]}
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  color: scrolled ? '#475569' : 'rgba(255, 255, 255, 0.75)',
-                  textDecoration: 'none',
-                  padding: '8px 13px',
-                  borderRadius: '8px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = scrolled ? '#F1F5F9' : 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.color = scrolled ? '#0F172A' : '#FFFFFF';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = scrolled ? '#475569' : 'rgba(255, 255, 255, 0.75)';
-                }}
-              >
-                {label}
-              </a>
-            );
-          })}
-        </div>
+        {links.length > 0 && <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {links.map(({ label, to }) => (
+            <LandingLink
+              key={to}
+              to={to}
+              navigate={navigate}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '14px',
+                color: scrolled ? '#475569' : 'rgba(255, 255, 255, 0.75)',
+                textDecoration: 'none',
+                padding: '8px 13px',
+                borderRadius: '8px',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = scrolled ? '#F1F5F9' : 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.color = scrolled ? '#0F172A' : '#FFFFFF';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = scrolled ? '#475569' : 'rgba(255, 255, 255, 0.75)';
+              }}
+            >
+              {label}
+            </LandingLink>
+          ))}
+        </div>}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <a
-            className="landing-students-link"
-            href="/alumnos"
-            onClick={(event) => { event.preventDefault(); navigate('/alumnos'); }}
-            style={{ padding: '9px 12px', borderRadius: '9px', background: '#F5F3FF', border: '1px solid #DDD6FE', color: '#5B21B6', fontSize: '13px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
-          >Para alumnos</a>
-          <a
-            href="/login"
-            onClick={(e) => { e.preventDefault(); navigate('/login'); }}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 700,
-              fontSize: '14px',
-              color: scrolled ? '#475569' : '#FFFFFF',
-              textDecoration: 'none',
-              padding: '9px 15px',
-              borderRadius: '9px',
-              border: scrolled ? '1px solid #E2E8F0' : '1px solid rgba(255, 255, 255, 0.15)',
-              background: scrolled ? '#fff' : 'rgba(255, 255, 255, 0.08)',
-              transition: 'all 0.2s'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = scrolled ? '#F8FAFC' : 'rgba(255, 255, 255, 0.15)';
-              e.currentTarget.style.borderColor = scrolled ? '#CBD5E1' : 'rgba(255, 255, 255, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = scrolled ? '#fff' : 'rgba(255, 255, 255, 0.08)';
-              e.currentTarget.style.borderColor = scrolled ? '#E2E8F0' : 'rgba(255, 255, 255, 0.15)';
-            }}
-          >
-            Acceder
-          </a>
-          <a
-            href="/register"
-            onClick={(e) => { e.preventDefault(); navigate('/register'); }}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 700,
-              fontSize: '14px',
-              color: '#fff',
-              textDecoration: 'none',
-              padding: '10px 17px',
-              borderRadius: '9px',
-              background: 'linear-gradient(135deg, #2B6CB0, #2C5282)',
-              boxShadow: '0 4px 14px rgba(43, 108, 176, 0.42)',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.2s'
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.05)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.filter = 'none'; }}
-          >
-            Registrarse
-          </a>
+          {renderExtraActions?.(scrolled)}
+          {crossLink && <LandingLink
+            className="landing-cross-link"
+            to={crossLink.to}
+            navigate={navigate}
+            style={{ padding: '9px 12px', borderRadius: '9px', background: theme.crossLink.background, border: `1px solid ${theme.crossLink.border}`, color: theme.crossLink.color, fontSize: '13px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >{crossLink.label}</LandingLink>}
+          {actions.map(({ label, to, variant, current }) => variant === 'primary' ? (
+            <LandingLink
+              key={to}
+              to={to}
+              navigate={navigate}
+              aria-current={current ? 'page' : undefined}
+              className="landing-header-action"
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                fontSize: '14px',
+                color: '#fff',
+                textDecoration: 'none',
+                padding: '10px 17px',
+                borderRadius: '9px',
+                background: theme.ctaGradient,
+                boxShadow: `0 4px 14px ${theme.ctaShadow}`,
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.05)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.filter = 'none'; }}
+            >
+              {label}
+            </LandingLink>
+          ) : (
+            <LandingLink
+              key={to}
+              to={to}
+              navigate={navigate}
+              aria-current={current ? 'page' : undefined}
+              className="landing-header-action"
+              style={ghostButtonStyle(scrolled)}
+              {...ghostButtonHover(scrolled)}
+            >
+              {label}
+            </LandingLink>
+          ))}
+          {renderTrailing?.(scrolled)}
         </div>
+        {children}
       </nav>
   );
 }

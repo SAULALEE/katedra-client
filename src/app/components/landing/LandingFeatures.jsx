@@ -1,81 +1,23 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Dna, FileText, Check, Monitor } from 'lucide-react';
+import { TEACHER_THEME, HIGHLIGHT_STYLE } from './landingTheme';
 
-export default function LandingFeatures() {
-  const [activeFeature, setActiveFeature] = useState(0);
+const TEACHER_ITEMS = [
+  { title: 'Teoría Estructurada', desc: 'Teoría docente organizada por módulos, con referencias editables.' },
+  { title: 'Exámenes y Evaluaciones', desc: 'Evaluaciones de opción múltiple y preguntas abiertas, con sus respuestas.' },
+  { title: 'Diapositivas Listas', desc: 'Diapositivas organizadas por módulo que puedes exportar a PowerPoint.' }
+];
+
+const TEACHER_PANEL_HEADER = {
+  icon: Dna,
+  title: 'Introducción a la web y modelo cliente-servidor.',
+  subtitle: 'Desarrollo Web · Contenido generado con IA',
+};
+
+function TeacherFeaturePanel({ activeFeature }) {
   return (
-      <section id="features" style={{ background: '#fff', padding: '60px 24px 120px' }}>
-        <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
-
-          <motion.div
-            initial={{ opacity: 0, y: 26 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, margin: '-10%' }}
-            transition={{ duration: 0.75, ease: 'easeOut' }}
-            style={{ textAlign: 'center', marginBottom: '64px' }}
-          >
-            <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '1.35px', textTransform: 'uppercase', color: '#10B981', marginBottom: '14px' }}>Todo Incluido</div>
-            <h2 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: 'clamp(30px, 4.6vw, 50px)', lineHeight: 1.06, letterSpacing: '-1.6px', margin: '0 auto', maxWidth: '680px', color: '#0F172A' }}>
-              Materiales para preparar <span style={{ fontFamily: "'Manrope', sans-serif", fontStyle: 'italic', fontWeight: 600, color: '#0F172A' }}>cada clase</span>.
-            </h2>
-          </motion.div>
-
-          <div className="feature-showcase-grid" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '32px', alignItems: 'center' }}>
-
-            {/* Sidebar Controls */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[
-                { title: 'Teoría Estructurada', desc: 'Teoría docente organizada por módulos, con referencias editables.' },
-                { title: 'Exámenes y Evaluaciones', desc: 'Evaluaciones de opción múltiple y preguntas abiertas, con sus respuestas.' },
-                { title: 'Diapositivas Listas', desc: 'Diapositivas organizadas por módulo que puedes exportar a PowerPoint.' }
-              ].map((ft, i) => {
-                const isActive = activeFeature === i;
-                return (
-                  <div
-                    key={i}
-                    onMouseEnter={() => setActiveFeature(i)}
-                    onClick={() => setActiveFeature(i)}
-                    style={{
-                      padding: '24px 20px',
-                      borderRadius: '16px',
-                      cursor: 'pointer',
-                      border: isActive ? '1px solid #A7F3D0' : '1px solid transparent',
-                      background: isActive ? '#ECFDF5' : 'transparent',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    <div style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '18px', color: isActive ? '#065F46' : '#64748B', marginBottom: '6px' }}>{ft.title}</div>
-                    <div style={{ fontFamily: "'Inter'", fontWeight: 500, fontSize: '14px', color: isActive ? '#047857' : '#94A3B8', lineHeight: 1.5 }}>{ft.desc}</div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Display Screen */}
-            <div style={{
-              background: '#F8FAFC',
-              border: '1px solid #EEF1F5',
-              borderRadius: '24px',
-              height: '520px',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: 'inset 0 4px 20px rgba(15,23,42,0.02)'
-            }}>
-              {/* Fake App Browser Window inside */}
-              <div style={{ flex: 1, background: '#fff', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 10px 30px rgba(15,23,42,0.06)' }}>
-                {/* Header */}
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ECFDF5', color: '#10B981', display: 'grid', placeItems: 'center' }}><Dna size={18} strokeWidth={2.5} /></div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontFamily: "'Inter'", fontWeight: 700, color: '#0F172A' }}>Introducción a la web y modelo cliente-servidor.</div>
-                    <div style={{ fontSize: '10.5px', fontFamily: "'Inter'", fontWeight: 500, color: '#64748B' }}>Desarrollo Web · Contenido generado con IA</div>
-                  </div>
-                </div>
-
-                {/* Content Viewer based on active feature */}
-                <div style={{ flex: 1, padding: '32px 24px', background: '#FAFBFC', position: 'relative', overflow: 'hidden' }}>
+    <>
                   {activeFeature === 0 && (
                     // TEORIA MOCKUP
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
@@ -159,6 +101,97 @@ export default function LandingFeatures() {
                       </div>
                     </motion.div>
                   )}
+    </>
+  );
+}
+
+export default function LandingFeatures({
+  theme = TEACHER_THEME,
+  id = 'features',
+  eyebrow = 'Todo Incluido',
+  title = 'Materiales para preparar ',
+  highlight = 'cada clase',
+  titleSuffix = '.',
+  items = TEACHER_ITEMS,
+  panelHeader = TEACHER_PANEL_HEADER,
+  renderPanel = (activeFeature) => <TeacherFeaturePanel activeFeature={activeFeature} />,
+}) {
+  const [activeFeature, setActiveFeature] = useState(0);
+  const PanelIcon = panelHeader.icon;
+  return (
+      <section id={id} style={{ background: '#fff', padding: '60px 24px 120px', scrollMarginTop: '40px' }}>
+        <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
+
+          <motion.div
+            initial={{ opacity: 0, y: 26 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, margin: '-10%' }}
+            transition={{ duration: 0.75, ease: 'easeOut' }}
+            style={{ textAlign: 'center', marginBottom: '64px' }}
+          >
+            <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '1.35px', textTransform: 'uppercase', color: theme.accent, marginBottom: '14px' }}>{eyebrow}</div>
+            <h2 style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: 'clamp(30px, 4.6vw, 50px)', lineHeight: 1.06, letterSpacing: '-1.6px', margin: '0 auto', maxWidth: '680px', color: '#0F172A' }}>
+              {title}<span style={{ ...HIGHLIGHT_STYLE, color: '#0F172A' }}>{highlight}</span>{titleSuffix}
+            </h2>
+          </motion.div>
+
+          <div className="feature-showcase-grid" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '32px', alignItems: 'center' }}>
+
+            {/* Sidebar Controls */}
+            <div role="tablist" aria-orientation="vertical" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {items.map((ft, i) => {
+                const isActive = activeFeature === i;
+                return (
+                  <button
+                    key={ft.title}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onMouseEnter={() => setActiveFeature(i)}
+                    onClick={() => setActiveFeature(i)}
+                    style={{
+                      padding: '24px 20px',
+                      borderRadius: '16px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      font: 'inherit',
+                      border: isActive ? `1px solid ${theme.accentBorder}` : '1px solid transparent',
+                      background: isActive ? theme.accentSoft : 'transparent',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    <div style={{ fontFamily: "'Inter'", fontWeight: 600, fontSize: '18px', color: isActive ? theme.accentStrong : '#64748B', marginBottom: '6px' }}>{ft.title}</div>
+                    <div style={{ fontFamily: "'Inter'", fontWeight: 500, fontSize: '14px', color: isActive ? theme.accentDeep : '#94A3B8', lineHeight: 1.5 }}>{ft.desc}</div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Display Screen */}
+            <div role="tabpanel" style={{
+              background: '#F8FAFC',
+              border: '1px solid #EEF1F5',
+              borderRadius: '24px',
+              height: '520px',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: 'inset 0 4px 20px rgba(15,23,42,0.02)'
+            }}>
+              {/* Fake App Browser Window inside */}
+              <div style={{ flex: 1, background: '#fff', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 10px 30px rgba(15,23,42,0.06)' }}>
+                {/* Header */}
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: theme.accentSoft, color: theme.accent, display: 'grid', placeItems: 'center', flexShrink: 0 }}><PanelIcon size={18} strokeWidth={2.5} /></div>
+                  <div>
+                    <div style={{ fontSize: '13px', fontFamily: "'Inter'", fontWeight: 700, color: '#0F172A' }}>{panelHeader.title}</div>
+                    <div style={{ fontSize: '10.5px', fontFamily: "'Inter'", fontWeight: 500, color: '#64748B' }}>{panelHeader.subtitle}</div>
+                  </div>
+                </div>
+
+                {/* Content Viewer based on active feature */}
+                <div style={{ flex: 1, padding: '32px 24px', background: '#FAFBFC', position: 'relative', overflow: 'hidden' }}>
+                  {renderPanel(activeFeature)}
                 </div>
               </div>
             </div>
