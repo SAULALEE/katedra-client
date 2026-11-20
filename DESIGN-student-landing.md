@@ -1,44 +1,45 @@
 # Diseño — Landing de alumnos
 
-Ruta: `/alumnos`. Fuentes de verdad de la implementación: `StudentLandingExperience.jsx`, `StudentLandingExperience.css` y `studentLandingJourney.js`.
+Ruta: `/alumnos`. La landing de alumnos es un **espejo exacto** de la landing de profesores (`/`): mismos bloques, elementos, bordes, espaciado, tipografía y motion. Solo cambian el contenido y la paleta: **morado** en alumnos; azul y esmeralda en profesores.
 
-## Idea rectora
+## Cómo se garantiza la paridad
 
-**Confusión → comprensión → acción → progreso.** El alumno pasa de cuatro dudas dispersas a una actividad guiada y a un siguiente paso concreto. La experiencia es conceptual y está marcada como tal. No existe registro de alumnos ni captura de correos en esta versión.
+- Las secciones viven una sola vez en `src/app/components/landing/` y reciben `theme` + contenido por props.
+- Tokens de color: `landingTheme.js` (`TEACHER_THEME`, `STUDENT_THEME`). Los neutros (`#0F172A`, `#475569`, `#64748B`, `#EEF1F5`, `#F8FAFC`) se comparten y no dependen del tema.
+- Estilos compartidos: `landingStyles.js` (botón ghost del header, mini-mock de proceso, grid de tarjetas).
+- Composición de alumnos: `src/modules/public/components/StudentLandingExperience.jsx`; contenido y mocks en `src/modules/public/components/landing/`.
+- Header y footer: `StudentLayout.jsx` reutiliza `LandingHeader` y `LandingFooter`, así que las páginas internas (`/alumnos/...`) comparten el mismo chrome.
 
-## Jerarquía y copy
+**Regla:** un cambio visual en una sección compartida se aplica a ambas landings. Los colores nuevos van como token, nunca hardcodeados en un shell.
 
-1. Header flotante: logo, Cómo funciona, IA para aprender, Katedra Forms, Preguntas, enlace secundario a profesores y CTA “Explorar la clase demo”. El menú móvil se cierra con Escape y devuelve el foco al botón.
-2. Hero oscuro: “Próximamente para alumnos”; “Entiende qué sigue después de cada clase.”; explicación concreta de materiales, actividades, comentarios y siguiente paso; CTA principal “Explorar la clase demo” y secundario “Ver cómo se organiza”.
-3. Preview de una clase de Ecosistemas: tema actual, progreso, material, actividad, comentario docente y siguiente paso. Etiqueta “Vista conceptual · Ejemplo de clase”.
-4. Problema editorial: cuatro dudas con disposición dispersa se convierten en “clase y tema → material y actividad → siguiente paso”.
-5. Demo principal: Consigna → Material relacionado → Respuesta → Retroalimentación → Siguiente paso. Cinco controles navegables actualizan el panel de contenido y el progreso.
-6. Beneficios con cuatro composiciones distintas: búsqueda contextual, consigna anotada, ejercicio y comentario convertido en acción.
-7. IA contextual: tres ejemplos seleccionables para explicar consigna, aclarar comentario y proponer práctica. Mensaje “IA para comprender, no para copiar”.
-8. Katedra Forms: pregunta seleccionable, progreso del intento, explicación posterior y refuerzo. Es una vista conceptual.
-9. Conexión profesor–alumno: publicación → estudio → respuesta → devolución → siguiente paso.
-10. Confianza: control docente, contexto de clase, respuestas del alumno y límites de la IA.
-11. FAQ de siete preguntas, con disponibilidad en primer lugar.
-12. Cierre con el mismo CTA hacia la demo y una nota visible: el registro de interés aún no está habilitado.
-13. Footer con navegación, estado de desarrollo e información provisional de privacidad y términos.
+## Estructura (mismo orden que `/`)
 
-## Sistema visual
+| # | Shell | Profesores | Alumnos | id alumnos |
+|---|---|---|---|---|
+| 1 | `LandingHeader` | Links + "Para alumnos" + Acceder/Registrarse | Links + Buscar + "Para profesores" + Iniciar sesión/Crear cuenta + menú móvil | — |
+| 2 | `LandingHero` | Mock del panel docente | `StudentMockClassPanel` (clase de Ecosistemas) | `top` |
+| 3 | `LandingProcess` | 3 tarjetas | Consigna → Material → Siguiente paso (`DEMO_STEPS`) | `como-funciona` |
+| 4 | `LandingFeatures` | Teoría / Evaluación / Diapositivas | Ayuda IA (`AI_HELP`) | `ia-para-aprender` |
+| 5 | `LandingStats` | Métricas de marketing | Cifras reales del producto: 5 etapas, 3 ayudas, 1 lugar | — |
+| 6 | `LandingIntegrations` | Formatos de exportación | Formatos en que llega el material | `conexiones` |
+| 7 | `LandingTiers` | Precios | Demo de Katedra Forms (toggle + tarjeta clara y oscura) | `katedra-forms` |
+| 8 | `LandingFaq` | FAQ | `STUDENT_FAQ` | `preguntas` |
+| 9 | `LandingFinalCta` + `LandingFooter` | — | Mismo banner y footer oscuro de 4 columnas, más notas de privacidad y términos | — |
 
-- Tipografía: Inter para estructura e interfaz; Manrope italic 600 para énfasis editorial.
-- Azul oscuro `#0F172A`: confianza y fondos. Violeta `#6D28D9`: identidad y acciones. Naranja `#F97316`: progreso y estados activos. Rosa `#EC4899`: glows y transición. Blanco, `#F8FAFC` y `#F5F3FF`: descanso visual.
-- Gradientes intensos reservados para hero, elementos de producto destacados y CTA final.
-- Tres niveles: texto editorial abierto, paneles secundarios y paneles de interacción/conversión.
-- Contenedor `min(1080px, calc(100% - 48px))`; navegación `min(1180px, calc(100% - 32px))`; radios de 18–20px para superficies principales y 11px para botones.
-- Transiciones de estado de 220–360 ms, entrada editorial de hasta 750 ms y feedback táctil breve. Hero y preview usan variantes escalonadas; la escena de dudas usa progreso local de scroll; demo e IA intercambian paneles con `AnimatePresence`; Forms y FAQ revelan contenido; beneficios y conexión tienen señales distintas. Todo el contenido esencial es legible desde el primer render.
-- `MotionConfig reducedMotion="user"` se aplica solo a la landing. La escena ligada al scroll y los desplazamientos de entrada se desactivan cuando el usuario prefiere menos movimiento.
+Extras exclusivos de alumnos, con estilo de profesores: buscador en el header, menú móvil (<820px) y chatbot estático.
 
-## Responsive y accesibilidad
+## Enlace cruzado entre portales
 
-- Hasta **820px**: navegación con menú desplegable; demo condensada; flujos y paneles ajustados.
-- Hasta **640px**: contenedor con 16px por lado; preview sin sidebar; demo vertical; beneficios, IA, Forms, conexión y CTA en una columna; botones principales de ancho completo.
-- HTML semántico, skip link, foco visible, controles con botones, FAQ con `aria-expanded` y `aria-controls`, regiones estables con `aria-live` para demo, IA y Forms, y contraste WCAG AA.
-- Ninguna opción depende solo del color: los estados incluyen texto, borde, icono o posición.
+El botón que lleva al otro portal usa la paleta **de la página donde está**: "Para alumnos" en `/` es azul (`#EFF6FF`, `#BFDBFE`, `#2C5282`), y "Para profesores" en `/alumnos` es morado. Lo mismo aplica al enlace del footer.
 
-## Disponibilidad y CTA
+## Sistema visual (de `ui-design-client.md`)
 
-No hay servicio de registro de interés. Los CTA visibles llevan a `#como-funciona`, una demo útil y conceptual. El cierre indica que aún no se recopilan correos. Cuando exista un servicio real, el registro y sus estados deberán diseñarse sobre un contrato de API y una política de privacidad publicados.
+- Inter para estructura; Manrope italic 600 para el énfasis dentro de títulos.
+- Radios: 24px en tarjetas grandes, 16px en paneles, 18px en mocks, 9–12px en botones y 100px en pills.
+- Contenedores: header de `min(1180px, 100% - 32px)`, secciones de 1080px, hero de 920px y mock de 840px.
+- Motion: fade-up de 0.75s; hover con `translateY(-2…-6px)`. `MotionConfig reducedMotion="user"` se aplica en `StudentLayout`.
+- Sin fotografías ni logos raster: solo iconos SVG y lucide.
+
+## Accesibilidad
+
+Skip link, foco visible violeta, tabs con `role="tab"`, FAQ con `aria-expanded`/`aria-controls`, Forms con `role="radio"` y resultado en `aria-live`. El buscador, el menú y el chat cierran con Escape y devuelven el foco.
