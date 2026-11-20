@@ -10,9 +10,6 @@ export function useStudentProfile() {
   useEffect(() => {
     let active = true;
 
-    setLoading(true);
-    setError(null);
-
     getMyStudentProfile()
       .then((profile) => {
         if (!profile?.id || !profile?.email || !profile?.nombre) {
@@ -33,7 +30,11 @@ export function useStudentProfile() {
     };
   }, [requestVersion]);
 
-  const retry = useCallback(() => setRequestVersion((version) => version + 1), []);
+  const retry = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    setRequestVersion((version) => version + 1);
+  }, []);
 
   return { student, loading, error, retry };
 }
