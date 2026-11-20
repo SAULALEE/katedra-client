@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { isAdmin, getDefaultRoute } from '../utils/roleUtils';
+import { getUserRole, getDefaultRoute } from '../utils/roleUtils';
 
 /**
  * Route protection wrapper component.
@@ -32,7 +32,7 @@ export default function ProtectedRoute({ children, allowedRoles, adminOnly = fal
   }
 
   const effectiveAllowedRoles = allowedRoles || (adminOnly ? ['ROLE_ADMIN'] : ['ROLE_PROFESOR']);
-  const userRole = user?.rol || (isAdmin(user) ? 'ROLE_ADMIN' : 'ROLE_PROFESOR');
+  const userRole = getUserRole(user);
 
   if (!effectiveAllowedRoles.includes(userRole)) {
     return <Navigate to={getDefaultRoute(user)} replace />;

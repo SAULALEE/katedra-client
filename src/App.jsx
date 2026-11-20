@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './app/pages/Landing';
 import StudentLanding from './modules/public/pages/StudentLanding';
 import StudentLayout from './modules/public/components/StudentLayout';
-import { StudentAccountPage, StudentAuthPage, StudentRecoveryPage, StudentSearchPage, StudentContactPage, StudentSitemapPage, StudentMissingPage } from './modules/public/pages/StudentPages';
+import { StudentAccountPage, StudentAuthPage, StudentRecoveryPage, StudentPasswordResetPage, StudentSearchPage, StudentContactPage, StudentSitemapPage, StudentMissingPage } from './modules/public/pages/StudentPages';
 import Dashboard from './modules/teacher/pages/Dashboard';
+import StudentPanel from './modules/student/pages/StudentPanel';
 import Generator from './modules/teacher/pages/Generator';
 import Login from './app/pages/Login';
 import Register from './app/pages/Register';
@@ -50,6 +51,14 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
+        <Route
+          path="/alumnos/panel"
+          element={
+            <ProtectedRoute allowedRoles={['ROLE_ALUMNO']} loginPath="/alumnos/iniciar-sesion">
+              <StudentPanel />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/alumnos" element={<StudentLayout />}>
           <Route index element={<StudentLanding />} />
           <Route path="forms" element={<StudentMissingPage forms />} />
@@ -57,6 +66,7 @@ function App() {
           <Route path="crear-cuenta" element={<StudentAuthPage key="register" mode="register" />} />
           <Route path="mi-cuenta" element={<ProtectedRoute allowedRoles={['ROLE_ALUMNO']} loginPath="/alumnos/iniciar-sesion"><StudentAccountPage /></ProtectedRoute>} />
           <Route path="recuperar-contrasena" element={<StudentRecoveryPage />} />
+          <Route path="restablecer-contrasena" element={<StudentPasswordResetPage />} />
           <Route path="buscar" element={<StudentSearchPage />} />
           <Route path="contacto" element={<StudentContactPage />} />
           <Route path="mapa-del-sitio" element={<StudentSitemapPage />} />

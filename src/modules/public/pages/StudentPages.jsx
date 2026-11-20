@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, ClipboardCheck, Eye, EyeOff, LockKeyhole, Mail, Map, Search, Sparkles } from 'lucide-react';
-import { searchStudentContent, validateStudentAccess } from '../studentPortal.js';
+import { searchStudentContent, validateStudentAccess, validateStudentPasswordReset, validateStudentRecoveryEmail } from '../studentPortal.js';
+import { requestStudentPasswordReset, resetStudentPassword } from '../services/studentPasswordRecoveryService.js';
 import { useAuth } from '../../../app/hooks/useAuth.js';
 
 function PageHeading({ eyebrow, title, description, icon: Icon }) {
@@ -39,7 +40,7 @@ export function StudentAuthPage({ mode }) {
     const success = register
       ? await registerStudent(fields.email.trim(), fields.password, fields.nombre.trim())
       : await login(fields.email.trim(), fields.password, Date.now(), 'ROLE_ALUMNO');
-    if (success) navigate('/alumnos/mi-cuenta', { replace: true });
+    if (success) navigate('/alumnos/panel', { replace: true });
     else setFields((current) => ({ ...current, password: '', confirmPassword: '' }));
   };
 
@@ -86,9 +87,104 @@ export function StudentAccountPage() {
 }
 
 export function StudentRecoveryPage() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    const validation = validateStudentRecoveryEmail(email);
+    if (validation) {
+      setError(validation);
+      setSent(false);
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+    try {
+      await requestStudentPasswordReset(email.trim());
+      setSent(true);
+    } catch {
+      setError('No pudimos procesar la solicitud. Inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return <main id="contenido" className="sl-portal-main"><div className="sl-container sl-portal-narrow">
-    <PageHeading eyebrow="ACCESO DE ALUMNOS" title="Recuperar contraseña" description="El restablecimiento por correo todavía no está disponible." icon={LockKeyhole} />
-    <div className="sl-portal-card"><p>Si recuerdas tu contraseña, vuelve al inicio de sesión.</p><div className="sl-portal-actions"><Link className="sl-portal-primary" to="/alumnos/iniciar-sesion">Iniciar sesión <ArrowRight size={17} /></Link></div></div>
+    <PageHeading eyebrow="ACCESO DE ALUMNOS" title="Recuperar contraseña" description="Te enviaremos instrucciones si el correo corresponde a una cuenta." icon={LockKeyhole} />
+    <div className="sl-portal-card">
+      <form onSubmit={submit} noValidate>
+        <div className="sl-portal-field"><label htmlFor="sl-recovery-email">Correo electrónico</label><input id="sl-recovery-email" type="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); setSent(false); }} disabled={loading} required /></div>
+        {error && <p role="alert" className="sl-portal-error">{error}</p>}
+        {sent && <p role="status">Si el correo corresponde a una cuenta, recibirás instrucciones para restablecer tu contraseña.</p>}
+        <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Enviando…' : 'Enviar instrucciones'}</button>
+      </form>
+      <div className="sl-portal-actions"><Link className="sl-portal-back" to="/alumnos/iniciar-sesion"><ArrowLeft size={16} aria-hidden="true" /> Volver al inicio de sesión</Link></div>
+    </div>
+  </div></main>;
+}
+
+export function StudentPasswordResetPage() {
+  const [searchParams] = useSearchParams();
+  const tokenFromLink = searchParams.get('token') || '';
+  const [token, setToken] = useState(tokenFromLink);
+  const [fields, setFields] = useState({ password: '', confirmPassword: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (tokenFromLink) navigate('/alumnos/restablecer-contrasena', { replace: true });
+  }, [tokenFromLink, navigate]);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (!token) {
+      setError('El enlace no es válido o ya venció. Solicita uno nuevo.');
+      return;
+    }
+
+    const validation = validateStudentPasswordReset(fields.password, fields.confirmPassword);
+    if (validation) {
+      setError(validation);
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+    try {
+      await resetStudentPassword(token, fields.password);
+      setToken('');
+      setFields({ password: '', confirmPassword: '' });
+      setSuccess(true);
+    } catch {
+      setError('No pudimos actualizar la contraseña. Revisa el enlace e inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return <main id="contenido" className="sl-portal-main"><div className="sl-container sl-portal-narrow">
+    <PageHeading eyebrow="ACCESO DE ALUMNOS" title="Establecer contraseña" description="Elige una contraseña nueva para tu cuenta." icon={LockKeyhole} />
+    <div className="sl-portal-card">
+      {success ? <>
+        <p role="status">Tu contraseña se actualizó. Ya puedes iniciar sesión.</p>
+        <Link className="sl-portal-primary" to="/alumnos/iniciar-sesion">Ir al inicio de sesión <ArrowRight size={17} aria-hidden="true" /></Link>
+      </> : !token ? <>
+        <p role="alert">{error || 'El enlace no es válido o ya venció. Solicita uno nuevo.'}</p>
+        <Link className="sl-portal-primary" to="/alumnos/recuperar-contrasena">Solicitar otro enlace</Link>
+      </> : <form onSubmit={submit} noValidate>
+        <div className="sl-portal-field"><label htmlFor="sl-reset-password">Nueva contraseña</label><input id="sl-reset-password" type="password" autoComplete="new-password" value={fields.password} onChange={(event) => { setFields((current) => ({ ...current, password: event.target.value })); setError(''); }} disabled={loading} required /></div>
+        <div className="sl-portal-field"><label htmlFor="sl-reset-confirm">Confirmar contraseña</label><input id="sl-reset-confirm" type="password" autoComplete="new-password" value={fields.confirmPassword} onChange={(event) => { setFields((current) => ({ ...current, confirmPassword: event.target.value })); setError(''); }} disabled={loading} required /></div>
+        {error && <p role="alert" className="sl-portal-error">{error}</p>}
+        <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Actualizando…' : 'Guardar contraseña'}</button>
+      </form>}
+      <div className="sl-portal-actions"><Link className="sl-portal-back" to="/alumnos/iniciar-sesion"><ArrowLeft size={16} aria-hidden="true" /> Volver al inicio de sesión</Link></div>
+    </div>
   </div></main>;
 }
 

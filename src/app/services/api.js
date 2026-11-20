@@ -21,6 +21,8 @@ api.interceptors.request.use(
     const isPublicAuthRequest =
       url.includes('/auth/login') ||
       url.includes('/auth/register') ||
+      url.includes('/auth/password/forgot') ||
+      url.includes('/auth/password/reset') ||
       url.includes('/auth/google') ||
       url.includes('/oauth2/');
 
@@ -42,6 +44,8 @@ api.interceptors.request.use(
 const isPublicAuthRequest = (url = '') =>
   url.includes('/auth/login') ||
   url.includes('/auth/register') ||
+  url.includes('/auth/password/forgot') ||
+  url.includes('/auth/password/reset') ||
   url.includes('/auth/google') ||
   url.includes('/oauth2/');
 
@@ -62,8 +66,12 @@ api.interceptors.response.use(
       localStorage.removeItem('katedra_token');
       localStorage.removeItem('katedra_last_active');
 
-      if (window.location.pathname !== '/login') {
-        window.location.assign('/login');
+      const loginPath = window.location.pathname.startsWith('/alumnos')
+        ? '/alumnos/iniciar-sesion'
+        : '/login';
+
+      if (window.location.pathname !== loginPath) {
+        window.location.assign(loginPath);
       }
     }
 
