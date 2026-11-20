@@ -10,6 +10,8 @@ import Generator from './modules/teacher/pages/Generator';
 import Login from './app/pages/Login';
 import Register from './app/pages/Register';
 import ChangePassword from './app/pages/ChangePassword';
+import ForgotPassword from './app/pages/ForgotPassword';
+import ResetPassword from './app/pages/ResetPassword';
 import AuthCallback from './app/pages/AuthCallback';
 import AuthError from './app/pages/AuthError';
 import Users from './app/pages/Users';
@@ -77,6 +79,8 @@ function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/error" element={<AuthError />} />
         <Route path="/cambiar-password" element={<ChangePassword />} />
+        <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
+        <Route path="/restablecer-contrasena" element={<ResetPassword />} />
 
         {/* Protected Academic Routes (ROLE_PROFESOR) */}
         <Route 

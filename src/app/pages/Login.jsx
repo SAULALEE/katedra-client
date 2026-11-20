@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { validateLoginFields } from '../services/authService';
 import { getDefaultRoute } from '../utils/roleUtils';
@@ -429,7 +429,7 @@ export default function Login() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
                   <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '12.5px', letterSpacing: '-.2px', color: '#334155' }}>Contraseña</label>
-                  <a href="#" style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '12px', color: '#059669', textDecoration: 'none' }}>¿La olvidaste?</a>
+                  <Link to="/recuperar-contrasena" style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: '12px', color: '#059669', textDecoration: 'none' }}>¿La olvidaste?</Link>
                 </div>
                 <div style={{ position: 'relative' }}>
                   <input
