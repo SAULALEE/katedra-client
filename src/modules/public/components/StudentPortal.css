@@ -156,12 +156,44 @@
 .sl-portal-password-wrap button { display: grid; place-items: center; position: absolute; right: 5px; top: 50%; width: 37px; height: 37px; transform: translateY(-50%); border: 0; border-radius: 7px; background: transparent; color: #64748b; cursor: pointer; }
 .sl-portal-password-wrap button:hover { color: #7c3aed; }
 
+/* Auth card: same geometry as the teacher TeacherAuthShell (teacherAuth.css), purple accent. */
+.sl-portal-auth-layout { align-items: stretch; min-height: 600px; border-radius: 26px; background: rgba(255,255,255,.72); backdrop-filter: blur(22px) saturate(1.3); }
+.sl-portal-auth-intro { min-height: 0; padding: 44px 40px; display: flex; flex-direction: column; background: linear-gradient(165deg, #f5f3ff 0%, #faf5ff 46%, #fdf4ff 100%); }
+.sl-portal-auth-intro .sl-portal-eyebrow { margin-bottom: 12px; font-size: 10px; letter-spacing: 1.35px; }
+.sl-portal-auth-headline { margin: 0 0 8px; color: #0f172a; font-size: 29px; font-weight: 600; line-height: 1.12; letter-spacing: -1.4px; }
+.sl-portal-auth-intro .sl-portal-auth-lead { max-width: 280px; margin: 0; color: #475569; font-size: 14px; font-weight: 500; line-height: 1.55; }
+.sl-portal-auth-orbit { margin: auto; }
+.sl-portal-auth-mobmark { display: none; place-items: center; width: 84px; height: 84px; margin: 0 auto 10px; border: 1px solid #ddd6fe; border-radius: 50%; background: radial-gradient(circle at 30% 25%, #fff, #ede9fe); color: #7c3aed; }
+.sl-portal-auth-layout { font-family: 'Manrope', sans-serif; }
+.sl-portal-auth-headline, .sl-portal-auth-title, .sl-portal-auth-brand { font-family: 'Inter', sans-serif; }
+.sl-portal-auth-card { padding: 48px 46px; background: #fff; }
+.sl-portal-auth-brand { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; margin-bottom: 26px; color: #0f172a; font-size: 18px; font-weight: 600; letter-spacing: -.8px; text-decoration: none; }
+.sl-portal-auth-brand em { color: #7c3aed; font-size: 14px; font-style: normal; font-weight: 700; letter-spacing: 0; }
+.sl-portal-auth-brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(150deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 12px -3px rgba(124,58,237,.6); color: #fff; font-size: 17px; font-weight: 700; letter-spacing: -1px; }
+.sl-portal-auth-title { margin: 0 0 7px; color: #0f172a; font-size: 27px; font-weight: 600; line-height: 1.1; letter-spacing: -1px; }
+.sl-portal-auth-description { margin: 0 0 26px !important; color: #64748b !important; font-size: 14.5px; font-weight: 500; line-height: 1.5 !important; }
+.sl-portal-auth-card form { margin-top: 0; gap: 15px; }
+.sl-portal-auth-card .sl-portal-field { gap: 6px; }
+.sl-portal-auth-card .sl-portal-field label { font-size: 12.5px; font-weight: 600; letter-spacing: -.2px; }
+.sl-portal-auth-card .sl-portal-field input { height: 46px; padding: 0 14px; border: 1.5px solid #e2e8f0; font-size: 14.5px; font-weight: 500; transition: border-color .2s, box-shadow .2s, background .2s; }
+.sl-portal-auth-card .sl-portal-field input:focus { box-shadow: 0 0 0 4px rgba(124,58,237,.15); }
+.sl-portal-auth-card .sl-portal-password-wrap input { padding-right: 48px; }
+.sl-portal-auth-card .sl-portal-primary, .sl-portal-block { width: 100%; height: 50px; margin-top: 4px; border-radius: 11px; font-size: 15px; font-weight: 800; letter-spacing: .2px; box-shadow: 0 12px 26px -10px rgba(124,58,237,.75); }
+.sl-portal-auth-card .sl-portal-primary:disabled { opacity: .8; cursor: not-allowed; transform: none; }
+.sl-portal-auth-card .sl-portal-error, .sl-portal-auth-card .sl-portal-success { padding: 12px; border-radius: 10px; font-size: 13px; }
+.sl-portal-auth-card .sl-portal-success { margin-bottom: 12px; }
+.sl-portal-auth-card .sl-portal-switch { margin: 22px 0 0; font-size: 13.5px; font-weight: 500; }
+.sl-portal-auth-card .sl-portal-switch a, .sl-portal-auth-card .sl-portal-label-row a { font-size: 13.5px; }
+.sl-portal-auth-card .sl-portal-label-row a { font-size: 12px; }
+
 @media (max-width: 760px) {
   .sl-portal-main { padding: 115px 16px 75px; }
   .sl-portal-auth-layout, .sl-portal-sitemap { grid-template-columns: 1fr; }
   .sl-portal-auth-layout { max-width: 440px; }
   .sl-portal-auth-intro { display: none; }
-  .sl-portal-auth-card { padding: 33px 26px; }
+  .sl-portal-auth-mobmark { display: grid; }
+  .sl-portal-auth-card { padding: 36px 30px; }
+  .sl-portal-auth-layout { min-height: 0; }
   .sl-portal-auth-main { padding: 100px 16px 42px; }
   .sl-portal-heading h1 { font-size: clamp(32px, 9vw, 44px); }
   .sl-portal-heading p { font-size: 15px; }

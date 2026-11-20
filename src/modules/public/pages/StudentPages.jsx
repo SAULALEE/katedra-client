@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpen, ClipboardCheck, Eye, EyeOff, LockKeyhole, Mail, Map, Search, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, ClipboardCheck, Eye, EyeOff, LockKeyhole, Mail, Map, Search, Sparkles } from 'lucide-react';
 import { searchStudentContent, validateStudentAccess, validateStudentPasswordReset, validateStudentRecoveryEmail } from '../studentPortal.js';
 import { requestStudentPasswordReset, resetStudentPassword } from '../services/studentPasswordRecoveryService.js';
 import { useAuth } from '../../../app/hooks/useAuth.js';
+import StudentAuthFrame from '../components/StudentAuthFrame.jsx';
 
 function PageHeading({ eyebrow, title, description, icon: Icon }) {
   return <div className="sl-portal-heading">
@@ -44,33 +45,26 @@ export function StudentAuthPage({ mode }) {
     else setFields((current) => ({ ...current, password: '', confirmPassword: '' }));
   };
 
-  return <main id="contenido" className="sl-portal-main sl-portal-auth-main">
-    <div className="sl-portal-auth-layout sl-container">
-      <div className="sl-portal-auth-intro">
-        <PageHeading eyebrow="KATEDRA ALUMNOS" title={register ? 'Crea tu cuenta de alumno.' : 'Entra a tu cuenta.'} description={register ? 'Solo necesitas tu nombre, correo y una contraseña.' : 'Escribe tu correo y contraseña para continuar.'} icon={BookOpen} />
-        <div className="sl-portal-auth-orbit" aria-hidden="true"><BookOpen size={66} strokeWidth={1.3} /><span>Katedra Alumnos</span></div>
+  return <StudentAuthFrame
+    eyebrow="Katedra Alumnos"
+    headline={register ? 'Crea tu cuenta de alumno.' : 'Entra a tu cuenta.'}
+    lead={register ? 'Solo necesitas tu nombre, correo y una contraseña.' : 'Revisa tus clases, entregas y retroalimentación en un solo lugar.'}
+    title={register ? 'Crea tu cuenta' : 'Inicia sesión en tu cuenta'}
+    description={register ? 'Empieza a aprender con Katedra.' : 'Bienvenido de nuevo. Continúa con tus clases.'}
+  >
+    <form onSubmit={submit} noValidate>
+      {register && <div className="sl-portal-field"><label htmlFor="sl-auth-name">Nombre completo</label><input id="sl-auth-name" type="text" autoComplete="name" value={fields.nombre} onChange={(event) => update('nombre', event.target.value)} placeholder="Tu nombre" disabled={loading} /></div>}
+      <div className="sl-portal-field"><label htmlFor="sl-auth-email">Correo electrónico</label><input id="sl-auth-email" type="email" autoComplete="email" value={fields.email} onChange={(event) => update('email', event.target.value)} placeholder="tu@escuela.edu" disabled={loading} /></div>
+      <div className="sl-portal-field">
+        <div className="sl-portal-label-row"><label htmlFor="sl-auth-password">Contraseña</label>{!register && <Link to="/alumnos/recuperar-contrasena">¿La olvidaste?</Link>}</div>
+        <div className="sl-portal-password-wrap"><input id="sl-auth-password" type={showPassword ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'} value={fields.password} onChange={(event) => update('password', event.target.value)} placeholder={register ? 'Mínimo 8 caracteres' : 'Tu contraseña'} disabled={loading} /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>
       </div>
-      <div className="sl-portal-card sl-portal-auth-card">
-        <span className="sl-portal-card-kicker">Katedra Alumnos</span>
-        <h2>{register ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
-        <form onSubmit={submit} noValidate>
-          {register && <div className="sl-portal-field"><label htmlFor="sl-auth-name">Nombre completo</label><input id="sl-auth-name" type="text" autoComplete="name" value={fields.nombre} onChange={(event) => update('nombre', event.target.value)} placeholder="Tu nombre" disabled={loading} /></div>}
-          <div className="sl-portal-field"><label htmlFor="sl-auth-email">Correo electrónico</label><input id="sl-auth-email" type="email" autoComplete="email" value={fields.email} onChange={(event) => update('email', event.target.value)} placeholder="tu@escuela.edu" disabled={loading} /></div>
-          <div className="sl-portal-field">
-            <div className="sl-portal-label-row"><label htmlFor="sl-auth-password">Contraseña</label>{!register && <Link to="/alumnos/recuperar-contrasena">¿La olvidaste?</Link>}</div>
-            <div className="sl-portal-password-wrap"><input id="sl-auth-password" type={showPassword ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'} value={fields.password} onChange={(event) => update('password', event.target.value)} placeholder={register ? 'Mínimo 6 caracteres' : 'Tu contraseña'} disabled={loading} /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>
-          </div>
-          {register && <>
-            <div className="sl-portal-field"><label htmlFor="sl-auth-confirm">Confirmar contraseña</label><input id="sl-auth-confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={fields.confirmPassword} onChange={(event) => update('confirmPassword', event.target.value)} placeholder="Repite la contraseña" disabled={loading} /></div>
-          </>}
-          {(error || authError) && <p className="sl-portal-error" role="alert">{error || authError}</p>}
-          <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Un momento…' : register ? 'Crear cuenta' : 'Iniciar sesión'} <ArrowRight size={17} aria-hidden="true" /></button>
-        </form>
-        <p className="sl-portal-switch">{register ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'} <Link to={register ? '/alumnos/iniciar-sesion' : '/alumnos/crear-cuenta'}>{register ? 'Iniciar sesión' : 'Crear cuenta'}</Link></p>
-        <Link className="sl-portal-back" to="/alumnos"><ArrowLeft size={16} aria-hidden="true" /> Volver a Katedra Alumnos</Link>
-      </div>
-    </div>
-  </main>;
+      {register && <div className="sl-portal-field"><label htmlFor="sl-auth-confirm">Confirmar contraseña</label><input id="sl-auth-confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={fields.confirmPassword} onChange={(event) => update('confirmPassword', event.target.value)} placeholder="Repite la contraseña" disabled={loading} /></div>}
+      {(error || authError) && <p className="sl-portal-error" role="alert">{error || authError}</p>}
+      <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Un momento…' : register ? 'Crear cuenta' : 'Iniciar sesión'} <ArrowRight size={17} aria-hidden="true" /></button>
+    </form>
+    <p className="sl-portal-switch">{register ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'} <Link to={register ? '/alumnos/iniciar-sesion' : '/alumnos/crear-cuenta'}>{register ? 'Inicia sesión' : 'Crea una cuenta'}</Link></p>
+  </StudentAuthFrame>;
 }
 
 export function StudentAccountPage() {
@@ -113,18 +107,22 @@ export function StudentRecoveryPage() {
     }
   };
 
-  return <main id="contenido" className="sl-portal-main"><div className="sl-container sl-portal-narrow">
-    <PageHeading eyebrow="ACCESO DE ALUMNOS" title="Recuperar contraseña" description="Te enviaremos instrucciones si el correo corresponde a una cuenta." icon={LockKeyhole} />
-    <div className="sl-portal-card">
-      <form onSubmit={submit} noValidate>
-        <div className="sl-portal-field"><label htmlFor="sl-recovery-email">Correo electrónico</label><input id="sl-recovery-email" type="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); setSent(false); }} disabled={loading} required /></div>
-        {error && <p role="alert" className="sl-portal-error">{error}</p>}
-        {sent && <p role="status">Si el correo corresponde a una cuenta, recibirás instrucciones para restablecer tu contraseña.</p>}
-        <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Enviando…' : 'Enviar instrucciones'}</button>
-      </form>
-      <div className="sl-portal-actions"><Link className="sl-portal-back" to="/alumnos/iniciar-sesion"><ArrowLeft size={16} aria-hidden="true" /> Volver al inicio de sesión</Link></div>
-    </div>
-  </div></main>;
+  return <StudentAuthFrame
+    eyebrow="Recupera tu acceso"
+    icon={LockKeyhole}
+    headline="Vuelve a tus clases en un momento."
+    lead="Te enviaremos un enlace seguro para que elijas una contraseña nueva."
+    title="Recupera tu contraseña"
+    description="Escribe el correo de tu cuenta y te enviaremos un enlace."
+  >
+    <form onSubmit={submit} noValidate>
+      <div className="sl-portal-field"><label htmlFor="sl-recovery-email">Correo electrónico</label><input id="sl-recovery-email" type="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); setError(''); setSent(false); }} placeholder="tu@escuela.edu" disabled={loading} required /></div>
+      {error && <p role="alert" className="sl-portal-error">{error}</p>}
+      {sent && <p role="status" className="sl-portal-success">Si el correo corresponde a una cuenta, recibirás un enlace válido por 15 minutos.</p>}
+      <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Enviando…' : 'Enviar enlace'} <ArrowRight size={17} aria-hidden="true" /></button>
+    </form>
+    <p className="sl-portal-switch">¿La recordaste? <Link to="/alumnos/iniciar-sesion">Inicia sesión</Link></p>
+  </StudentAuthFrame>;
 }
 
 export function StudentPasswordResetPage() {
@@ -135,6 +133,7 @@ export function StudentPasswordResetPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -168,24 +167,34 @@ export function StudentPasswordResetPage() {
     }
   };
 
-  return <main id="contenido" className="sl-portal-main"><div className="sl-container sl-portal-narrow">
-    <PageHeading eyebrow="ACCESO DE ALUMNOS" title="Establecer contraseña" description="Elige una contraseña nueva para tu cuenta." icon={LockKeyhole} />
-    <div className="sl-portal-card">
-      {success ? <>
-        <p role="status">Tu contraseña se actualizó. Ya puedes iniciar sesión.</p>
-        <Link className="sl-portal-primary" to="/alumnos/iniciar-sesion">Ir al inicio de sesión <ArrowRight size={17} aria-hidden="true" /></Link>
-      </> : !token ? <>
-        <p role="alert">{error || 'El enlace no es válido o ya venció. Solicita uno nuevo.'}</p>
-        <Link className="sl-portal-primary" to="/alumnos/recuperar-contrasena">Solicitar otro enlace</Link>
-      </> : <form onSubmit={submit} noValidate>
-        <div className="sl-portal-field"><label htmlFor="sl-reset-password">Nueva contraseña</label><input id="sl-reset-password" type="password" autoComplete="new-password" value={fields.password} onChange={(event) => { setFields((current) => ({ ...current, password: event.target.value })); setError(''); }} disabled={loading} required /></div>
-        <div className="sl-portal-field"><label htmlFor="sl-reset-confirm">Confirmar contraseña</label><input id="sl-reset-confirm" type="password" autoComplete="new-password" value={fields.confirmPassword} onChange={(event) => { setFields((current) => ({ ...current, confirmPassword: event.target.value })); setError(''); }} disabled={loading} required /></div>
-        {error && <p role="alert" className="sl-portal-error">{error}</p>}
-        <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Actualizando…' : 'Guardar contraseña'}</button>
-      </form>}
-      <div className="sl-portal-actions"><Link className="sl-portal-back" to="/alumnos/iniciar-sesion"><ArrowLeft size={16} aria-hidden="true" /> Volver al inicio de sesión</Link></div>
-    </div>
-  </div></main>;
+  const frame = {
+    eyebrow: 'Recupera tu acceso',
+    icon: LockKeyhole,
+    headline: 'Una contraseña nueva y sigues donde ibas.',
+    lead: 'Por seguridad, al cambiarla cerramos tus sesiones anteriores.'
+  };
+  const backToLogin = <p className="sl-portal-switch"><Link to="/alumnos/iniciar-sesion">Volver al inicio de sesión</Link></p>;
+
+  if (success) return <StudentAuthFrame {...frame} title="Contraseña actualizada" description="Ya puedes iniciar sesión con tu nueva contraseña.">
+    <p role="status" className="sl-portal-success">Tu contraseña se actualizó.</p>
+    <Link className="sl-portal-primary sl-portal-block" to="/alumnos/iniciar-sesion">Ir al inicio de sesión <ArrowRight size={17} aria-hidden="true" /></Link>
+  </StudentAuthFrame>;
+
+  if (!token) return <StudentAuthFrame {...frame} title="Enlace no válido" description="El enlace no es válido o ya venció. Solicita uno nuevo.">
+    {error && <p role="alert" className="sl-portal-error">{error}</p>}
+    <Link className="sl-portal-primary sl-portal-block" to="/alumnos/recuperar-contrasena">Solicitar otro enlace <ArrowRight size={17} aria-hidden="true" /></Link>
+    {backToLogin}
+  </StudentAuthFrame>;
+
+  return <StudentAuthFrame {...frame} title="Elige una nueva contraseña" description="Debe tener entre 8 y 100 caracteres.">
+    <form onSubmit={submit} noValidate>
+      <div className="sl-portal-field"><label htmlFor="sl-reset-password">Nueva contraseña</label><div className="sl-portal-password-wrap"><input id="sl-reset-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={fields.password} onChange={(event) => { setFields((current) => ({ ...current, password: event.target.value })); setError(''); }} placeholder="Mínimo 8 caracteres" disabled={loading} required /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></div>
+      <div className="sl-portal-field"><label htmlFor="sl-reset-confirm">Confirmar contraseña</label><input id="sl-reset-confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={fields.confirmPassword} onChange={(event) => { setFields((current) => ({ ...current, confirmPassword: event.target.value })); setError(''); }} placeholder="Repite tu nueva contraseña" disabled={loading} required /></div>
+      {error && <p role="alert" className="sl-portal-error">{error}</p>}
+      <button className="sl-portal-primary" type="submit" disabled={loading}>{loading ? 'Guardando…' : 'Guardar contraseña'} <ArrowRight size={17} aria-hidden="true" /></button>
+    </form>
+    {backToLogin}
+  </StudentAuthFrame>;
 }
 
 function StudentSearchForm({ initialQuery, onSearch }) {
