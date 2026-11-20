@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getDefaultRoute } from '../utils/roleUtils';
-import AuthCard, { AuthMessage } from '../components/AuthCard';
-import { inputStyle, labelStyle, submitStyle } from '../components/authCardStyles';
+import TeacherAuthShell, { AuthLabel, AuthMessage, PasswordVisibilityToggle, SubmitButton } from '../components/auth/TeacherAuthShell';
 
 export default function ChangePassword() {
   const navigate = useNavigate();
@@ -54,64 +53,65 @@ export default function ChangePassword() {
   };
 
   return (
-    <AuthCard
+    <TeacherAuthShell
+      eyebrow="Primer acceso"
+      headline={<>Protege tu cuenta<br />antes de empezar.</>}
+      lead="Cambia la contraseña temporal por una que solo tú conozcas."
       title="Cambia tu contraseña"
       description="Tu cuenta se creó con una contraseña temporal. Elige una nueva antes de continuar."
+      navAction={{ label: 'Iniciar sesión', to: '/login' }}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
-          <label style={labelStyle}>Contraseña temporal</label>
-          <input
-            type={showPasswords ? 'text' : 'password'}
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="La que recibiste al crear tu cuenta"
-            className="kt-cp-input"
-            disabled={loading}
-            style={inputStyle}
-          />
+          <AuthLabel htmlFor="kt-cp-current">Contraseña temporal</AuthLabel>
+          <div style={{ position: 'relative' }}>
+            <input
+              id="kt-cp-current"
+              type={showPasswords ? 'text' : 'password'}
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="La que recibiste al crear tu cuenta"
+              className="kt-input"
+              style={{ paddingRight: '44px' }}
+              disabled={loading}
+            />
+            <PasswordVisibilityToggle visible={showPasswords} onToggle={() => setShowPasswords(!showPasswords)} />
+          </div>
         </div>
 
         <div>
-          <label style={labelStyle}>Nueva contraseña</label>
+          <AuthLabel htmlFor="kt-cp-new">Nueva contraseña</AuthLabel>
           <input
+            id="kt-cp-new"
             type={showPasswords ? 'text' : 'password'}
+            autoComplete="new-password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Mínimo 8 caracteres"
+            className="kt-input"
             disabled={loading}
-            style={inputStyle}
           />
         </div>
 
         <div>
-          <label style={labelStyle}>Confirmar nueva contraseña</label>
+          <AuthLabel htmlFor="kt-cp-confirm">Confirmar nueva contraseña</AuthLabel>
           <input
+            id="kt-cp-confirm"
             type={showPasswords ? 'text' : 'password'}
+            autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Repite tu nueva contraseña"
+            className="kt-input"
             disabled={loading}
-            style={inputStyle}
           />
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '2px 0 4px', cursor: 'pointer', fontFamily: "'Manrope', sans-serif", fontSize: '12.5px', color: '#475569' }}>
-          <input
-            type="checkbox"
-            checked={showPasswords}
-            onChange={(e) => setShowPasswords(e.target.checked)}
-            style={{ width: '15px', height: '15px', accentColor: '#10B981', cursor: 'pointer' }}
-          />
-          Mostrar contraseñas
-        </label>
-
         {(validationError || error) && <AuthMessage>{validationError || error}</AuthMessage>}
 
-        <button type="submit" disabled={loading} style={submitStyle}>
-          {loading ? 'Guardando…' : 'Guardar y continuar'}
-        </button>
+        <SubmitButton loading={loading} loadingLabel="Guardando…">Guardar y continuar</SubmitButton>
       </form>
-    </AuthCard>
+    </TeacherAuthShell>
   );
 }

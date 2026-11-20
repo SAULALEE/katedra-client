@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import AuthCard, { AuthMessage } from '../components/AuthCard';
-import { inputStyle, labelStyle, linkStyle, submitStyle } from '../components/authCardStyles';
+import TeacherAuthShell, { AuthFooterLink, AuthLabel, AuthMessage, SubmitButton } from '../components/auth/TeacherAuthShell';
 import { requestPasswordReset, validateRecoveryEmail } from '../services/passwordRecoveryService';
 
 export default function ForgotPassword() {
@@ -9,6 +7,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,22 +31,29 @@ export default function ForgotPassword() {
   };
 
   return (
-    <AuthCard
+    <TeacherAuthShell
+      eyebrow="Recupera tu acceso"
+      headline={<>Vuelve a tus clases<br />en un momento.</>}
+      lead="Te enviaremos un enlace seguro para que elijas una contraseña nueva."
       title="Recupera tu contraseña"
-      description="Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una nueva."
+      description="Escribe el correo de tu cuenta y te enviaremos un enlace."
+      excited={isFocused}
+      navAction={{ label: 'Iniciar sesión', to: '/login' }}
     >
-      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
-          <label htmlFor="kt-forgot-email" style={labelStyle}>Correo electrónico</label>
+          <AuthLabel htmlFor="kt-forgot-email">Correo electrónico</AuthLabel>
           <input
             id="kt-forgot-email"
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setError(''); setSent(false); }}
-            placeholder="tu@correo.com"
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder="tucorreo@escuela.edu"
+            className="kt-input"
             disabled={loading}
-            style={inputStyle}
           />
         </div>
 
@@ -58,11 +64,10 @@ export default function ForgotPassword() {
           </AuthMessage>
         )}
 
-        <button type="submit" disabled={loading} style={submitStyle}>
-          {loading ? 'Enviando…' : 'Enviar enlace'}
-        </button>
-        <Link to="/login" style={linkStyle}>Volver al inicio de sesión</Link>
+        <SubmitButton loading={loading} loadingLabel="Enviando…">Enviar enlace</SubmitButton>
       </form>
-    </AuthCard>
+
+      <AuthFooterLink prompt="¿La recordaste?" to="/login">Inicia sesión</AuthFooterLink>
+    </TeacherAuthShell>
   );
 }
