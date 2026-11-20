@@ -30,7 +30,7 @@ test('la pantalla de recuperacion y su ruta no persisten ni exponen el token', a
 
   assert.match(pages, /requestStudentPasswordReset/);
   assert.match(pages, /resetStudentPassword/);
-  assert.match(pages, /Establecer contrase/);
+  assert.match(pages, /Elige una nueva contrase/);
   assert.match(pages, /role="status"/);
   assert.match(pages, /role="alert"/);
   assert.doesNotMatch(pages, /localStorage|sessionStorage|console\.(log|error)/);
